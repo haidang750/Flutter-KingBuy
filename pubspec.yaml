@@ -40,6 +40,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/chat.png
     - assets/logo.png
     - assets/facebook.png
     - assets/google.jpg
@@ -47,3 +48,28 @@ flutter:
     - assets/user.png
     - assets/phone.png
     - assets/user@2x.png
+    - assets/home.png
+    - assets/person.png
+    - assets/promotion.png
+    - assets/pin.png
+    - assets/star.png
+    - assets/history.png
+    - assets/eye.png
+    - assets/group.png
+    - assets/policy.png
+    - assets/image.png
+    - assets/1.jpg
+    - assets/zalo.png
+    - assets/messenger.png
+    - assets/menu.png
+    - assets/alarm.png
+    - assets/Image 18.png
+    - assets/Image 18@2x.png
+    - assets/call-answer.png
+    - assets/-e-calendar.png
+    - assets/-e-envelope.png
+    - assets/email.png
+    - assets/bike.png
+    - assets/Image 1.png
+    - assets/Image 3.png
+    - assets/Image 5.png

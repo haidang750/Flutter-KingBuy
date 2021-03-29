@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'LoginScreen/LoginScreen.dart';
+import 'src/presentation/HomeSreens/MyBottomNavigationBar.dart';
 
 void main() {
   runApp(MyApp());
@@ -8,7 +8,6 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        title: "Đây là project tập dựng UI cứng", home: LoginScreen());
+    return MaterialApp(title: "KingBuy", home: MyBottomNavigationBar());
   }
 }
