@@ -2,16 +2,20 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/presentation/LoginScreens/LoginScreen.dart';
 import 'package:badges/badges.dart';
-import 'package:projectui/src/presentation/ProfileScreens/Address.dart';
-import 'package:projectui/src/presentation/ProfileScreens/ChangePassword.dart';
-import 'package:projectui/src/presentation/ProfileScreens/KingbuyCommitment.dart';
-import 'package:projectui/src/presentation/ProfileScreens/MyCoupon.dart';
-import 'package:projectui/src/presentation/ProfileScreens/OrderHistory.dart';
-import 'package:projectui/src/presentation/ProfileScreens/Profile.dart';
-import 'package:projectui/src/presentation/ProfileScreens/SeenProducts.dart';
-import 'package:projectui/src/presentation/ProfileScreens/TermsOfUse.dart';
-import 'Contact.dart';
-import 'Promotion.dart';
+import 'package:projectui/src/presentation/ProfileScreens/Address/Address_screen.dart';
+import 'package:projectui/src/presentation/ProfileScreens/ChangePassword/ChangePassword_screen.dart';
+import 'package:projectui/src/presentation/ProfileScreens/Commitment/KingbuyCommitment_screen.dart';
+import 'package:projectui/src/presentation/ProfileScreens/Coupon/MyCoupon_screen.dart';
+import 'package:projectui/src/presentation/ProfileScreens/Order/OrderHistory_screen.dart';
+import 'package:projectui/src/presentation/ProfileScreens/UserProfile/DetailProfile_screen.dart';
+import 'package:projectui/src/presentation/ProfileScreens/SeenProducts/SeenProducts_screen.dart';
+import 'package:projectui/src/presentation/ProfileScreens/TermOfUse/TermOfUse_screen.dart';
+import 'package:projectui/src/resource/model/Data.dart';
+import 'package:projectui/src/resource/model/network_state.dart';
+import 'package:projectui/src/resource/repo/auth_repository.dart';
+import 'package:provider/provider.dart';
+import 'Contact/Contact_screen.dart';
+import 'Promotion/Promotion_screen.dart';
 
 List<Map<String, dynamic>> items = [
   {
@@ -24,7 +28,7 @@ List<Map<String, dynamic>> items = [
     "id": 2,
     "icon": "promotion.png",
     "content": "Khuyến mãi",
-    "badgeContent": "2"
+    "badgeContent": "4"
   },
   {
     "id": 3,
@@ -77,13 +81,13 @@ class RootProfileScreen extends StatefulWidget {
 }
 
 class _RootProfileScreenState extends State<RootProfileScreen> {
-  onSelectItem(int id) {
+  onSelectItem(int id) async {
     switch (id) {
       case 1:
-        Navigator.push(
+        await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => Profile(),
+              builder: (context) => DetailProfile(),
             ));
         break;
       case 2:
@@ -152,68 +156,83 @@ class _RootProfileScreenState extends State<RootProfileScreen> {
     }
   }
 
+  handleLogout() async {
+    final authRepository = AuthRepository();
+    NetworkState response = await authRepository.sendRequestLogout();
+    if (response.status == 1) {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LoginScreen(),
+          ));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    Data userData = Provider.of<Data>(context);
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           children: [
             Container(
-                height: 240,
-                alignment: Alignment.center,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Padding(padding: EdgeInsets.only(top: 40)),
-                    GestureDetector(
-                        // Tạo Badge bằng Stack và Positioned
-                        child: Stack(
-                          children: [
-                            CircleAvatar(
+              height: 240,
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(padding: EdgeInsets.only(top: 40)),
+                  GestureDetector(
+                      // Tạo Badge bằng Stack và Positioned
+                      child: Stack(
+                        children: [
+                          CircleAvatar(
                               radius: 50,
-                              backgroundImage: AssetImage("assets/1.jpg"),
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                    color: Colors.red.shade700,
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(12))),
-                                child: Center(
-                                  child: Icon(
-                                    Icons.edit_rounded,
-                                    size: 16,
-                                    color: Colors.white,
-                                  ),
+                              backgroundImage: NetworkImage(
+                                  "https://kingbuy.vn${userData.profile.avatarSource}")),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                  color: Colors.red.shade700,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(12))),
+                              child: Center(
+                                child: Icon(
+                                  Icons.edit_rounded,
+                                  size: 16,
+                                  color: Colors.white,
                                 ),
                               ),
-                            )
-                          ],
-                        ),
-                        onTap: () {
-                          print("Handle Change Avatar");
-                        }),
-                    SizedBox(
-                      height: 15,
-                    ),
-                    Text("Nguyễn Hải Đăng",
-                        style: TextStyle(
-                            fontSize: 21, fontWeight: FontWeight.bold)),
-                    Text("+8412345678",
-                        style: TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.w400)),
-                    Text("5 điểm",
-                        style: TextStyle(
-                            fontSize: 21,
-                            color: Colors.red.shade700,
-                            fontWeight: FontWeight.bold))
-                  ],
-                )),
+                            ),
+                          )
+                        ],
+                      ),
+                      onTap: () {
+                        print("Click avatar");
+                      }),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  Text(userData.profile.name,
+                      style:
+                          TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
+                  Text("+" + userData.profile.phoneNumber,
+                      style:
+                          TextStyle(fontSize: 17, fontWeight: FontWeight.w400)),
+                  Text("${userData.rewardPoints} điểm",
+                      style: TextStyle(
+                          fontSize: 21,
+                          color: Colors.red.shade700,
+                          fontWeight: FontWeight.bold))
+                ],
+              ),
+            ),
             Container(
                 height: 510,
                 padding: EdgeInsets.symmetric(horizontal: 10),
@@ -304,11 +323,7 @@ class _RootProfileScreenState extends State<RootProfileScreen> {
                           fontWeight: FontWeight.bold),
                     ),
                     onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => LoginScreen(),
-                          ));
+                      handleLogout();
                     },
                   ),
                 ))

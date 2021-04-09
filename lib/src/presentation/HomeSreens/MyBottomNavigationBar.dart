@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:projectui/src/presentation/CategoriesScreen/RootCategoriesScreen.dart';
 import 'HomeScreen.dart';
-import '../StoreScreens/RootStoreScreen.dart';
-import '../ProfileScreens/Notifications.dart';
+import '../CategoriesScreen/RootCategoriesScreen.dart';
+import '../Notifications/Notifications_screen.dart';
 import '../ProfileScreens/RootProfileScreen.dart';
 
 class MyBottomNavigationBar extends StatefulWidget {
@@ -26,10 +27,11 @@ class MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
             child: PageView(
           controller: controller,
           scrollDirection: Axis.horizontal, // hướng swipe
+          physics: NeverScrollableScrollPhysics(),
           // Chỉ số Page sẽ bắt đầu từ 0
           children: [
             HomeScreen(), // 0
-            RootStoreScreen(), // 1
+            RootCategoriesScreen(), // 1
             Notifications(), // 2
             RootProfileScreen() // 3
           ],
