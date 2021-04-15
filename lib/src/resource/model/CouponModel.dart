@@ -1,10 +1,3 @@
-import 'dart:convert';
-
-CouponModel couponModelFromJson(String str) =>
-    CouponModel.fromJson(json.decode(str));
-
-String couponModelToJson(CouponModel data) => json.encode(data.toJson());
-
 class CouponModel {
   CouponModel({
     this.status,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/presentation/CategoriesScreen/RootCategoriesScreen.dart';
+import 'package:projectui/src/presentation/HomeSreens/MyBottomNavigationBar_viewmodel.dart';
 import 'HomeScreen.dart';
 import '../CategoriesScreen/RootCategoriesScreen.dart';
 import '../Notifications/Notifications_screen.dart';
@@ -14,9 +15,22 @@ class MyBottomNavigationBar extends StatefulWidget {
 
 class MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
   int currentIndex = 0;
+  final myBottomNavigationBarViewModel = MyBottomNavigationBarViewModel();
   final controller = PageController(
     initialPage: 0, // HomeScreen
   );
+
+  @override
+  void initState() {
+    super.initState();
+    myBottomNavigationBarViewModel.getCountNotification();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    myBottomNavigationBarViewModel.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,27 +140,7 @@ class MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
             Padding(
               padding: EdgeInsets.only(top: 12),
             ),
-            Column(
-              children: [
-                Container(
-                  height: 24,
-                  width: 24,
-                  child: Image.asset(
-                    image,
-                    color: index == currentIndex
-                        ? Colors.red.shade700
-                        : Colors.grey.shade500,
-                  ),
-                ),
-                Text(name,
-                    style: TextStyle(
-                        fontSize: 14,
-                        color: index == currentIndex
-                            ? Colors.red.shade700
-                            : Colors.grey.shade500,
-                        fontWeight: FontWeight.w600)),
-              ],
-            ),
+            buildOneItem(image, name, index)
           ],
         ),
         // thay đổi Page khi click item bottom
@@ -156,5 +150,65 @@ class MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
           });
           controller.jumpToPage(currentIndex);
         });
+  }
+
+  Widget buildOneItem(String image, String name, int index) {
+    return Column(
+      children: [
+        Stack(
+          children: [
+            // build Icon
+            Container(
+              height: 24,
+              width: 40,
+              child: Image.asset(
+                image,
+                color: index == currentIndex
+                    ? Colors.red.shade700
+                    : Colors.grey.shade500,
+              ),
+            ),
+            // build Badge
+            index == 2 ? buildNotificationItem() : Container()
+          ],
+        ),
+        // build Title
+        Text(name,
+            style: TextStyle(
+                fontSize: 14,
+                color: index == currentIndex
+                    ? Colors.red.shade700
+                    : Colors.grey.shade500,
+                fontWeight: FontWeight.w600)),
+      ],
+    );
+  }
+
+  Widget buildNotificationItem() {
+    return StreamBuilder(
+      stream: myBottomNavigationBarViewModel.countNotificationStream,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return Positioned(
+            top: 0,
+            right: 2,
+            child: Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                  color: Colors.red.shade500,
+                  borderRadius: BorderRadius.all(Radius.circular(8))),
+              child: Center(
+                  child: Text(
+                snapshot.data.toString(),
+                style: TextStyle(color: Colors.white),
+              )),
+            ),
+          );
+        } else {
+          return Container();
+        }
+      },
+    );
   }
 }

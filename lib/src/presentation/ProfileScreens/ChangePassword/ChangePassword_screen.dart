@@ -31,7 +31,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                   child: Text(
                     "THAY ĐỔI MẬT KHẨU MỚI",
                     style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.6),
                   ),
@@ -49,7 +49,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                     child: Row(
                       children: [
                         Container(
-                            width: 66,
+                            width: 60,
                             child: Center(
                                 child: Container(
                                     width: 18,
@@ -86,7 +86,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                     child: Row(
                       children: [
                         Container(
-                            width: 66,
+                            width: 60,
                             child: Center(
                                 child: Container(
                                     width: 18,
@@ -123,7 +123,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                     child: Row(
                       children: [
                         Container(
-                            width: 66,
+                            width: 60,
                             child: Center(
                                 child: Container(
                                     width: 18,
@@ -156,7 +156,8 @@ class _ChangePasswordState extends State<ChangePassword> {
                   child: Container(
                     child: Row(
                       children: [
-                        SizedBox(width: 210),
+                        SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.5),
                         Expanded(
                             child: Container(
                                 child: ButtonTheme(

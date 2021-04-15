@@ -1,6 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:projectui/src/resource/model/Data.dart';
+import 'package:projectui/src/resource/model/DistrictModel.dart';
 import 'package:projectui/src/resource/model/LoginModel.dart';
+import 'package:projectui/src/resource/model/NotificationModel.dart';
+import 'package:projectui/src/resource/model/OrderHistoryModel.dart';
+import 'package:projectui/src/resource/model/ProductModel.dart';
+import 'package:projectui/src/resource/model/ProvinceModel.dart';
+import 'package:projectui/src/resource/model/WardModel.dart';
 import '../../configs/configs.dart';
 import '../../utils/utils.dart';
 import '../resource.dart';
@@ -27,7 +33,7 @@ class AuthRepository {
       Response response =
           await AppClients().post(AppEndpoint.LOGIN, data: params);
 
-      NetworkState<LoginData> state = NetworkState(
+      NetworkState<LoginData> result = NetworkState(
         status: response.statusCode,
         response: NetworkResponse.fromJson(
           response.data,
@@ -35,10 +41,10 @@ class AuthRepository {
         ),
       );
       print(
-          "State.data: ${state.isSuccess} - ${state.isError} - ${state.data.token}");
-      if (state.isSuccess && !state.isError && state.data.token != null) {
-        await AppShared.setAccessToken(state.data.token);
-        return state;
+          "State.data: ${result.isSuccess} - ${result.isError} - ${result.data.token}");
+      if (result.isSuccess && !result.isError && result.data.token != null) {
+        await AppShared.setAccessToken(result.data.token);
+        return result;
       } else
         throw DioErrorType.cancel;
     } on DioError catch (e) {
@@ -73,6 +79,7 @@ class AuthRepository {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
     String token = await AppShared.getAccessToken();
+
     try {
       FormData data = FormData.fromMap({
         "name": name,
@@ -119,6 +126,331 @@ class AuthRepository {
           converter: (data) => PromotionModel.fromJson(data),
         ),
       );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<ProvinceModel>> getProvince() async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+
+    try {
+      Response response = await AppClients().get(AppEndpoint.GET_PROVINCE);
+      print("Province Data: ${response.data}");
+
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => ProvinceModel.fromJson(data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<DistrictModel>> getDistrict(String provinceCode) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+
+    try {
+      Response response =
+          await AppClients().get(AppEndpoint.GET_DISTRICT + "/$provinceCode");
+
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => DistrictModel.fromJson(data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<WardModel>> getWard(String districtCode) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+
+    try {
+      Response response =
+          await AppClients().get(AppEndpoint.GET_WARD + "/$districtCode");
+
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => WardModel.fromJson(data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<AddressModel>> getDeliveryAddress() async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      Response response =
+          await AppClients().get(AppEndpoint.GET_DELIVERY_ADDRESS,
+              options: Options(headers: {
+                "${AppEndpoint.keyAuthorization}": "Bearer $token",
+              }));
+
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => AddressModel.fromJson(data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<AddressModel>> createDeliveryAddress(
+      String fullName,
+      String firstPhone,
+      String secondPhone,
+      String provinceCode,
+      String districtCode,
+      String wardCode,
+      String address,
+      int isDefault,
+      int isExportInvoice,
+      String taxCode,
+      String companyName,
+      String companyAddress,
+      String companyEmail) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      FormData data = FormData.fromMap({
+        "fullname": fullName,
+        "first_phone": firstPhone,
+        "second_phone": secondPhone,
+        "province_code": provinceCode,
+        "district_code": districtCode,
+        "ward_code": wardCode,
+        "address": address,
+        "is_default": isDefault,
+        "is_export_invoice": isExportInvoice,
+        "tax_code": taxCode,
+        "company_name": companyName,
+        "company_address": companyAddress,
+        "company_email": companyEmail
+      });
+      Response response =
+          await AppClients().post(AppEndpoint.CREATE_DELIVERY_ADDRESS,
+              data: data,
+              options: Options(headers: {
+                "${AppEndpoint.keyAuthorization}": "Bearer $token",
+              }));
+      print("Response: $response");
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => AddressModel.fromJson(data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<AddressModel>> updateDeliveryAddress(
+      int deliveryAddressId,
+      String fullName,
+      String firstPhone,
+      String secondPhone,
+      String provinceCode,
+      String districtCode,
+      String wardCode,
+      String address,
+      int isDefault,
+      int isExportInvoice,
+      String taxCode,
+      String companyName,
+      String companyAddress,
+      String companyEmail) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      FormData data = FormData.fromMap({
+        "delivery_address_id": deliveryAddressId,
+        "fullname": fullName,
+        "first_phone": firstPhone,
+        "second_phone": secondPhone,
+        "province_code": provinceCode,
+        "district_code": districtCode,
+        "ward_code": wardCode,
+        "address": address,
+        "is_default": isDefault,
+        "is_export_invoice": isExportInvoice,
+        "tax_code": taxCode,
+        "company_name": companyName,
+        "company_address": companyAddress,
+        "company_email": companyEmail
+      });
+      Response response =
+          await AppClients().post(AppEndpoint.UPDATE_DELIVERY_ADDRESS,
+              data: data,
+              options: Options(headers: {
+                "${AppEndpoint.keyAuthorization}": "Bearer $token",
+              }));
+      print("Response: $response");
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => AddressModel.fromJson(data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<AddressModel>> deleteDeliveryAddress(
+    int deliveryAddressId,
+  ) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      FormData data = FormData.fromMap({
+        "delivery_address_id": deliveryAddressId,
+      });
+      Response response =
+          await AppClients().post(AppEndpoint.DELETE_DELIVERY_ADDRESS,
+              data: data,
+              options: Options(headers: {
+                "${AppEndpoint.keyAuthorization}": "Bearer $token",
+              }));
+      print("Response: $response");
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => AddressModel.fromJson(data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<ProductModel>> getViewedProducts(
+      int limit, int offset) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      Response response =
+          await AppClients().get(AppEndpoint.GET_VIEWED_PRODUCTS,
+              queryParameters: {"limit": limit, "offset": offset},
+              options: Options(headers: {
+                "${AppEndpoint.keyAuthorization}": "Bearer $token",
+              }));
+      print("Response: $response");
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => ProductModel.fromJson(data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<int>> getCountNotification() async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      Response response =
+          await AppClients().get(AppEndpoint.GET_COUNT_NOTIFICATION,
+              options: Options(headers: {
+                "${AppEndpoint.keyAuthorization}": "Bearer $token",
+              }));
+      print("Count Notification: ${response.data["data"]}");
+      return NetworkState(
+          status: response.statusCode,
+          response: NetworkResponse(data: response.data["data"]));
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<NotificationModel>> getListNotification(
+      int limit, int offset) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      Response response =
+          await AppClients().get(AppEndpoint.GET_LIST_NOTIFICATION,
+              queryParameters: {"limit": limit, "offset": offset},
+              options: Options(headers: {
+                "${AppEndpoint.keyAuthorization}": "Bearer $token",
+              }));
+      print("Response: $response");
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => NotificationModel.fromJson(data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<OrderHistoryModel>> getOrderHistory(
+      int filter, int limit, int offset) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      Response response = await AppClients().get(AppEndpoint.GET_ORDER_HISTORY,
+          queryParameters: {"filter": filter, "limit": limit, "offset": offset},
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
+
+      NetworkState<OrderHistoryModel> result = NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => OrderHistoryModel.fromJson(data),
+        ),
+      );
+
+      if (result.isSuccess) {
+        print("recordsTotal: ${result.data.recordsTotal}");
+        return result;
+      } else
+        throw DioErrorType.cancel;
     } on DioError catch (e) {
       return NetworkState.withError(e);
     }

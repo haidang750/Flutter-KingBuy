@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:projectui/src/presentation/splash/SplashScreen.dart';
+import 'package:projectui/src/resource/model/AddressModel.dart';
 import 'package:projectui/src/resource/model/Data.dart';
 import 'package:provider/provider.dart';
-import './src/presentation/LoginScreens/LoginScreen.dart';
-// import 'src/presentation/HomeSreens/MyBottomNavigationBar.dart';
 
 void main() {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(
         create: (context) => Data(),
-      )
+      ),
+      ChangeNotifierProvider(
+        create: (context) => AddressModel(),
+      ),
     ],
     child: MyApp(),
   ));
@@ -18,6 +21,6 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: "KingBuy", home: LoginScreen());
+    return MaterialApp(title: "KingBuy", home: SplashScreen());
   }
 }

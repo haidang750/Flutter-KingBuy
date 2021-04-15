@@ -6,7 +6,7 @@ import 'package:projectui/src/utils/app_shared.dart';
 
 class CouponRepository {
   final couponApiProvider = CouponApiProvider();
-  Future<CouponData> fetchAllCoupons() => couponApiProvider._fetchAllCoupons();
+  Future<CouponData> getAllCoupons() => couponApiProvider._getAllCoupons();
 }
 
 class CouponApiProvider {
@@ -15,7 +15,7 @@ class CouponApiProvider {
 
   final String url = "https://kingbuy.vn/api/getMyCoupons";
 
-  Future<CouponData> _fetchAllCoupons() async {
+  Future<CouponData> _getAllCoupons() async {
     String token = await AppShared.getAccessToken();
 
     response = await client.get(Uri.parse(url), headers: {

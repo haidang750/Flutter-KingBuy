@@ -1,8 +1,6 @@
 import 'package:projectui/src/resource/model/Data.dart';
 import 'package:projectui/src/resource/model/model.dart';
 import 'package:projectui/src/resource/repo/auth_repository.dart';
-import 'package:projectui/src/utils/app_shared.dart';
-import 'package:rxdart/subjects.dart';
 
 class ProfileViewModel {
   final authRepository = AuthRepository();

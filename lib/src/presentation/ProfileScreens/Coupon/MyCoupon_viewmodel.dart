@@ -18,8 +18,8 @@ class MyCouponViewModel {
   Stream<TypeCoupon> get expiredCouponStream => expiredCouponSubject.stream;
   Sink<TypeCoupon> get expiredCouponSink => expiredCouponSubject.sink;
 
-  fetchAllCoupons() async {
-    CouponData coupons = await _couponRepository.fetchAllCoupons();
+  getAllCoupons() async {
+    CouponData coupons = await _couponRepository.getAllCoupons();
     nonUseCouponSubject.sink.add(coupons.nonUse);
     usedCouponSubject.sink.add(coupons.used);
     expiredCouponSubject.sink.add(coupons.expired);

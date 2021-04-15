@@ -6,65 +6,6 @@ import 'package:projectui/src/resource/model/CouponModel.dart';
 
 import 'CouponDetail_screen.dart';
 
-Map<String, dynamic> coupons = {
-  "Chưa sử dụng": [
-    {
-      "image": "Image 18.png",
-      "content": "Giảm 15% giá trị đơn hàng",
-      "status": "HSD: 19/07/2019"
-    },
-    {
-      "image": "Image 18.png",
-      "content": "Giảm 20% giá trị đơn hàng",
-      "status": "HSD: 22/07/2019"
-    },
-    {
-      "image": "Image 18.png",
-      "content": "Giảm 25% giá trị đơn hàng",
-      "status": "HSD: 31/07/2019"
-    },
-    {
-      "image": "Image 18.png",
-      "content": "Giảm 35% giá trị đơn hàng",
-      "status": "HSD: 04/08/2019"
-    },
-    {
-      "image": "Image 18.png",
-      "content": "Giảm 35% giá trị đơn hàng",
-      "status": "HSD: 04/08/2019"
-    }
-  ],
-  "Đã sử dụng": [
-    {
-      "image": "Image 18.png",
-      "content": "Giảm 20% giá trị đơn hàng",
-      "status": "Đã sử dụng"
-    },
-    {
-      "image": "Image 18.png",
-      "content": "Giảm 25% giá trị đơn hàng",
-      "status": "Đã sử dụng"
-    },
-    {
-      "image": "Image 18.png",
-      "content": "Giảm 35% giá trị đơn hàng",
-      "status": "Đã sử dụng"
-    }
-  ],
-  "Đã hết hạn": [
-    {
-      "image": "Image 18.png",
-      "content": "Giảm 30% giá trị đơn hàng",
-      "status": "HSD: 02/07/2019"
-    },
-    {
-      "image": "Image 18.png",
-      "content": "Giảm 10% giá trị đơn hàng",
-      "status": "HSD: 01/05/2019"
-    },
-  ]
-};
-
 class MyCoupon extends StatefulWidget {
   @override
   _MyCouponState createState() => _MyCouponState();
@@ -76,7 +17,7 @@ class _MyCouponState extends State<MyCoupon> {
   @override
   void initState() {
     super.initState();
-    myCouponViewModel.fetchAllCoupons();
+    myCouponViewModel.getAllCoupons();
   }
 
   @override
@@ -107,9 +48,11 @@ class _MyCouponState extends State<MyCoupon> {
                     Text(
                       "Chưa sử dụng",
                       style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                     Text(
                       "Đã sử dụng",
@@ -117,6 +60,7 @@ class _MyCouponState extends State<MyCoupon> {
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           color: Colors.black),
+                      textAlign: TextAlign.center,
                     ),
                     Text(
                       "Đã hết hạn",
@@ -124,6 +68,7 @@ class _MyCouponState extends State<MyCoupon> {
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           color: Colors.black),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),

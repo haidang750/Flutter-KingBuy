@@ -1,51 +1,27 @@
-import 'dart:convert';
+import 'package:flutter/material.dart';
 
-AddressModel welcomeFromJson(String str) =>
-    AddressModel.fromJson(json.decode(str));
-
-String welcomeToJson(AddressModel data) => json.encode(data.toJson());
-
-class AddressModel {
+class AddressModel with ChangeNotifier {
   AddressModel({
-    this.status,
-    this.message,
-    this.addressList,
-  });
-
-  int status;
-  String message;
-  AddressList addressList;
-
-  factory AddressModel.fromJson(Map<String, dynamic> json) => AddressModel(
-        status: json["status"],
-        message: json["message"],
-        addressList: AddressList.fromJson(json["data"]),
-      );
-
-  Map<String, dynamic> toJson() => {
-        "status": status,
-        "message": message,
-        "data": addressList.toJson(),
-      };
-}
-
-class AddressList {
-  AddressList({
     this.addresses,
   });
 
   List<Address> addresses;
 
-  factory AddressList.fromJson(Map<String, dynamic> json) {
-    return AddressList(
-      addresses:
-          List<Address>.from(json["rows"].map((x) => Address.fromJson(x))),
-    );
-  }
+  factory AddressModel.fromJson(Map<String, dynamic> json) => AddressModel(
+        addresses:
+            List<Address>.from(json["rows"].map((x) => Address.fromJson(x))),
+      );
 
   Map<String, dynamic> toJson() => {
         "rows": List<dynamic>.from(addresses.map((x) => x.toJson())),
       };
+
+  void setAddress(List<Address> addresses) {
+    this.addresses = addresses;
+    notifyListeners();
+  }
+
+  List<Address> getAddress() => this.addresses;
 }
 
 class Address {
@@ -68,7 +44,7 @@ class Address {
     this.companyEmail,
     this.firstPhone,
     this.secondPhone,
-    this.fullname,
+    this.fullName,
     this.shipFeeBulky,
     this.shipFeeNotBulky,
     this.fullAddress,
@@ -91,8 +67,8 @@ class Address {
   dynamic companyAddress;
   dynamic companyEmail;
   String firstPhone;
-  dynamic secondPhone;
-  String fullname;
+  String secondPhone;
+  String fullName;
   int shipFeeBulky;
   int shipFeeNotBulky;
   String fullAddress;
@@ -115,8 +91,8 @@ class Address {
         companyAddress: json["company_address"],
         companyEmail: json["company_email"],
         firstPhone: json["first_phone"],
-        secondPhone: json["second_phone"],
-        fullname: json["fullname"],
+        secondPhone: json["second_phone"] == null ? null : json["second_phone"],
+        fullName: json["fullname"],
         shipFeeBulky: json["ship_fee_bulky"],
         shipFeeNotBulky: json["ship_fee_not_bulky"],
         fullAddress: json["full_address"],
@@ -140,8 +116,8 @@ class Address {
         "company_address": companyAddress,
         "company_email": companyEmail,
         "first_phone": firstPhone,
-        "second_phone": secondPhone,
-        "fullname": fullname,
+        "second_phone": secondPhone == null ? null : secondPhone,
+        "fullname": fullName,
         "ship_fee_bulky": shipFeeBulky,
         "ship_fee_not_bulky": shipFeeNotBulky,
         "full_address": fullAddress,

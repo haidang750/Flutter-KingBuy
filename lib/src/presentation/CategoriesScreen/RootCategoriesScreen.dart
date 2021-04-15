@@ -274,8 +274,8 @@ class _RootCategoriesScreenState extends State<RootCategoriesScreen>
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-            width: 70,
-            height: 70,
+            width: 60,
+            height: 60,
             color: name == "Danh mục đang hot"
                 ? Colors.yellow.shade200
                 : Colors.white,
@@ -333,9 +333,12 @@ class _RootCategoriesScreenState extends State<RootCategoriesScreen>
       alignment: Alignment.centerLeft,
       child: Row(
         children: [
-          Text(
-            title,
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          Padding(
+            padding: EdgeInsets.only(left: 5),
+            child: Text(
+              title,
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            ),
           ),
           Spacer(),
           GestureDetector(

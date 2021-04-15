@@ -4,49 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:projectui/src/presentation/ProfileScreens/Promotion/PromotionDetail_screen.dart';
 import 'Promotion_viewmodel.dart';
 
-List<Map<String, String>> promotions = [
-  {
-    "image": "Image 18@2x.png",
-    "content": "Khuyến mãi giảm 10% tối đa 300k khi thanh toán qua VNPAY",
-    "time": "31/07/2019"
-  },
-  {
-    "image": "Image 18@2x.png",
-    "content": "Khuyến mãi giảm 10% tối đa 400k khi thanh toán qua VNPAY",
-    "time": "31/07/2019"
-  },
-  {
-    "image": "Image 18@2x.png",
-    "content": "Khuyến mãi giảm 10% tối đa 200k khi thanh toán qua VNPAY",
-    "time": "31/07/2019"
-  },
-  {
-    "image": "Image 18@2x.png",
-    "content": "Khuyến mãi giảm 10% tối đa 200k khi thanh toán qua VNPAY",
-    "time": "31/07/2019"
-  },
-  {
-    "image": "Image 18@2x.png",
-    "content": "Khuyến mãi giảm 10% tối đa 200k khi thanh toán qua VNPAY",
-    "time": "31/07/2019"
-  },
-  {
-    "image": "Image 18@2x.png",
-    "content": "Khuyến mãi giảm 10% tối đa 200k khi thanh toán qua VNPAY",
-    "time": "31/07/2019"
-  },
-  {
-    "image": "Image 18@2x.png",
-    "content": "Khuyến mãi giảm 10% tối đa 200k khi thanh toán qua VNPAY",
-    "time": "31/07/2019"
-  },
-  {
-    "image": "Image 18@2x.png",
-    "content": "Khuyến mãi giảm 10% tối đa 200k khi thanh toán qua VNPAY",
-    "time": "31/07/2019"
-  },
-];
-
 class Promotion extends StatefulWidget {
   @override
   _PromotionState createState() => _PromotionState();
@@ -58,7 +15,7 @@ class _PromotionState extends State<Promotion> {
   @override
   void initState() {
     super.initState();
-    promotionViewModel.fetchPromotion();
+    promotionViewModel.getPromotion();
   }
 
   @override
@@ -72,7 +29,7 @@ class _PromotionState extends State<Promotion> {
     return Scaffold(
         appBar: AppBar(title: Text("Khuyến mãi")),
         body: Container(
-            padding: EdgeInsets.only(left: 25, top: 0, right: 40),
+            padding: EdgeInsets.only(left: 25, top: 0, right: 25),
             child: buildList()));
   }
 
@@ -87,7 +44,7 @@ class _PromotionState extends State<Promotion> {
               return GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 child: Container(
-                  height: 100,
+                  height: 115,
                   padding: EdgeInsets.only(top: 10, bottom: 5),
                   child: Row(
                     children: [
@@ -109,7 +66,7 @@ class _PromotionState extends State<Promotion> {
                             Text(
                               snapshot.data[index].title,
                               style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.w500),
+                                  fontSize: 16, fontWeight: FontWeight.w500),
                             ),
                             SizedBox(height: 5),
                             Text(

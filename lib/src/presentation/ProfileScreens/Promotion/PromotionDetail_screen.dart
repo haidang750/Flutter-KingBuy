@@ -14,15 +14,14 @@ class PromotionDetail extends StatefulWidget {
 class PromotionDetailState extends State<PromotionDetail> {
   @override
   Widget build(BuildContext context) {
-    print("Image: ${widget.image}");
     return Scaffold(
       appBar: AppBar(title: Text("Chi tiết khuyến mãi")),
       body: Container(
         child: ListView(
           children: [
             Container(
-              height: 240,
-              padding: EdgeInsets.fromLTRB(20, 10, 5, 0),
+              height: 220,
+              padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
               child: Image.network(
                 "https://kingbuy.vn${widget.image}",
                 fit: BoxFit.fill,
@@ -30,7 +29,7 @@ class PromotionDetailState extends State<PromotionDetail> {
             ),
             SizedBox(height: 15),
             Container(
-              padding: EdgeInsets.only(left: 20, right: 10),
+              padding: EdgeInsets.only(left: 15, right: 15),
               child: Text(
                 widget.title,
                 style: TextStyle(
@@ -42,7 +41,7 @@ class PromotionDetailState extends State<PromotionDetail> {
             ),
             SizedBox(height: 10),
             Container(
-              padding: EdgeInsets.only(left: 20, right: 10),
+              padding: EdgeInsets.only(left: 15, right: 15),
               child: Text(
                 widget.description,
                 style: TextStyle(

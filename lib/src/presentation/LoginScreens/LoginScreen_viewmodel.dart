@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 class LoginViewModel {
   final authRepository = AuthRepository();
 
-  fetchLoginData(BuildContext context, String email, String password) async {
+  getLoginData(BuildContext context, String email, String password) async {
     try {
       await authRepository.sendRequestLogin(email, password).then((value) {
         if (value.isSuccess) {

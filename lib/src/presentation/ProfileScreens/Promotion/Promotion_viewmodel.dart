@@ -10,7 +10,7 @@ class PromotionViewModel {
 
   Stream<List<Promotion>> get promotionStream => promotionSubject.stream;
 
-  fetchPromotion() async {
+  getPromotion() async {
     NetworkState<PromotionModel> result =
         await authRepository.getPromotion(10, 0);
     if (result.isSuccess) {

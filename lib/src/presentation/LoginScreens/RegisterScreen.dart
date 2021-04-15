@@ -26,14 +26,14 @@ class RegisterScreenState extends State<RegisterScreen> {
         child: ListView(
           children: [
             Container(
-                height: 240,
+                height: 190,
                 alignment: Alignment.center,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Container(
-                        height: 180,
-                        width: 180,
+                        height: 160,
+                        width: 160,
                         child: Image.asset(
                           "assets/logo.png",
                           fit: BoxFit.cover,
@@ -41,7 +41,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                     Text(
                       "ĐĂNG KÝ TÀI KHOẢN",
                       style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.6),
                     )
@@ -66,7 +66,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                         child: Row(
                           children: [
                             Container(
-                                width: 80,
+                                width: 60,
                                 child: Center(
                                     child: Container(
                                         width: 16,
@@ -101,7 +101,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                       child: Row(
                         children: [
                           Container(
-                              width: 80,
+                              width: 60,
                               child: Center(
                                   child: Container(
                                       width: 18,
@@ -138,7 +138,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                       child: Row(
                         children: [
                           Container(
-                              width: 80,
+                              width: 60,
                               child: Center(
                                   child: Container(
                                       width: 18,
@@ -171,7 +171,8 @@ class RegisterScreenState extends State<RegisterScreen> {
                     child: Container(
                       child: Row(
                         children: [
-                          SizedBox(width: 210),
+                          SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.5),
                           Expanded(
                               child: Container(
                                   child: ButtonTheme(
@@ -202,7 +203,7 @@ class RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
             Container(
-              height: 180,
+              height: 160,
               alignment: Alignment.center,
               child: Column(
                 children: [

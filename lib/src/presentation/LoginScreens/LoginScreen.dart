@@ -35,14 +35,14 @@ class LoginSreenState extends State<LoginScreen> {
         child: ListView(
           children: [
             Container(
-                height: 240,
+                height: 190,
                 alignment: Alignment.center,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Container(
-                        height: 180,
-                        width: 180,
+                        height: 160,
+                        width: 160,
                         child: Image.asset(
                           "assets/logo.png",
                           fit: BoxFit.cover,
@@ -50,14 +50,14 @@ class LoginSreenState extends State<LoginScreen> {
                     Text(
                       "ĐĂNG NHẬP",
                       style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.6),
                     )
                   ],
                 )),
             Container(
-              height: 280,
+              height: 260,
               alignment: Alignment.center,
               child: Column(
                 children: [
@@ -75,7 +75,7 @@ class LoginSreenState extends State<LoginScreen> {
                         child: Row(
                           children: [
                             Container(
-                                width: 80,
+                                width: 60,
                                 child: Center(
                                     child: Container(
                                         width: 16,
@@ -110,7 +110,7 @@ class LoginSreenState extends State<LoginScreen> {
                       child: Row(
                         children: [
                           Container(
-                              width: 80,
+                              width: 60,
                               child: Center(
                                   child: Container(
                                       width: 18,
@@ -144,7 +144,7 @@ class LoginSreenState extends State<LoginScreen> {
                       child: Row(
                         children: [
                           Container(
-                            width: 210,
+                            width: MediaQuery.of(context).size.width * 0.5,
                             child: Center(
                                 child: GestureDetector(
                               child: Text(
@@ -175,7 +175,7 @@ class LoginSreenState extends State<LoginScreen> {
                                       fontWeight: FontWeight.w500,
                                       color: Colors.white)),
                               // xử lý API => đăng nhập thành công => vào trang Home
-                              onPressed: () => loginViewModel.fetchLoginData(
+                              onPressed: () => loginViewModel.getLoginData(
                                 context,
                                 "0979629204",
                                 "12345678",
@@ -190,13 +190,9 @@ class LoginSreenState extends State<LoginScreen> {
               ),
             ),
             Container(
-              height: 180,
-              alignment: Alignment.center,
+              height: 130,
               child: Column(
                 children: [
-                  Padding(
-                    padding: EdgeInsets.only(top: 15),
-                  ),
                   Text(
                     "Hoặc đăng nhập bằng",
                     style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),

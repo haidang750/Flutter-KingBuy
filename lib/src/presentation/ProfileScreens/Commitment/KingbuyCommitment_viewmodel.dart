@@ -9,9 +9,9 @@ class CommitmentViewModel {
   Stream<List<dynamic>> get commitmentStream => commitmentSubject.stream;
   Sink<List<dynamic>> get commitmentSink => commitmentSubject.sink;
 
-  fetchContactInfo() async {
+  getCommitmentInfo() async {
     List<dynamic> commitmentInfo =
-        await _commitmentRepository.fetchCommitmentInfo();
+        await _commitmentRepository.getCommitmentInfo();
     commitmentSubject.sink.add(commitmentInfo);
   }
 

@@ -1,8 +1,6 @@
 // Ảnh 42 - Thông tin cá nhân
 import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:badges/badges.dart';
 import 'package:intl/intl.dart';
 import 'package:projectui/src/presentation/ProfileScreens/UserProfile/DetailProfile.dart';
 import 'package:projectui/src/resource/model/Data.dart';
@@ -78,6 +76,7 @@ class DetailProfileState extends State<DetailProfile> {
   }
 
   updateProfile(
+    BuildContext context,
     String name,
     String phoneNumber,
     String dateOfBirth,
@@ -89,8 +88,28 @@ class DetailProfileState extends State<DetailProfile> {
         name, phoneNumber, dateOfBirth, gender, email, avatarPath);
 
     if (result.isSuccess) {
+      print("Cập nhật thông tin thành công");
       // Sau khi update profile thành công thì set lại profile trong Data
       Provider.of<Data>(context, listen: false).setProfile(result.data.profile);
+      Scaffold.of(context).showSnackBar(SnackBar(
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.blue,
+          content: Text(
+            "Cập nhật thông tin thành công",
+            style: TextStyle(
+                color: Colors.white, fontSize: 17, fontWeight: FontWeight.w500),
+            textAlign: TextAlign.center,
+          )));
+    } else {
+      Scaffold.of(context).showSnackBar(SnackBar(
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.blue,
+          content: Text("Cập nhật thông tin thất bại",
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w500),
+              textAlign: TextAlign.center)));
     }
   }
 
@@ -103,27 +122,30 @@ class DetailProfileState extends State<DetailProfile> {
         appBar: AppBar(
           title: Text("Thông tin cá nhân"),
           actions: [
-            Padding(
-              padding: EdgeInsets.only(right: 20, top: 16, bottom: 8),
-              child: ButtonTheme(
-                  minWidth: 66,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30)),
-                  disabledColor: Colors.grey.shade500,
-                  buttonColor: Colors.red.shade800,
-                  child: RaisedButton(
-                      child: Text("LƯU",
-                          style: TextStyle(
-                            fontSize: 17,
-                            color: Colors.white,
-                          )),
-                      onPressed: () => updateProfile(
-                          nameController.text,
-                          phoneController.text,
-                          birthdayController.text,
-                          radioValue == "Nam" ? 1 : 0,
-                          emailController.text,
-                          image != null ? image.path : null))),
+            Builder(
+              builder: (context) => Padding(
+                padding: EdgeInsets.only(right: 20, top: 16, bottom: 8),
+                child: ButtonTheme(
+                    minWidth: 66,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
+                    disabledColor: Colors.grey.shade500,
+                    buttonColor: Colors.red.shade800,
+                    child: RaisedButton(
+                        child: Text("LƯU",
+                            style: TextStyle(
+                              fontSize: 17,
+                              color: Colors.white,
+                            )),
+                        onPressed: () => updateProfile(
+                            context,
+                            nameController.text,
+                            phoneController.text,
+                            birthdayController.text,
+                            radioValue == "Nam" ? 1 : 0,
+                            emailController.text,
+                            image != null ? image.path : null))),
+              ),
             )
           ],
         ),
@@ -139,25 +161,41 @@ class DetailProfileState extends State<DetailProfile> {
                 Container(
                     height: 160,
                     child: Center(
-                        child: GestureDetector(
-                            child: Badge(
-                                badgeContent: Icon(
-                                  Icons.edit_rounded,
-                                  color: Colors.white,
+                      child: GestureDetector(
+                          child: Stack(
+                            children: [
+                              CircleAvatar(
+                                radius: 50,
+                                backgroundImage: image == null
+                                    ? NetworkImage(
+                                        "https://kingbuy.vn$avatarSource")
+                                    : FileImage(image),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                      color: Colors.red.shade700,
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(12))),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.edit_rounded,
+                                      size: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
-                                badgeColor: Colors.red.shade700,
-                                position: BadgePosition.bottomEnd(
-                                    bottom: -6, end: -6),
-                                child: CircleAvatar(
-                                  radius: 50,
-                                  backgroundImage: image == null
-                                      ? NetworkImage(
-                                          "https://kingbuy.vn$avatarSource")
-                                      : FileImage(image),
-                                )),
-                            onTap: () {
-                              getImage();
-                            }))),
+                              )
+                            ],
+                          ),
+                          onTap: () {
+                            getImage();
+                          }),
+                    )),
                 Container(
                     height: 320,
                     child: Container(
@@ -173,7 +211,7 @@ class DetailProfileState extends State<DetailProfile> {
                           TextField(
                             controller: nameController,
                             style: TextStyle(
-                                fontSize: 17, fontWeight: FontWeight.w600),
+                                fontSize: 18, fontWeight: FontWeight.w600),
                             decoration: InputDecoration(
                               border: UnderlineInputBorder(),
                             ),
@@ -189,7 +227,7 @@ class DetailProfileState extends State<DetailProfile> {
                           TextField(
                               controller: phoneController,
                               style: TextStyle(
-                                fontSize: 17,
+                                fontSize: 18,
                                 fontWeight: FontWeight.w600,
                               ),
                               decoration: InputDecoration(
@@ -206,7 +244,7 @@ class DetailProfileState extends State<DetailProfile> {
                           TextField(
                             controller: birthdayController,
                             style: TextStyle(
-                              fontSize: 17,
+                              fontSize: 18,
                               fontWeight: FontWeight.w600,
                             ),
                             decoration: InputDecoration(
@@ -228,7 +266,7 @@ class DetailProfileState extends State<DetailProfile> {
                           TextField(
                               controller: emailController,
                               style: TextStyle(
-                                fontSize: 17,
+                                fontSize: 18,
                                 fontWeight: FontWeight.w600,
                               ),
                               decoration: InputDecoration(

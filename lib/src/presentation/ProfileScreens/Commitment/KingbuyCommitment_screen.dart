@@ -2,26 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/presentation/ProfileScreens/Commitment/KingbuyCommitment_viewmodel.dart';
 
-List<Map<String, String>> options = [
-  {
-    "time": "7 ngày",
-    "title": "Đổi trả trong vòng 7 ngày",
-    "content":
-        "Nếu phụ kiện bị lỗi do nhà sản xuất, Kingbuy sẽ hỗ trợ Quý khách trả lại trong 7 ngày mà không phát sinh thêm chi phí."
-  },
-  {
-    "time": "Miễn phí",
-    "title": "Giao hàng, lắp đặt, trải nghiệm miễn phí",
-    "content":
-        "Hỗ trợ giao hàng, lắp đặt miễn phí tại nhà trên toàn quốc. Trải nghiệm miễn phí tại showroom trên toàn quốc."
-  },
-  {
-    "time": "6 năm",
-    "title": "Bảo hành 6 năm, bảo trì trọn đời",
-    "content": "Kingbuy bảo hành 6 năm, bảo trì trọn đời cho sản phẩm."
-  }
-];
-
 class KingbuyCommitment extends StatefulWidget {
   @override
   _KingbuyCommitmentState createState() => _KingbuyCommitmentState();
@@ -33,7 +13,7 @@ class _KingbuyCommitmentState extends State<KingbuyCommitment> {
   @override
   void initState() {
     super.initState();
-    commitmentViewModel.fetchContactInfo();
+    commitmentViewModel.getCommitmentInfo();
   }
 
   @override

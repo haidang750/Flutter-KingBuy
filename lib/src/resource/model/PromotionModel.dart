@@ -1,10 +1,3 @@
-import 'dart:convert';
-
-PromotionModel promotionModelFromJson(String str) =>
-    PromotionModel.fromJson(json.decode(str));
-
-String promotionModelToJson(PromotionModel data) => json.encode(data.toJson());
-
 class PromotionModel {
   PromotionModel({
     this.promotions,

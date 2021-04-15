@@ -3,8 +3,8 @@ import 'package:http/http.dart' show Client, Response;
 
 class CommitmentRepository {
   final commitmentApiProvider = CommitmentApiProvider();
-  Future<List<dynamic>> fetchCommitmentInfo() =>
-      commitmentApiProvider._fetchCommitmentInfo();
+  Future<List<dynamic>> getCommitmentInfo() =>
+      commitmentApiProvider._getCommitmentInfo();
 }
 
 class CommitmentApiProvider {
@@ -14,7 +14,7 @@ class CommitmentApiProvider {
   final String url = "https://kingbuy.vn/api/getCommitments";
 
   // ignore: missing_return
-  Future<List<dynamic>> _fetchCommitmentInfo() async {
+  Future<List<dynamic>> _getCommitmentInfo() async {
     response = await client.get(Uri.parse(url));
 
     if (response.statusCode == 200) {

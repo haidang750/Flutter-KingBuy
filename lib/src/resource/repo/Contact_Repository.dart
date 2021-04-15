@@ -3,8 +3,8 @@ import 'package:http/http.dart' show Client, Response;
 
 class ContactRepository {
   final contactApiProvider = ContactApiProvider();
-  Future<List<dynamic>> fetchContactInfo() =>
-      contactApiProvider._fetchContactInfo();
+  Future<List<dynamic>> getContactInfo() =>
+      contactApiProvider._getContactInfo();
 }
 
 class ContactApiProvider {
@@ -13,7 +13,7 @@ class ContactApiProvider {
 
   final String url = "https://kingbuy.vn/api/contactUs";
 
-  Future<List<dynamic>> _fetchContactInfo() async {
+  Future<List<dynamic>> _getContactInfo() async {
     response = await client.get(Uri.parse(url));
 
     if (response.statusCode == 200) {

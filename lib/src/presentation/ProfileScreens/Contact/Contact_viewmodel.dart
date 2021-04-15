@@ -9,8 +9,8 @@ class ContactViewModel {
   Stream<List<dynamic>> get contactStream => contactSubject.stream;
   Sink<List<dynamic>> get contactSink => contactSubject.sink;
 
-  fetchContactInfo() async {
-    List<dynamic> contactInfo = await _contactRepository.fetchContactInfo();
+  getContactInfo() async {
+    List<dynamic> contactInfo = await _contactRepository.getContactInfo();
     contactSubject.sink.add(contactInfo);
   }
 

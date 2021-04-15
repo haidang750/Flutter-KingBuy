@@ -1,11 +1,7 @@
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Data.dart';
 import 'Profile.dart';
 import 'Shop.dart';
-
-LoginModel loginModelFromJson(String str) =>
-    LoginModel.fromJson(json.decode(str));
 
 class LoginModel {
   LoginModel({

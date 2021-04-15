@@ -13,7 +13,7 @@ class _ContactState extends State<Contact> {
   @override
   void initState() {
     super.initState();
-    contactViewModel.fetchContactInfo();
+    contactViewModel.getContactInfo();
   }
 
   @override

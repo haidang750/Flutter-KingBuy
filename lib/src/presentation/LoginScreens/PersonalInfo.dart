@@ -88,7 +88,7 @@ class PersonalInfoState extends State<PersonalInfo> {
                             child: Row(
                               children: [
                                 Container(
-                                    width: 80,
+                                    width: 60,
                                     child: Center(
                                         child: Container(
                                             width: 16,
@@ -122,7 +122,7 @@ class PersonalInfoState extends State<PersonalInfo> {
                             child: Row(
                               children: [
                                 Container(
-                                    width: 80,
+                                    width: 60,
                                     child: Center(
                                         child: Container(
                                             width: 20,
@@ -157,7 +157,7 @@ class PersonalInfoState extends State<PersonalInfo> {
                             child: Row(
                               children: [
                                 Container(
-                                    width: 80,
+                                    width: 60,
                                     child: Center(
                                         child: Container(
                                             width: 20,
@@ -193,7 +193,7 @@ class PersonalInfoState extends State<PersonalInfo> {
                             child: Row(
                               children: [
                                 Container(
-                                    width: 80,
+                                    width: 60,
                                     child: Center(
                                         child: Container(
                                             width: 24,

@@ -38,7 +38,7 @@ class ForgetPasswordState extends State<ForgetPassword> {
                 Text(
                   "NHẬP THÔNG TIN TÀI KHOẢN",
                   style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.6),
                 ),
@@ -55,7 +55,7 @@ class ForgetPasswordState extends State<ForgetPassword> {
                     child: Row(
                       children: [
                         Container(
-                            width: 80,
+                            width: 60,
                             child: Center(
                                 child: Container(
                                     width: 16,
@@ -92,7 +92,8 @@ class ForgetPasswordState extends State<ForgetPassword> {
                   child: Container(
                     child: Row(
                       children: [
-                        SizedBox(width: 210),
+                        SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.5),
                         Expanded(
                             child: Container(
                                 child: ButtonTheme(

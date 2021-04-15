@@ -2,13 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/presentation/LoginScreens/LoginScreen.dart';
 import 'package:badges/badges.dart';
-import 'package:projectui/src/presentation/ProfileScreens/Address/Address_screen.dart';
+import 'package:projectui/src/presentation/ProfileScreens/Address/Addresss.dart';
 import 'package:projectui/src/presentation/ProfileScreens/ChangePassword/ChangePassword_screen.dart';
 import 'package:projectui/src/presentation/ProfileScreens/Commitment/KingbuyCommitment_screen.dart';
 import 'package:projectui/src/presentation/ProfileScreens/Coupon/MyCoupon_screen.dart';
 import 'package:projectui/src/presentation/ProfileScreens/Order/OrderHistory_screen.dart';
 import 'package:projectui/src/presentation/ProfileScreens/UserProfile/DetailProfile_screen.dart';
-import 'package:projectui/src/presentation/ProfileScreens/SeenProducts/SeenProducts_screen.dart';
+import 'package:projectui/src/presentation/ProfileScreens/ViewedProducts/ViewedProducts_screen.dart';
 import 'package:projectui/src/presentation/ProfileScreens/TermOfUse/TermOfUse_screen.dart';
 import 'package:projectui/src/resource/model/Data.dart';
 import 'package:projectui/src/resource/model/network_state.dart';
@@ -101,7 +101,7 @@ class _RootProfileScreenState extends State<RootProfileScreen> {
         Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => Address(),
+              builder: (context) => AddressScreen(),
             ));
         break;
       case 4:
@@ -122,7 +122,7 @@ class _RootProfileScreenState extends State<RootProfileScreen> {
         Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => SeenProducts(),
+              builder: (context) => ViewedProducts(),
             ));
         break;
       case 7:
