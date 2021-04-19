@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/presentation/splash/SplashScreen.dart';
 import 'package:projectui/src/resource/model/AddressModel.dart';
+import 'package:projectui/src/resource/model/ContactModel.dart';
 import 'package:projectui/src/resource/model/Data.dart';
 import 'package:provider/provider.dart';
 

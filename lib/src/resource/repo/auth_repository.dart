@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:projectui/src/resource/model/ContactModel.dart';
 import 'package:projectui/src/resource/model/Data.dart';
 import 'package:projectui/src/resource/model/DistrictModel.dart';
 import 'package:projectui/src/resource/model/LoginModel.dart';
@@ -33,6 +34,7 @@ class AuthRepository {
       Response response =
           await AppClients().post(AppEndpoint.LOGIN, data: params);
 
+      print("data: ${response.data}");
       NetworkState<LoginData> result = NetworkState(
         status: response.statusCode,
         response: NetworkResponse.fromJson(
@@ -456,7 +458,101 @@ class AuthRepository {
     }
   }
 
-  Future<NetworkState> sendRequestLogout() async {
+  Future<NetworkState<bool>> checkFeedbackOfUser() async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      Response response =
+          await AppClients().get(AppEndpoint.CHECK_FEEDBACK_OF_USER,
+              options: Options(headers: {
+                "${AppEndpoint.keyAuthorization}": "Bearer $token",
+              }));
+
+      return NetworkState(
+          status: response.statusCode,
+          response: NetworkResponse(data: response.data["data"]));
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<String>> userSendContact(String fullName, String email,
+      String phone, String subject, String body) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      FormData data = FormData.fromMap({
+        "fullname": fullName,
+        "email": email,
+        "phone": phone,
+        "subject": subject,
+        "body": body
+      });
+      Response response =
+          await AppClients().post(AppEndpoint.USER_SEND_CONTACT_FORM,
+              data: data,
+              options: Options(headers: {
+                "${AppEndpoint.keyAuthorization}": "Bearer $token",
+              }));
+
+      return NetworkState(
+          status: response.statusCode,
+          response: NetworkResponse(data: response.data["message"]));
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState> getAllFeedback() async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      Response response = await AppClients().get(AppEndpoint.GET_ALL_FEEDBACK,
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
+
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => ContactModel.fromJson(data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState> userReplyFeedback(String contentRep) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      FormData data = FormData.fromMap({"contentRep": contentRep});
+      Response response =
+          await AppClients().post(AppEndpoint.USER_REPLY_FEEDBACK,
+              data: data,
+              options: Options(headers: {
+                "${AppEndpoint.keyAuthorization}": "Bearer $token",
+              }));
+
+      return NetworkState(
+          status: response.statusCode,
+          response: NetworkResponse(data: response.data["status"]));
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<int>> sendRequestLogout() async {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
     String token = await AppShared.getAccessToken();
@@ -468,9 +564,8 @@ class AuthRepository {
           }));
       print("Status Logout Request: ${response.data["status"]}");
       return NetworkState(
-          status: response.data["status"],
-          message: response.data["message"],
-          response: null);
+          status: response.statusCode,
+          response: NetworkResponse(data: response.data["status"]));
     } on DioError catch (e) {
       return NetworkState.withError(e);
     }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class BorderTextField extends StatefulWidget {
   BorderTextField(
       {this.height = 50,
+        this.color = Colors.white,
       this.textPaddingLeft = 10,
       this.textPaddingRight = 5,
       this.borderWidth = 1.0,
@@ -18,6 +19,7 @@ class BorderTextField extends StatefulWidget {
       this.hintTextFontSize,
       this.hintTextFontWeight,});
   double height;
+  Color color;
   double textPaddingLeft;
   double textPaddingRight;
   double borderWidth;
@@ -45,6 +47,7 @@ class BorderTextFieldState extends State<BorderTextField> {
       padding: EdgeInsets.only(
           left: widget.textPaddingLeft, right: widget.textPaddingRight),
       decoration: BoxDecoration(
+          color: widget.color,
           border:
               Border.all(width: widget.borderWidth, color: widget.borderColor),
           borderRadius: BorderRadius.all(Radius.circular(widget.borderRadius))),

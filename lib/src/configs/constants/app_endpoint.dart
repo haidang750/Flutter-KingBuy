@@ -29,4 +29,8 @@ class AppEndpoint {
   static const String GET_COUNT_NOTIFICATION = "/api/countNotification";
   static const String GET_LIST_NOTIFICATION = "/api/listNotification";
   static const String GET_ORDER_HISTORY = "/api/listBuyHistoryOfUser";
+  static const String CHECK_FEEDBACK_OF_USER = "/api/checkFeedbackOfUser";
+  static const String USER_SEND_CONTACT_FORM = "/api/userSendContactForm";
+  static const String GET_ALL_FEEDBACK = "/api/getAllFeedback";
+  static const String USER_REPLY_FEEDBACK = "/api/userReplyFeedback";
 }

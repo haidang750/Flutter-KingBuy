@@ -1,6 +1,8 @@
 // Ảnh 48 - Liên hệ
 import 'package:flutter/material.dart';
 import 'package:projectui/src/presentation/ProfileScreens/Contact/Contact_viewmodel.dart';
+import 'package:projectui/src/presentation/ProfileScreens/Contact/DetailContact_screen.dart';
+import 'CreateContact_screen.dart';
 
 class Contact extends StatefulWidget {
   @override
@@ -34,9 +36,25 @@ class _ContactState extends State<Contact> {
                 padding: EdgeInsets.only(left: 25, right: 35, top: 20),
                 child: ListView(
                   children: [
-                    _buildChat(snapshot.data[0]["message"]),
-                    _buildPhone(snapshot.data[0]["hotLine"]),
-                    _buildEmail(snapshot.data[0]["email"])
+                    buildTypeContact(
+                        Image.asset("assets/chat.png"),
+                        snapshot.data[0]["message"],
+                        Image.asset(
+                          "assets/messenger.png",
+                        ),
+                        handleMessenger),
+                    buildTypeContact(
+                        Image.asset("assets/call-answer.png"),
+                        snapshot.data[0]["hotLine"],
+                        Icon(Icons.arrow_forward_ios_outlined,
+                            size: 18, color: Colors.grey),
+                        handlePhone),
+                    buildTypeContact(
+                        Image.asset("assets/email.png"),
+                        snapshot.data[0]["email"],
+                        Icon(Icons.arrow_forward_ios_outlined,
+                            size: 18, color: Colors.grey),
+                        handleEmail)
                   ],
                 ),
               );
@@ -49,94 +67,59 @@ class _ContactState extends State<Contact> {
         ));
   }
 
-  Widget _buildChat(String message) {
-    return Container(
-      height: 50,
-      child: Row(children: [
-        Expanded(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                  width: 20, height: 20, child: Image.asset("assets/chat.png")),
-              SizedBox(
-                width: 15,
-              ),
-              Text(
-                message,
-                style: TextStyle(fontSize: 17),
-              )
-            ],
+  Widget buildTypeContact(
+      Image iconStart, String content, Widget iconEnd, Function action) {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      child: Container(
+        height: 50,
+        child: Row(children: [
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(width: 20, height: 20, child: iconStart),
+                SizedBox(
+                  width: 15,
+                ),
+                Text(
+                  content,
+                  style: TextStyle(fontSize: 17),
+                )
+              ],
+            ),
           ),
-        ),
-        Container(
-          height: 28,
-          width: 28,
-          child: Image.asset(
-            "assets/messenger.png",
-          ),
-        )
-      ]),
+          Container(
+            height: 28,
+            width: 28,
+            child: iconEnd,
+          )
+        ]),
+      ),
+      onTap: action,
     );
   }
 
-  Widget _buildPhone(String hotLine) {
-    return Container(
-      height: 50,
-      child: Row(children: [
-        Expanded(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                  width: 20,
-                  height: 20,
-                  child: Image.asset("assets/call-answer.png")),
-              SizedBox(
-                width: 20,
-              ),
-              Text(
-                hotLine,
-                style: TextStyle(fontSize: 17),
-              )
-            ],
-          ),
-        ),
-        Container(
-          child: Icon(Icons.arrow_forward_ios_outlined,
-              size: 18, color: Colors.grey),
-        )
-      ]),
-    );
+  void handleMessenger() {
+    print("handleMessenger()");
   }
 
-  Widget _buildEmail(String email) {
-    return Container(
-      height: 50,
-      child: Row(children: [
-        Expanded(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                  width: 20,
-                  height: 20,
-                  child: Image.asset("assets/email.png")),
-              SizedBox(
-                width: 20,
-              ),
-              Text(
-                email,
-                style: TextStyle(fontSize: 17),
-              )
-            ],
-          ),
-        ),
-        Container(
-          child: Icon(Icons.arrow_forward_ios_outlined,
-              size: 18, color: Colors.grey),
-        )
-      ]),
-    );
+  void handlePhone() {
+    print("handlePhone()");
+  }
+
+  void handleEmail() async {
+    bool isContacted = await contactViewModel.checkFeedbackOfUser();
+    isContacted
+        ? Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailContact(),
+            ))
+        : Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateContact(),
+            ));
   }
 }

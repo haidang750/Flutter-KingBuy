@@ -158,8 +158,8 @@ class _RootProfileScreenState extends State<RootProfileScreen> {
 
   handleLogout() async {
     final authRepository = AuthRepository();
-    NetworkState response = await authRepository.sendRequestLogout();
-    if (response.status == 1) {
+    NetworkState<int> response = await authRepository.sendRequestLogout();
+    if (response.data == 1) {
       Navigator.push(
           context,
           MaterialPageRoute(

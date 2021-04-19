@@ -13,20 +13,12 @@ class NetworkState<T> {
     try {
       String message;
       int code;
-      print("=========== ERROR ===========");
-      print("${error.type}");
       Response response = error.response;
       if (response != null) {
-        print("=========== statusCode ===========");
-        print("${response.statusCode}");
         code = response.statusCode;
-        print("=========== data ===========");
-        print("${response.data.toString()}");
         message = response.data["code"];
       } else {
         code = AppEndpoint.ERROR_SERVER;
-        print("=========== message ===========");
-        print("${error.message}");
         message = "Không thể kết nối đến máy chủ!";
       }
       this.message = message;
@@ -45,7 +37,9 @@ class NetworkState<T> {
 
   T get data => response?.data;
 
-  bool get isSuccess => status == AppEndpoint.SUCCESS;
+  bool get isSuccess =>
+      status == AppEndpoint.SUCCESS;
 
-  bool get isError => status != AppEndpoint.SUCCESS;
+  bool get isError =>
+      status != AppEndpoint.SUCCESS;
 }
