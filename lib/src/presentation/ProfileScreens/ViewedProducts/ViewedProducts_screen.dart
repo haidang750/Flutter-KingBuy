@@ -96,7 +96,7 @@ class ViewedProductsState extends State<ViewedProducts> {
         itemBuilder: itemBuilder,
         dataRequester: viewedProductsViewModel.dataRequester,
         initRequester: viewedProductsViewModel.initRequester,
-        childAspectRatio: 3 / 5.5,
+        childAspectRatio: 3 / 5.8,
         crossAxisCount: 2,
       ),
     );

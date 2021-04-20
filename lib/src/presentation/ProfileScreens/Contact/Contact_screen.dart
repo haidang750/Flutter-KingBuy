@@ -2,6 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/presentation/ProfileScreens/Contact/Contact_viewmodel.dart';
 import 'package:projectui/src/presentation/ProfileScreens/Contact/DetailContact_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:toast/toast.dart';
+import 'package:projectui/src/utils/utils.dart';
 import 'CreateContact_screen.dart';
 
 class Contact extends StatefulWidget {
@@ -48,7 +51,7 @@ class _ContactState extends State<Contact> {
                         snapshot.data[0]["hotLine"],
                         Icon(Icons.arrow_forward_ios_outlined,
                             size: 18, color: Colors.grey),
-                        handlePhone),
+                        () => handlePhone(snapshot.data[0]["hotLine"])),
                     buildTypeContact(
                         Image.asset("assets/email.png"),
                         snapshot.data[0]["email"],
@@ -100,26 +103,39 @@ class _ContactState extends State<Contact> {
     );
   }
 
-  void handleMessenger() {
-    print("handleMessenger()");
+  handleMessenger() async {
+    if (await canLaunch('http://m.me/100040733580443')) {
+      await launch('https://m.me/100040733580443');
+    } else
+      Toast.show("Không thể mở Messenger", context,
+          duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
   }
 
-  void handlePhone() {
-    print("handlePhone()");
+  handlePhone(String hotLine) async {
+    if (await canLaunch('tel:$hotLine')) {
+      await launch('tel:$hotLine');
+    } else {
+      Toast.show("Không thể mở điện thoại", context,
+          duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
+    }
   }
 
-  void handleEmail() async {
-    bool isContacted = await contactViewModel.checkFeedbackOfUser();
-    isContacted
-        ? Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DetailContact(),
-            ))
-        : Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CreateContact(),
-            ));
+  handleEmail() async {
+    if (AppUtils.checkLogin()) {
+      bool isContacted = await contactViewModel.checkFeedbackOfUser();
+      isContacted
+          ? Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailContact(),
+              ))
+          : Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CreateContact(),
+              ));
+    } else {
+      AppUtils.myShowDialog(context);
+    }
   }
 }

@@ -36,7 +36,7 @@ class ShowOneProductState extends State<ShowOneProduct> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                height: 46,
+                height: 58,
                 child: Text(widget.name,
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
@@ -61,7 +61,7 @@ class ShowOneProductState extends State<ShowOneProduct> {
                 children: [
                   ShowMoney(
                     price: widget.salePrice,
-                    fontSizeLarge: 14,
+                    fontSizeLarge: 13,
                     fontSizeSmall: 10,
                     color: Colors.red.shade700,
                     fontWeight: FontWeight.bold,
@@ -69,8 +69,8 @@ class ShowOneProductState extends State<ShowOneProduct> {
                   ),
                   ShowMoney(
                     price: widget.price,
-                    fontSizeLarge: 12,
-                    fontSizeSmall: 9,
+                    fontSizeLarge: 11,
+                    fontSizeSmall: 8,
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
                     isLineThrough: true,
