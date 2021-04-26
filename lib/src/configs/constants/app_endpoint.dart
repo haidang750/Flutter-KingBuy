@@ -33,4 +33,9 @@ class AppEndpoint {
   static const String USER_SEND_CONTACT_FORM = "/api/userSendContactForm";
   static const String GET_ALL_FEEDBACK = "/api/getAllFeedback";
   static const String USER_REPLY_FEEDBACK = "/api/userReplyFeedback";
+  static const String GET_HOT_CATEGORIES = "/api/getHotCategories";
+  static const String GET_ALL_CATEGORIES = "/api/getAllCategories";
+  static const String GET_PRODUCTS_BY_CATEGORY = "/api/getProductsByCategory";
+  static const String GET_BRANDS = "/api/getBrands";
+  static const String SEARCH_PRODUCT = "/api/searchProduct";
 }

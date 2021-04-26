@@ -7,7 +7,7 @@ import 'package:projectui/src/presentation/ProfileScreens/ChangePassword/ChangeP
 import 'package:projectui/src/presentation/ProfileScreens/Commitment/KingbuyCommitment_screen.dart';
 import 'package:projectui/src/presentation/ProfileScreens/Coupon/MyCoupon_screen.dart';
 import 'package:projectui/src/presentation/ProfileScreens/Order/OrderHistory_screen.dart';
-import 'package:projectui/src/presentation/ProfileScreens/UserProfile/DetailProfile_screen.dart';
+import 'package:projectui/src/presentation/ProfileScreens/DetailProfile/DetailProfile_screen.dart';
 import 'package:projectui/src/presentation/ProfileScreens/ViewedProducts/ViewedProducts_screen.dart';
 import 'package:projectui/src/presentation/ProfileScreens/TermOfUse/TermOfUse_screen.dart';
 import 'package:projectui/src/resource/model/Data.dart';
@@ -305,7 +305,7 @@ class _RootProfileScreenState extends State<RootProfileScreen> {
                     style: TextStyle(fontSize: 20),
                   ),
                   Text(
-                    "2023 Kingbuy.Ver 1.07",
+                    "2020 Kingbuy.Ver 1.07",
                     style: TextStyle(fontSize: 15),
                   ),
                 ],

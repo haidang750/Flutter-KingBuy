@@ -10,7 +10,7 @@ class _TermsOfUseState extends State<TermsOfUse> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Điều khoản sử dụng")),
+        appBar: AppBar(titleSpacing: 0, title: Text("Điều khoản sử dụng")),
         body: Container(
           child: Center(
             child: Text("Điều khoản sử dụng"),

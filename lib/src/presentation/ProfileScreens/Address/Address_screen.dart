@@ -37,6 +37,7 @@ class _AddressState extends State<AddressScreen> {
 
     return Scaffold(
         appBar: AppBar(
+          titleSpacing: 0,
           title: Text("Địa chỉ giao hàng"),
           actions: [
             Padding(

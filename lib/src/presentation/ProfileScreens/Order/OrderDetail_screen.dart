@@ -15,6 +15,7 @@ class OrderDetailState extends State<OrderDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          titleSpacing: 0,
           title: Text("Chi tiết đơn hàng"),
         ),
         body: Container(

@@ -81,6 +81,7 @@ class HandleAddressState extends State<HandleAddress> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        titleSpacing: 0,
         title: Text(
             widget.event == "create" ? "Thêm mới địa chỉ" : "Chi tiết địa chỉ"),
       ),
@@ -326,10 +327,10 @@ class HandleAddressState extends State<HandleAddress> {
                 print("Value checkbox: $value");
                 setState(() {
                   isExportInvoice = !isExportInvoice;
-                  taxCodeController.text = "";
-                  companyNameController.text = "";
-                  companyAddressController.text = "";
-                  companyEmailController.text = "";
+                  taxCodeController.clear();
+                  companyNameController.clear();
+                  companyAddressController.clear();
+                  companyEmailController.clear();
                 });
               },
             ),
@@ -387,6 +388,37 @@ class HandleAddressState extends State<HandleAddress> {
         ],
       ),
     );
+  }
+
+  Widget buildButton(
+      Alignment alignment,
+      double buttonHeight,
+      double buttonWidth,
+      Color buttonColor,
+      double buttonBorderRadius,
+      String buttonContent,
+      Color buttonContentColor,
+      double buttonContentSize,
+      FontWeight buttonContentFontWeight,
+      Function buttonAction) {
+    return GestureDetector(
+        child: Container(
+            alignment: alignment,
+            child: Container(
+                height: buttonHeight,
+                width: buttonWidth,
+                decoration: BoxDecoration(
+                    color: buttonColor,
+                    borderRadius:
+                        BorderRadius.all(Radius.circular(buttonBorderRadius))),
+                alignment: Alignment.center,
+                child: Text(buttonContent,
+                    style: TextStyle(
+                      color: buttonContentColor,
+                      fontSize: buttonContentSize,
+                      fontWeight: buttonContentFontWeight,
+                    )))),
+        onTap: buttonAction);
   }
 
   Widget buildCreateButton(){
@@ -548,36 +580,5 @@ class HandleAddressState extends State<HandleAddress> {
     } else {
       print("Xóa địa chỉ không thành công");
     }
-  }
-
-  Widget buildButton(
-      Alignment alignment,
-      double buttonHeight,
-      double buttonWidth,
-      Color buttonColor,
-      double buttonBorderRadius,
-      String buttonContent,
-      Color buttonContentColor,
-      double buttonContentSize,
-      FontWeight buttonContentFontWeight,
-      Function buttonAction) {
-    return GestureDetector(
-        child: Container(
-            alignment: alignment,
-            child: Container(
-                height: buttonHeight,
-                width: buttonWidth,
-                decoration: BoxDecoration(
-                    color: buttonColor,
-                    borderRadius:
-                        BorderRadius.all(Radius.circular(buttonBorderRadius))),
-                alignment: Alignment.center,
-                child: Text(buttonContent,
-                    style: TextStyle(
-                      color: buttonContentColor,
-                      fontSize: buttonContentSize,
-                      fontWeight: buttonContentFontWeight,
-                    )))),
-        onTap: buttonAction);
   }
 }

@@ -1,22 +1,17 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_image/network.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:projectui/src/configs/constants/app_endpoint.dart';
+import 'package:projectui/src/presentation/CategoriesScreens/ProductDetail_screen.dart';
+import 'package:projectui/src/presentation/widgets/MyNetworkImage.dart';
 import 'package:projectui/src/presentation/widgets/ShowMoney.dart';
+import '../../resource/model/ProductModel.dart';
 
 class ShowOneProduct extends StatefulWidget {
-  ShowOneProduct(
-      {Key key,
-      this.imageSource,
-      this.saleOff,
-      this.name,
-      this.brandName,
-      this.star,
-      this.salePrice,
-      this.price});
+  ShowOneProduct({Key key, this.product});
 
-  String imageSource, name, brandName;
-  int saleOff, star, salePrice, price;
+  Product product;
+
   @override
   ShowOneProductState createState() => ShowOneProductState();
 }
@@ -24,95 +19,91 @@ class ShowOneProduct extends StatefulWidget {
 class ShowOneProductState extends State<ShowOneProduct> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Stack(
-          children: [buildImageProduct(), buildDiscount()],
-        ),
-        Expanded(
-            child: Padding(
-          padding: EdgeInsets.only(top: 10, left: 5, right: 5),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: 58,
-                child: Text(widget.name,
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-              ),
-              SizedBox(
-                height: 5,
-              ),
-              Text(widget.brandName,
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.blue)),
-              SizedBox(
-                height: 5,
-              ),
-              buildRate(widget.star),
-              SizedBox(
-                height: 5,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return GestureDetector(
+        child: Card(
+            child: Column(
+          children: [
+            Stack(
+              children: [buildImageProduct(), buildDiscount()],
+            ),
+            Expanded(
+                child: Padding(
+              padding: EdgeInsets.only(top: 10, left: 5, right: 5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ShowMoney(
-                    price: widget.salePrice,
-                    fontSizeLarge: 13,
-                    fontSizeSmall: 10,
-                    color: Colors.red.shade700,
-                    fontWeight: FontWeight.bold,
-                    isLineThrough: false,
+                  Container(
+                    height: 58,
+                    child: Text(widget.product.name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                   ),
-                  ShowMoney(
-                    price: widget.price,
-                    fontSizeLarge: 11,
-                    fontSizeSmall: 8,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    isLineThrough: true,
+                  SizedBox(
+                    height: 5,
                   ),
-                ],
-              )
-            ],
-          ),
-        ))
-      ],
-    );
-  }
-
-  Widget buildImage() {
-    return Container(
-        height: 180,
-        child: Image.network("${AppEndpoint.BASE_URL}${widget.imageSource}",
-            fit: BoxFit.fill,
-            loadingBuilder: (context, child, loadingProgress) =>
-                (loadingProgress == null)
-                    ? child
-                    : Center(
-                        child: CircularProgressIndicator(),
+                  Text(widget.product.brandName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.blue)),
+                  SizedBox(
+                    height: 5,
+                  ),
+                  buildRate(widget.product.star),
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ShowMoney(
+                        price: widget.product.salePrice,
+                        fontSizeLarge: 13,
+                        fontSizeSmall: 9.5,
+                        color: Colors.red.shade700,
+                        fontWeight: FontWeight.bold,
+                        isLineThrough: false,
                       ),
-            errorBuilder: (context, error, stackTrace) =>
-                Image.asset("assets/logo.png")));
+                      ShowMoney(
+                        price: widget.product.price,
+                        fontSizeLarge: 11,
+                        fontSizeSmall: 8,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        isLineThrough: true,
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  widget.product.gifts.length > 0 ? buildGift() : Container(),
+                  widget.product.isInstallment == 1
+                      ? SizedBox(
+                          height: 5,
+                        )
+                      : Container(),
+                  widget.product.isInstallment == 1
+                      ? Text(
+                          "Trả góp: 0%",
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        )
+                      : Container()
+                ],
+              ),
+            ))
+          ],
+        )),
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProductDetail(
+                  product: widget.product,
+                ),
+              ));
+        });
   }
 
   Widget buildImageProduct() {
-    print("imageSource: ${widget.imageSource}");
-    print("Image URL: ${AppEndpoint.BASE_URL}${widget.imageSource}");
-
-    return Container(
-        height: 180,
-        child: CachedNetworkImage(
-          imageUrl:
-              Uri.encodeFull("${AppEndpoint.BASE_URL}${widget.imageSource}"),
-          placeholder: (context, url) => Center(
-            child: CircularProgressIndicator(),
-          ),
-          errorWidget: (context, url, error) => Image.asset("assets/logo.png"),
-        ));
+    return MyNetworkImage(
+      url: "${AppEndpoint.BASE_URL}${widget.product.imageSource}",
+      height: 180,
+    );
   }
 
   Widget buildDiscount() {
@@ -122,16 +113,11 @@ class ShowOneProductState extends State<ShowOneProduct> {
         child: Container(
           height: 32,
           width: 56,
-          decoration: BoxDecoration(
-              color: Colors.red.shade600,
-              borderRadius: BorderRadius.all(Radius.circular(19))),
+          decoration: BoxDecoration(color: Colors.red.shade600, borderRadius: BorderRadius.all(Radius.circular(19))),
           child: Center(
             child: Text(
-              "-${widget.saleOff.toString()}%",
-              style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500),
+              "-${widget.product.saleOff.toString()}%",
+              style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w500),
             ),
           ),
         ));
@@ -159,5 +145,23 @@ class ShowOneProductState extends State<ShowOneProduct> {
 
   Widget buildRate(int star) {
     return Row(children: buildStar(star));
+  }
+
+  Widget buildGift() {
+    return Row(
+      children: [
+        Container(
+          height: 24,
+          child: Image.asset(
+            "assets/gift.png",
+            fit: BoxFit.fill,
+          ),
+        ),
+        SizedBox(
+          width: 7,
+        ),
+        Text("Quà tặng kèm", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.blue))
+      ],
+    );
   }
 }

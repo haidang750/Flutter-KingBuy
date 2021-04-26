@@ -29,6 +29,7 @@ class DetailContactState extends State<DetailContact> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          titleSpacing: 0,
           title: Text("Chi tiết liên hệ"),
         ),
         body: GestureDetector(

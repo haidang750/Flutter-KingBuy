@@ -30,7 +30,7 @@ class _ContactState extends State<Contact> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Liên hệ")),
+        appBar: AppBar(titleSpacing: 0, title: Text("Liên hệ")),
         body: StreamBuilder(
           stream: contactViewModel.contactStream,
           builder: (context, snapshot) {
@@ -113,6 +113,7 @@ class _ContactState extends State<Contact> {
 
   handlePhone(String hotLine) async {
     if (await canLaunch('tel:$hotLine')) {
+
       await launch('tel:$hotLine');
     } else {
       Toast.show("Không thể mở điện thoại", context,

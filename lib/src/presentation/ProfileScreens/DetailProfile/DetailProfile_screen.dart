@@ -2,7 +2,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:projectui/src/presentation/ProfileScreens/UserProfile/DetailProfile.dart';
+import 'package:projectui/src/presentation/ProfileScreens/DetailProfile/DetailProfile.dart';
 import 'package:projectui/src/resource/model/Data.dart';
 import 'package:projectui/src/resource/model/network_state.dart';
 import 'package:provider/provider.dart';
@@ -120,6 +120,7 @@ class DetailProfileState extends State<DetailProfile> {
 
     return Scaffold(
         appBar: AppBar(
+          titleSpacing: 0,
           title: Text("Thông tin cá nhân"),
           actions: [
             Builder(

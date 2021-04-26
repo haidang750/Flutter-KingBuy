@@ -1,9 +1,13 @@
 class ProductModel {
   ProductModel({
+    this.id,
+    this.name,
     this.products,
     this.recordsTotal,
   });
 
+  int id;
+  String name;
   List<Product> products;
   int recordsTotal;
 
@@ -59,7 +63,7 @@ class Product {
   int price;
   int salePrice;
   int productCategoryId;
-  Category category;
+  ProductCategory category;
   int brandId;
   List<int> giftIds;
   String imageSource;
@@ -92,7 +96,7 @@ class Product {
         price: json["price"],
         salePrice: json["sale_price"],
         productCategoryId: json["product_category_id"],
-        category: Category.fromJson(json["category"]),
+        category: ProductCategory.fromJson(json["category"]),
         brandId: json["brand_id"],
         giftIds: List<int>.from(json["gift_ids"].map((x) => x)),
         imageSource: json["image_source"],
@@ -160,8 +164,8 @@ class Product {
       };
 }
 
-class Category {
-  Category({
+class ProductCategory {
+  ProductCategory({
     this.id,
     this.name,
     this.parent,
@@ -169,13 +173,13 @@ class Category {
 
   int id;
   String name;
-  Category parent;
+  ProductCategory parent;
 
-  factory Category.fromJson(Map<String, dynamic> json) => Category(
+  factory ProductCategory.fromJson(Map<String, dynamic> json) => ProductCategory(
         id: json["id"],
         name: json["name"],
         parent:
-            json["parent"] == null ? null : Category.fromJson(json["parent"]),
+            json["parent"] == null ? null : ProductCategory.fromJson(json["parent"]),
       );
 
   Map<String, dynamic> toJson() => {

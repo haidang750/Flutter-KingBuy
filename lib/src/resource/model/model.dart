@@ -1,9 +1,15 @@
 export 'network_state.dart';
 export 'network_response.dart';
 export 'AddressModel.dart';
+export 'CategoryModel.dart';
 export 'CouponModel.dart';
 export 'Data.dart';
+export 'DistrictModel.dart';
+export 'NotificationModel.dart';
+export 'OrderHistoryModel.dart';
 export 'LoginModel.dart';
 export 'Profile.dart';
 export 'PromotionModel.dart';
+export 'ProvinceModel.dart';
 export 'Shop.dart';
+export 'WardModel.dart';

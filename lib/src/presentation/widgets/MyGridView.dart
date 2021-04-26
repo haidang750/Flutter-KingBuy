@@ -74,8 +74,8 @@ class MyGridViewState extends State<MyGridView> {
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         childAspectRatio: widget.childAspectRatio,
                         crossAxisCount: widget.crossAxisCount,
-                        mainAxisSpacing: 10,
-                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 1,
+                        crossAxisSpacing: 1,
                       ),
                       delegate: SliverChildBuilderDelegate(
                           (BuildContext context, int index) {

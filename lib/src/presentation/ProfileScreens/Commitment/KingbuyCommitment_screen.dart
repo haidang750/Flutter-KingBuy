@@ -25,7 +25,7 @@ class _KingbuyCommitmentState extends State<KingbuyCommitment> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Cam kết của Kingbuy")),
+        appBar: AppBar(titleSpacing: 0, title: Text("Cam kết của Kingbuy")),
         body: Container(color: Colors.grey.shade300, child: _buildListItem()));
   }
 

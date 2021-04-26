@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:projectui/src/presentation/CategoriesScreen/RootCategoriesScreen.dart';
+import 'package:projectui/src/presentation/CategoriesScreens/RootCategories_screen.dart';
 import 'package:projectui/src/presentation/HomeSreens/MyBottomNavigationBar_viewmodel.dart';
 import 'HomeScreen.dart';
-import '../CategoriesScreen/RootCategoriesScreen.dart';
+import '../CategoriesScreens/RootCategories_screen.dart';
 import '../Notifications/Notifications_screen.dart';
 import '../ProfileScreens/RootProfileScreen.dart';
 

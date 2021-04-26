@@ -18,9 +18,10 @@ class ViewedProductsViewModel {
     NetworkState<ProductModel> result =
         await authRepository.getViewedProducts(6, offset);
     if (result.isSuccess) {
-      List<Product> promotions = result.data.products;
-      return promotions;
+      List<Product> products = result.data.products;
+      return products;
     } else {
+      print("Vui lòng kiểm tra lại kết nối Internet!");
       return [];
     }
   }

@@ -17,7 +17,8 @@ class BorderTextField extends StatefulWidget {
       this.inputBorder = InputBorder.none,
       this.hintText,
       this.hintTextFontSize,
-      this.hintTextFontWeight,});
+      this.hintTextFontWeight,
+      this.textAlign = TextAlign.left});
   double height;
   Color color;
   double textPaddingLeft;
@@ -34,6 +35,7 @@ class BorderTextField extends StatefulWidget {
   String hintText;
   double hintTextFontSize;
   FontWeight hintTextFontWeight;
+  TextAlign textAlign;
 
   @override
   BorderTextFieldState createState() => BorderTextFieldState();
@@ -44,6 +46,7 @@ class BorderTextFieldState extends State<BorderTextField> {
   Widget build(BuildContext context) {
     return Container(
       height: widget.height,
+      alignment: Alignment.centerLeft,
       padding: EdgeInsets.only(
           left: widget.textPaddingLeft, right: widget.textPaddingRight),
       decoration: BoxDecoration(
@@ -63,7 +66,8 @@ class BorderTextFieldState extends State<BorderTextField> {
             hintText: widget.hintText,
             hintStyle: TextStyle(
                 fontSize: widget.hintTextFontSize,
-                fontWeight: widget.hintTextFontWeight,)),
+                fontWeight: widget.hintTextFontWeight)),
+        textAlign: widget.textAlign,
       ),
     );
   }

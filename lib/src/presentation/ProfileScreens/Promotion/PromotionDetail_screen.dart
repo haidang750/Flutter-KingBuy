@@ -15,7 +15,7 @@ class PromotionDetailState extends State<PromotionDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Chi tiết khuyến mãi")),
+      appBar: AppBar(titleSpacing: 0, title: Text("Chi tiết khuyến mãi")),
       body: Container(
         child: ListView(
           children: [

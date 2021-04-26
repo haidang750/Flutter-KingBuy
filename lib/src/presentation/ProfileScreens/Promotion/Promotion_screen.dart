@@ -27,7 +27,7 @@ class _PromotionState extends State<Promotion> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Khuyến mãi")),
+        appBar: AppBar(titleSpacing: 0, title: Text("Khuyến mãi")),
         body: Container(
             padding: EdgeInsets.only(left: 25, top: 0, right: 25),
             child: buildList()));

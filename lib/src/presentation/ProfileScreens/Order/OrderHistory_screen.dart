@@ -23,7 +23,7 @@ class _OrderHistoryState extends State<OrderHistory> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Lịch sử đặt hàng")),
+        appBar: AppBar(titleSpacing: 0, title: Text("Lịch sử đặt hàng")),
         body: Column(
           children: [
             buildListStatus(),
@@ -32,37 +32,10 @@ class _OrderHistoryState extends State<OrderHistory> {
               color: Colors.grey.shade300,
             ),
             Expanded(
-              child: Container(
-                  color: Colors.grey.shade300, child: buildListOrder()),
+              child: Container(color: Colors.grey.shade300, child: buildListOrder()),
             )
           ],
         ));
-  }
-
-  Widget buildOneStatus(int index) {
-    return GestureDetector(
-      child: Container(
-        width: 140,
-        height: 100,
-        alignment: Alignment.center,
-        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-        child: Card(
-          color: currentIndex == index ? Colors.blue : Colors.white,
-          child: Text(
-            status[index],
-            style: TextStyle(
-                fontSize: 17,
-                color: currentIndex == index ? Colors.white : Colors.black),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ),
-      onTap: () {
-        setState(() {
-          currentIndex = index;
-        });
-      },
-    );
   }
 
   Widget buildListStatus() {
@@ -77,6 +50,30 @@ class _OrderHistoryState extends State<OrderHistory> {
           return buildOneStatus(index);
         },
       )),
+    );
+  }
+
+  Widget buildOneStatus(int index) {
+    return GestureDetector(
+      child: Container(
+        width: 140,
+        height: 100,
+        alignment: Alignment.center,
+        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+        child: Card(
+          color: currentIndex == index ? Colors.blue : Colors.white,
+          child: Text(
+            status[index],
+            style: TextStyle(fontSize: 17, color: currentIndex == index ? Colors.white : Colors.black),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+      onTap: () {
+        setState(() {
+          currentIndex = index;
+        });
+      },
     );
   }
 

@@ -13,7 +13,7 @@ class _ChangePasswordState extends State<ChangePassword> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Đổi mật khẩu")),
+        appBar: AppBar(titleSpacing: 0, title: Text("Đổi mật khẩu")),
         body: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {

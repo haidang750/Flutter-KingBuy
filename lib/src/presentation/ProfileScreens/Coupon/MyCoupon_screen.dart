@@ -30,9 +30,10 @@ class _MyCouponState extends State<MyCoupon> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+          titleSpacing: 0,
           title: Text(
-        "Coupon của tôi",
-      )),
+            "Coupon của tôi",
+          )),
       body: DefaultTabController(
         length: 3,
         child: Column(
@@ -56,18 +57,12 @@ class _MyCouponState extends State<MyCoupon> {
                     ),
                     Text(
                       "Đã sử dụng",
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
                       textAlign: TextAlign.center,
                     ),
                     Text(
                       "Đã hết hạn",
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -123,19 +118,11 @@ class _MyCouponState extends State<MyCoupon> {
                               children: [
                                 Text(
                                   snapshot.data.coupons[index].name,
-                                  style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w500),
+                                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
                                 ),
                                 SizedBox(height: 10),
-                                Text(
-                                    "HSD: " +
-                                        DateFormat("dd/MM/yyyy").format(snapshot
-                                            .data.coupons[index].expiresAt),
-                                    style: TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.red.shade600))
+                                Text("HSD: " + DateFormat("dd/MM/yyyy").format(snapshot.data.coupons[index].expiresAt),
+                                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.red.shade600))
                               ],
                             ),
                           ),
@@ -149,8 +136,7 @@ class _MyCouponState extends State<MyCoupon> {
                         MaterialPageRoute(
                           builder: (context) => CouponDetail(
                             name: snapshot.data.coupons[index].name,
-                            description:
-                                snapshot.data.coupons[index].description,
+                            description: snapshot.data.coupons[index].description,
                             image: snapshot.data.coupons[index].imageSource,
                           ),
                         ));
