@@ -22,6 +22,7 @@ List<PriceRange> priceRanges = [
   PriceRange(id: 3, name: "20 - 50 triệu", from: 20000000, to: 50000000),
   PriceRange(id: 4, name: "50 - 100 triệu", from: 50000000, to: 100000000),
 ];
+final formKey = GlobalKey<FormState>();
 
 class CategoryDetail extends StatefulWidget {
   CategoryDetail({Key key, this.category}) : super(key: key);
@@ -34,12 +35,10 @@ class CategoryDetail extends StatefulWidget {
 class CategoryDetailState extends State<CategoryDetail> {
   final rootCategoriesViewModel = RootCategoriesViewModel();
   final categoryDetailViewModel = CategoryDetailViewModel();
-  final keyGridViewButton = GlobalKey<MyGridViewButtonState>();
   final currentCategorySubject = BehaviorSubject<int>();
   final searchController = TextEditingController();
   final searchSubject = BehaviorSubject<String>();
   final categoryIdSubject = BehaviorSubject<int>(); // Dùng trong màn hình [Chi tiết danh mục]/[Danh sách sản phẩm]
-  final filterButtonSubject = BehaviorSubject<bool>();
 
   // Dưới đây là danh sách các biến dùng cho Filter Screen
   final priceFromController = TextEditingController();
@@ -60,6 +59,9 @@ class CategoryDetailState extends State<CategoryDetail> {
   final categoryButtonSubject = BehaviorSubject<String>(); // Dùng cho StreamBuilder của Danh mục/Button Xem thêm-Rút gọn
   final brandButtonSubject = BehaviorSubject<String>(); // Dùng cho StreamBuilder của Thương hiệu/Button Xem thêm-Rút gọn
   final applyButtonSubject = BehaviorSubject<bool>();
+  List<String> filterOptions = []; // Dùng để lưu các các option filter đã lựa chọn (tên Danh mục, tên Brand, range giá)
+  final filterOptionsSubject = BehaviorSubject<List<String>>();
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -68,6 +70,21 @@ class CategoryDetailState extends State<CategoryDetail> {
     searchController.text = "";
     getListCategories();
     getListBrands();
+    searchSubject.sink.add(searchController.text);
+    currentCategorySubject.sink.add(0);
+    listCategoriesSubject.sink.add(listCategoriesPartition);
+    listBrandsSubject.sink.add(listBrandsPartition);
+    listPriceRangesSubject.sink.add(priceRanges);
+    categoryButtonSubject.sink.add("Xem thêm");
+    brandButtonSubject.sink.add("Xem thêm");
+    idCategorySubject.sink.add(0);
+    idBrandSubject.sink.add(0);
+    idPriceSubject.sink.add(0);
+    nameCategorySubject.sink.add("");
+    nameBrandSubject.sink.add("");
+    namePriceRangeSubject.sink.add("");
+    applyButtonSubject.sink.add(false);
+    filterOptionsSubject.sink.add(filterOptions);
   }
 
   getListCategories() async {
@@ -85,7 +102,6 @@ class CategoryDetailState extends State<CategoryDetail> {
     super.dispose();
     searchSubject.close();
     categoryIdSubject.close();
-    filterButtonSubject.close();
     idPriceSubject.close();
     listCategoriesSubject.close();
     listBrandsSubject.close();
@@ -99,27 +115,12 @@ class CategoryDetailState extends State<CategoryDetail> {
     namePriceRangeSubject.close();
     applyButtonSubject.close();
     currentCategorySubject.close();
+    filterOptionsSubject.close();
   }
 
   @override
   Widget build(BuildContext context) {
-    print("Recall build function");
-    searchSubject.sink.add(searchController.text);
-    filterButtonSubject.sink.add(false);
-    currentCategorySubject.sink.add(0);
-    listCategoriesSubject.sink.add(listCategoriesPartition);
-    listBrandsSubject.sink.add(listBrandsPartition);
-    listPriceRangesSubject.sink.add(priceRanges);
-    categoryButtonSubject.sink.add("Xem thêm");
-    brandButtonSubject.sink.add("Xem thêm");
-    idCategorySubject.sink.add(0);
-    idBrandSubject.sink.add(0);
-    idPriceSubject.sink.add(0);
-    applyButtonSubject.sink.add(false);
-
-    return Stack(
-      children: [buildCategoryDetailContainer(), buildFilterContainer()],
-    );
+    return buildCategoryDetailContainer();
   }
 
   // {* build UI màn hình Filter *} //
@@ -128,56 +129,179 @@ class CategoryDetailState extends State<CategoryDetail> {
   // Nghiệp vụ phần TextField search: Dù ở màn hình của bất kỳ category nào thì chỗ search này đều search theo tất cả sản phẩm có trong hệ
   // thống chứ không phải các sản phẩm thuộc category đó.
 
-  // build UI Filter = Phần bên trái (Outside) + Phần bên phải (Inside)
-  Widget buildFilterContainer() {
-    return StreamBuilder(
-      stream: filterButtonSubject.stream,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return snapshot.data
-              ? Row(
-                  children: [buildOutside(), buildInside()],
-                )
-              : Container();
-        } else {
-          return Center(child: SpinKitCircle(color: Colors.blue, size: 36));
-        }
-      },
-    );
-  }
-
-  Widget buildOutside() {
-    return Padding(
-        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-        child: GestureDetector(
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.15,
-            color: Colors.black.withOpacity(0.7),
-          ),
-          onTap: () {
-            FocusScope.of(context).requestFocus(new FocusNode());
-            filterButtonSubject.sink.add(false);
-          },
-        ));
-  }
-
-  Widget buildInside() {
-    return Expanded(
-        child: Material(
-      type: MaterialType.transparency,
-      child: Padding(
-          padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-          child: GestureDetector(
+  Widget buildCategoryDetailContainer() {
+    return Scaffold(
+        key: scaffoldKey,
+        endDrawer: Drawer(
+          child: buildFilterContainer(),
+        ),
+        appBar: buildAppBar(),
+        body: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () {
               FocusScope.of(context).requestFocus(new FocusNode());
             },
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [buildHeader(), buildBody()],
+            child: SingleChildScrollView(
+                physics: BouncingScrollPhysics(),
+                child: StreamBuilder(
+                    stream: Rx.combineLatest2(searchSubject.stream, applyButtonSubject, (stream1, stream2) => stream1),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        // Nếu đã submit nội dung search thì build searchedProductList
+                        if (snapshot.data != "") {
+                          print("Name Category: ${nameCategorySubject.stream.value}");
+                          print("Name Brand: ${nameBrandSubject.stream.value}");
+                          print("Range Price: ${namePriceRangeSubject.stream.value}");
+                          return buildSearchResult(snapshot.data);
+                        } else {
+                          // ngược lại build màn hình CategoryDetail
+                          return ListView(
+                            shrinkWrap: true,
+                            physics: BouncingScrollPhysics(),
+                            scrollDirection: Axis.vertical,
+                            children: [
+                              buildOneContainer(buildPath()),
+                              buildOneContainer(buildCategoryBackground()),
+                              buildOneContainer(buildListChildCategories()),
+                              buildOneContainer(buildListProducts()),
+                              widget.category.description != null
+                                  ? buildCategoryDescription(widget.category.name, widget.category.description)
+                                  : Container()
+                            ],
+                          );
+                        }
+                      } else {
+                        return Center(child: SpinKitCircle(color: Colors.blue, size: 36));
+                      }
+                    }))));
+  }
+
+  Widget buildAppBar() {
+    return AppBar(
+      titleSpacing: 0,
+      title: buildSearchContainer(),
+      leading: (ModalRoute.of(context)?.canPop ?? false) ? BackButton() : null,
+      centerTitle: true,
+      actions: [
+        buildFilterButton(),
+      ],
+    );
+  }
+
+  Widget buildSearchContainer() {
+    return Container(
+        width: MediaQuery.of(context).size.width * 0.72,
+        height: 36,
+        padding: EdgeInsets.only(left: 10),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(18))),
+        child: Row(
+          children: [
+            Image.asset(
+              "assets/search.jpg",
+              height: 20,
+              width: 20,
             ),
-          )),
-    ));
+            SizedBox(
+              width: 5,
+            ),
+            Expanded(
+                child: Row(
+              children: [
+                Expanded(
+                  // build vùng nhập nội dung tìm kiếm
+                  child: TextField(
+                    key: formKey,
+                    controller: searchController,
+                    decoration: InputDecoration(
+                        border: InputBorder.none, hintText: "Tìm kiếm", hintStyle: TextStyle(fontSize: 16, color: Colors.grey.shade500)),
+                    style: TextStyle(fontSize: 16),
+                    onSubmitted: (value) {
+                      searchSubject.sink.add(value);
+                      priceFromController.clear();
+                      priceToController.clear();
+                      idCategorySubject.sink.add(0);
+                      idBrandSubject.sink.add(0);
+                      idPriceSubject.sink.add(0);
+                      filterOptions.removeRange(0, filterOptions.length);
+                      filterOptionsSubject.sink.add(filterOptions);
+                    },
+                  ),
+                ),
+                // build button cancel để xóa nội dung tìm kiếm đã nhập
+                StreamBuilder(
+                  stream: searchSubject.stream,
+                  builder: (context, snapshot) {
+                    if (snapshot.data != "") {
+                      return Container(
+                          width: 35,
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.cancel,
+                              color: Colors.grey,
+                            ),
+                            iconSize: 18,
+                            onPressed: () {
+                              searchController.clear();
+                              searchSubject.sink.add("");
+                              priceFromController.clear();
+                              priceToController.clear();
+                              idCategorySubject.sink.add(0);
+                              idBrandSubject.sink.add(0);
+                              idPriceSubject.sink.add(0);
+                              nameCategorySubject.sink.add("");
+                              nameBrandSubject.sink.add("");
+                              namePriceRangeSubject.sink.add("");
+                              filterOptions.removeRange(0, filterOptions.length); // Xóa các filter options
+                              filterOptionsSubject.sink.add(filterOptions);
+                            },
+                          ));
+                    } else {
+                      return Container();
+                    }
+                  },
+                )
+              ],
+            ))
+          ],
+        ));
+  }
+
+  Widget buildFilterButton() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(0, 12, 15, 10),
+      child: GestureDetector(
+        child: Column(children: [
+          Image.asset(
+            "assets/filter_black.png",
+            height: 22,
+            width: 22,
+            color: Colors.white,
+          ),
+          Text(
+            "Lọc",
+            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+          )
+        ]),
+        onTap: () {
+          scaffoldKey.currentState.openEndDrawer();
+        },
+      ),
+    );
+  }
+
+  Widget buildFilterContainer() {
+    return Padding(
+        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            FocusScope.of(context).requestFocus(new FocusNode());
+          },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [buildHeader(), buildBody()],
+          ),
+        ));
   }
 
   // build Header của phần Inside
@@ -218,15 +342,30 @@ class CategoryDetailState extends State<CategoryDetail> {
             shrinkWrap: true,
             physics: BouncingScrollPhysics(),
             children: [
-              searchSubject.stream.value != ""
-                  ? buildFilterOption("Danh mục", listCategoriesSubject, idCategorySubject, true, categoryButtonSubject, listCategories,
-                      listCategoriesPartition)
-                  : Container(),
-              searchSubject.stream.value != "" ? SizedBox(height: 30) : Container(),
-              buildFilterOption(
-                  "Thương hiệu", listBrandsSubject, idBrandSubject, true, brandButtonSubject, listBrands, listBrandsPartition),
+              StreamBuilder(
+                stream: searchSubject.stream,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    if (snapshot.data != "") {
+                      return Column(
+                        children: [
+                          buildFilterOption("Danh mục", listCategoriesSubject, idCategorySubject, nameCategorySubject, true,
+                              categoryButtonSubject, listCategories, listCategoriesPartition),
+                          SizedBox(height: 30)
+                        ],
+                      );
+                    } else {
+                      return Container();
+                    }
+                  } else {
+                    return Center(child: SpinKitCircle(color: Colors.blue, size: 36));
+                  }
+                },
+              ),
+              buildFilterOption("Thương hiệu", listBrandsSubject, idBrandSubject, nameBrandSubject, true, brandButtonSubject, listBrands,
+                  listBrandsPartition),
               SizedBox(height: 30),
-              buildFilterOption("Giá", listPriceRangesSubject, idPriceSubject, false, null, [], []),
+              buildFilterOption("Giá", listPriceRangesSubject, idPriceSubject, namePriceRangeSubject, false, null, [], []),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10),
                 child: Text("Hoặc nhập giá ở ô dưới", style: TextStyle(fontSize: 14)),
@@ -246,8 +385,8 @@ class CategoryDetailState extends State<CategoryDetail> {
   }
 
   // Build 3 filter options
-  Widget buildFilterOption(String optionTitle, BehaviorSubject listSubject, BehaviorSubject idSubject, bool isShowButton,
-      BehaviorSubject buttonSubject, List listOriginal, List listPartition) {
+  Widget buildFilterOption(String optionTitle, BehaviorSubject listSubject, BehaviorSubject idSubject, BehaviorSubject nameSubject,
+      bool isShowButton, BehaviorSubject buttonSubject, List listOriginal, List listPartition) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -304,6 +443,7 @@ class CategoryDetailState extends State<CategoryDetail> {
                               ),
                               onTap: () {
                                 idSubject.sink.add(snapshot.data[index].id);
+                                nameSubject.sink.add(snapshot.data[index].name);
                               },
                             ),
                           ));
@@ -347,7 +487,7 @@ class CategoryDetailState extends State<CategoryDetail> {
                           )),
                       onTap: () {
                         if (snapshot.data == "Xem thêm") {
-                          listPartition.addAll(listOriginal.getRange(4, listOriginal.length));
+                          if(listOriginal.length > 4) listPartition.addAll(listOriginal.getRange(4, listOriginal.length));
                           listSubject.sink.add(listPartition);
                           buttonSubject.sink.add("Rút gọn");
                         } else {
@@ -399,7 +539,7 @@ class CategoryDetailState extends State<CategoryDetail> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        buildOneButton("Thiết lập lại", Colors.grey, handleSetUpButton),
+        buildOneButton("Thiết lập lại", Colors.grey, handleResetButton),
         SizedBox(
           width: 10,
         ),
@@ -423,184 +563,153 @@ class CategoryDetailState extends State<CategoryDetail> {
         onTap: buttonAction);
   }
 
-  handleSetUpButton() {
+  handleResetButton() {
     priceFromController.clear();
     priceToController.clear();
     idCategorySubject.sink.add(0);
     idBrandSubject.sink.add(0);
     idPriceSubject.sink.add(0);
+    nameCategorySubject.sink.add("");
+    nameBrandSubject.sink.add("");
+    namePriceRangeSubject.sink.add("");
   }
 
   handleApplyButton() async {
-    CategoryDetailViewModel filterCategoryDetailViewModel = priceFromController.text != "" && priceToController.text != ""
+    applyButtonSubject.sink.add(!applyButtonSubject.stream.value);
+    priceFromController.text != "" && priceToController.text != ""
+        ? namePriceRangeSubject.sink
+            .add("${double.parse(priceFromController.text) / 1000000} - ${double.parse(priceToController.text) / 1000000} triệu")
+        : idPriceSubject.stream.value - 1 >= 0
+            ? namePriceRangeSubject.sink.add(priceRanges[idPriceSubject.stream.value - 1].name)
+            : namePriceRangeSubject.sink.add("");
+    if (searchSubject.stream.value != "") {
+      filterOptions.removeRange(0, filterOptions.length);
+      filterOptions.add(nameCategorySubject.stream.value);
+      filterOptions.add(nameBrandSubject.stream.value);
+      filterOptions.add(namePriceRangeSubject.stream.value);
+    }
+    filterOptionsSubject.sink.add(filterOptions);
+    Navigator.pop(context);
+    print("filterOption: $filterOptions");
+  }
+
+  Widget buildSearchResult(String searchContent) {
+    CategoryDetailViewModel searchedCategoryDetailViewModel = priceFromController.text != "" && priceToController.text != ""
         ? CategoryDetailViewModel(
-            productCategoryId: searchSubject.stream.value != "" ? idCategorySubject.stream.value : widget.category.id,
+            searchWord: searchContent,
+            productCategoryId: idCategorySubject.stream.value,
             brandId: idBrandSubject.stream.value,
             priceFrom: int.parse(priceFromController.text),
             priceTo: int.parse(priceToController.text))
         : idPriceSubject.stream.value - 1 >= 0
             ? CategoryDetailViewModel(
-                productCategoryId: searchSubject.stream.value != "" ? idCategorySubject.stream.value : widget.category.id,
+                searchWord: searchContent,
+                productCategoryId: idCategorySubject.stream.value,
                 brandId: idBrandSubject.stream.value,
                 priceFrom: priceRanges[idPriceSubject.stream.value - 1].from,
                 priceTo: priceRanges[idPriceSubject.stream.value - 1].to)
             : CategoryDetailViewModel(
-                productCategoryId: searchSubject.stream.value != "" ? idCategorySubject.stream.value : widget.category.id,
+                searchWord: searchContent,
+                productCategoryId: idCategorySubject.stream.value,
                 brandId: idBrandSubject.stream.value,
               );
-    filterButtonSubject.sink.add(false);
-    applyButtonSubject.sink.add(!applyButtonSubject.stream.value);
-  }
-
-  // {* build UI màn hình CategoryDetail *} //
-
-  Widget buildCategoryDetailContainer() {
-    return Scaffold(
-        appBar: buildAppBar(),
-        body: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              FocusScope.of(context).requestFocus(new FocusNode());
-            },
-            child: SingleChildScrollView(
-                physics: BouncingScrollPhysics(),
-                child: StreamBuilder(
-                    stream: searchSubject.stream,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        // Nếu đã submit nội dung search thì build searchedProductList
-                        if (snapshot.data != "") {
-                          CategoryDetailViewModel searchedCategoryDetailViewModel = CategoryDetailViewModel(searchWord: snapshot.data);
-
-                          return Container(
-                              padding: EdgeInsets.fromLTRB(10, 20, 10, 0),
-                              child: KeyedSubtree(
-                                key: UniqueKey(),
-                                child: MyGridViewButton(
-                                  itemBuilder: itemBuilder,
-                                  dataRequester: searchedCategoryDetailViewModel.dataRequesterSearchedProduct,
-                                  initRequester: searchedCategoryDetailViewModel.initRequesterSearchedProduct,
-                                  childAspectRatio: 1 / 2.26,
-                                  crossAxisCount: 2,
-                                ),
-                              ));
-                        } else {
-                          // ngược lại build màn hình CategoryDetail
-                          return ListView(
-                            shrinkWrap: true,
-                            physics: BouncingScrollPhysics(),
-                            scrollDirection: Axis.vertical,
-                            children: [
-                              buildOneContainer(buildPath()),
-                              buildOneContainer(buildCategoryBackground()),
-                              buildOneContainer(buildListChildCategories()),
-                              buildOneContainer(buildListProducts()),
-                              widget.category.description != null
-                                  ? buildCategoryDescription(widget.category.name, widget.category.description)
-                                  : Container()
-                            ],
-                          );
-                        }
-                      } else {
-                        return Center(child: SpinKitCircle(color: Colors.blue, size: 36));
-                      }
-                    }))));
-  }
-
-  Widget buildAppBar() {
-    return AppBar(
-      titleSpacing: 0,
-      title: buildSearchContainer(),
-      centerTitle: true,
-      actions: [
-        buildFilterButton(),
-      ],
-    );
-  }
-
-  Widget buildSearchContainer() {
     return Container(
-        width: MediaQuery.of(context).size.width * 0.72,
-        height: 36,
-        padding: EdgeInsets.only(left: 10),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(18))),
-        child: Row(
+        padding: EdgeInsets.fromLTRB(10, 20, 10, 0),
+        child: Column(
           children: [
-            Image.asset(
-              "assets/search.jpg",
-              height: 20,
-              width: 20,
+            StreamBuilder(
+              stream: filterOptionsSubject.stream,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  if (snapshot.data.any((filterOption) => filterOption != "")) {
+                    return Container(
+                      height: 60,
+                      alignment: Alignment.centerLeft,
+                      child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          shrinkWrap: true,
+                          physics: BouncingScrollPhysics(),
+                          itemCount: snapshot.data.length,
+                          itemBuilder: (context, index) => snapshot.data[index] != ""
+                              ? Stack(
+                                  children: [
+                                    Card(
+                                        child: Container(
+                                      alignment: Alignment.center,
+                                      padding: EdgeInsets.symmetric(horizontal: 10),
+                                      child: Text(
+                                        snapshot.data[index],
+                                        style: TextStyle(fontSize: 15),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    )),
+                                    Positioned(
+                                        top: 4,
+                                        right: 4,
+                                        child: GestureDetector(
+                                            child: Icon(
+                                              Icons.cancel,
+                                              size: 16,
+                                              color: Colors.blue,
+                                            ),
+                                            onTap: () {
+                                              switch (index) {
+                                                case 0:
+                                                  if (idCategorySubject.stream.value != 0 && nameCategorySubject.stream.value != "") {
+                                                    idCategorySubject.sink.add(0);
+                                                    nameCategorySubject.sink.add("");
+                                                  } else {
+                                                    if (idBrandSubject.stream.value != 0 && nameBrandSubject.stream.value != "") {
+                                                      idBrandSubject.sink.add(0);
+                                                      nameBrandSubject.sink.add("");
+                                                    } else {
+                                                      idPriceSubject.sink.add(0);
+                                                      namePriceRangeSubject.sink.add("");
+                                                    }
+                                                  }
+                                                  break;
+                                                case 1:
+                                                  if (idBrandSubject.stream.value != 0 && nameBrandSubject.stream.value != "") {
+                                                    idBrandSubject.sink.add(0);
+                                                    nameBrandSubject.sink.add("");
+                                                  } else {
+                                                    idPriceSubject.sink.add(0);
+                                                    namePriceRangeSubject.sink.add("");
+                                                  }
+                                                  break;
+                                                case 2:
+                                                  idPriceSubject.sink.add(0);
+                                                  namePriceRangeSubject.sink.add("");
+                                                  break;
+                                              }
+                                              filterOptions.removeAt(index);
+                                              filterOptionsSubject.sink.add(filterOptions);
+                                              applyButtonSubject.sink.add(!applyButtonSubject.stream.value);
+                                            }))
+                                  ],
+                                )
+                              : Container()),
+                    );
+                  } else {
+                    return Container();
+                  }
+                } else {
+                  return Container();
+                }
+              },
             ),
-            SizedBox(
-              width: 5,
-            ),
-            Expanded(
-                child: Row(
-              children: [
-                Expanded(
-                  // build vùng nhập nội dung tìm kiếm
-                  child: TextField(
-                    controller: searchController,
-                    decoration: InputDecoration(
-                        border: InputBorder.none, hintText: "Tìm kiếm", hintStyle: TextStyle(fontSize: 16, color: Colors.grey.shade500)),
-                    style: TextStyle(fontSize: 16),
-                    onSubmitted: (value) {
-                      print(123123);
-                      String oldValue = searchSubject.stream.value;
-                      if (oldValue != value) searchSubject.sink.add(value);
-                    },
-                  ),
-                ),
-                // build button cancel để xóa nội dung tìm kiếm đã nhập
-                StreamBuilder(
-                  stream: searchSubject.stream,
-                  builder: (context, snapshot) {
-                    if (snapshot.data != "") {
-                      return Container(
-                          width: 35,
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.cancel,
-                              color: Colors.grey,
-                            ),
-                            iconSize: 18,
-                            onPressed: () {
-                              searchController.clear();
-                              searchSubject.sink.add("");
-                            },
-                          ));
-                    } else {
-                      return Container();
-                    }
-                  },
-                )
-              ],
-            ))
+            KeyedSubtree(
+              key: UniqueKey(),
+              child: MyGridViewButton(
+                itemBuilder: itemBuilder,
+                dataRequester: searchedCategoryDetailViewModel.dataRequesterSearchedProduct,
+                initRequester: searchedCategoryDetailViewModel.initRequesterSearchedProduct,
+                childAspectRatio: 1 / 2.26,
+                crossAxisCount: 2,
+              ),
+            )
           ],
         ));
-  }
-
-  Widget buildFilterButton() {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(0, 12, 15, 10),
-      child: GestureDetector(
-        child: Column(children: [
-          Image.asset(
-            "assets/filter_black.png",
-            height: 22,
-            width: 22,
-            color: Colors.white,
-          ),
-          Text(
-            "Lọc",
-            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
-          )
-        ]),
-        onTap: () {
-          filterButtonSubject.sink.add(true);
-        },
-      ),
-    );
   }
 
   Widget buildOneContainer(Widget widget) {

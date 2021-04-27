@@ -135,8 +135,8 @@ class ShowOneProductState extends State<ShowOneProduct> {
 
     for (var i = 0; i < 5 - star; i++) {
       stars.add(Icon(
-        Icons.star_border_outlined,
-        color: Colors.yellow.shade600,
+        Icons.star,
+        color: Colors.grey,
         size: 15,
       ));
     }
