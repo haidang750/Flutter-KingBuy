@@ -1,4 +1,4 @@
-import 'package:projectui/src/resource/model/ProductModel.dart';
+import 'package:projectui/src/resource/model/ListProductsModel.dart';
 
 class SearchedProductModel {
   SearchedProductModel({

@@ -10,9 +10,9 @@ import 'package:projectui/src/presentation/widgets/ShowOneProduct.dart';
 import 'package:projectui/src/presentation/widgets/ShowPath.dart';
 import 'package:projectui/src/resource/model/BrandModel.dart';
 import 'package:projectui/src/resource/model/CategoryModel.dart';
-import 'package:projectui/src/resource/model/ProductModel.dart';
+import 'package:projectui/src/resource/model/ListProductsModel.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
+import 'package:flutter_html/flutter_html.dart';
 
 import 'ClipPathClass.dart';
 
@@ -405,7 +405,7 @@ class CategoryDetailState extends State<CategoryDetail> {
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        childAspectRatio: 3 / 1.1,
+                        childAspectRatio: 3 / 1,
                         crossAxisCount: 2,
                         crossAxisSpacing: 20,
                         mainAxisSpacing: 8,
@@ -487,7 +487,7 @@ class CategoryDetailState extends State<CategoryDetail> {
                           )),
                       onTap: () {
                         if (snapshot.data == "Xem thêm") {
-                          if(listOriginal.length > 4) listPartition.addAll(listOriginal.getRange(4, listOriginal.length));
+                          if (listOriginal.length > 4) listPartition.addAll(listOriginal.getRange(4, listOriginal.length));
                           listSubject.sink.add(listPartition);
                           buttonSubject.sink.add("Rút gọn");
                         } else {
@@ -704,7 +704,7 @@ class CategoryDetailState extends State<CategoryDetail> {
                 itemBuilder: itemBuilder,
                 dataRequester: searchedCategoryDetailViewModel.dataRequesterSearchedProduct,
                 initRequester: searchedCategoryDetailViewModel.initRequesterSearchedProduct,
-                childAspectRatio: 1 / 2.26,
+                childAspectRatio: 1 / 2.2,
                 crossAxisCount: 2,
               ),
             )
@@ -832,7 +832,7 @@ class CategoryDetailState extends State<CategoryDetail> {
               itemBuilder: itemBuilder,
               dataRequester: categoryDetailViewModel.dataRequesterCategoryProduct,
               initRequester: categoryDetailViewModel.initRequesterCategoryProduct,
-              childAspectRatio: 1 / 2.26,
+              childAspectRatio: 1 / 2.2,
               crossAxisCount: 2,
             ),
           );
@@ -852,15 +852,15 @@ class CategoryDetailState extends State<CategoryDetail> {
   Widget buildCategoryDescription(String categoryName, String categoryDescription) {
     return Container(
         color: Colors.grey.shade400,
-        padding: EdgeInsets.symmetric(horizontal: 10),
+        padding: EdgeInsets.fromLTRB(10, 15, 10, 0),
         child: Column(
           children: [
             Container(
-              height: 50,
+              height: 20,
               alignment: Alignment.centerLeft,
               child: Text(categoryName, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
             ),
-            HtmlWidget(categoryDescription, customStylesBuilder: (element) => {'text-align': 'left'}),
+            Html(data: categoryDescription),
             SizedBox(
               height: 20,
             )

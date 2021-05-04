@@ -1,11 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:projectui/src/configs/constants/app_endpoint.dart';
 import 'package:projectui/src/presentation/CategoriesScreens/ProductDetail_screen.dart';
 import 'package:projectui/src/presentation/widgets/MyNetworkImage.dart';
 import 'package:projectui/src/presentation/widgets/ShowMoney.dart';
-import '../../resource/model/ProductModel.dart';
+import 'package:projectui/src/presentation/widgets/ShowRating.dart';
+import '../../resource/model/ListProductsModel.dart';
 
 class ShowOneProduct extends StatefulWidget {
   ShowOneProduct({Key key, this.product});
@@ -43,7 +42,7 @@ class ShowOneProductState extends State<ShowOneProduct> {
                   SizedBox(
                     height: 5,
                   ),
-                  buildRate(widget.product.star),
+                  ShowRating(star: widget.product.star, starSize: 15),
                   SizedBox(
                     height: 5,
                   ),
@@ -92,9 +91,12 @@ class ShowOneProductState extends State<ShowOneProduct> {
           Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ProductDetail(
-                  product: widget.product,
-                ),
+                builder: (context){
+                  return ProductDetail(
+                    productId: widget.product.id,
+                    productVideoLink: widget.product.videoLink,
+                  );
+                }
               ));
         });
   }
@@ -102,7 +104,7 @@ class ShowOneProductState extends State<ShowOneProduct> {
   Widget buildImageProduct() {
     return MyNetworkImage(
       url: "${AppEndpoint.BASE_URL}${widget.product.imageSource}",
-      height: 180,
+      height: 160,
     );
   }
 
@@ -121,30 +123,6 @@ class ShowOneProductState extends State<ShowOneProduct> {
             ),
           ),
         ));
-  }
-
-  List<Icon> buildStar(int star) {
-    List<Icon> stars = [];
-    for (var i = 0; i < star; i++) {
-      stars.add(Icon(
-        Icons.star,
-        color: Colors.yellow.shade600,
-        size: 15,
-      ));
-    }
-
-    for (var i = 0; i < 5 - star; i++) {
-      stars.add(Icon(
-        Icons.star,
-        color: Colors.grey,
-        size: 15,
-      ));
-    }
-    return stars;
-  }
-
-  Widget buildRate(int star) {
-    return Row(children: buildStar(star));
   }
 
   Widget buildGift() {

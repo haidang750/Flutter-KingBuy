@@ -46,7 +46,6 @@ class BorderTextFieldState extends State<BorderTextField> {
   Widget build(BuildContext context) {
     return Container(
       height: widget.height,
-      alignment: Alignment.centerLeft,
       padding: EdgeInsets.only(
           left: widget.textPaddingLeft, right: widget.textPaddingRight),
       decoration: BoxDecoration(

@@ -8,6 +8,7 @@ typedef Widget ItemBuilder(List data, BuildContext context, int index);
 class MyListView extends StatefulWidget {
   MyListView.build(
       {Key key,
+        this.scrollDirection = Axis.vertical,
       @required this.itemBuilder,
       @required this.dataRequester,
       @required this.initRequester})
@@ -16,6 +17,7 @@ class MyListView extends StatefulWidget {
         assert(initRequester != null),
         super(key: key);
 
+  Axis scrollDirection;
   final ItemBuilder itemBuilder;
   final DataRequester dataRequester;
   final InitRequester initRequester;
@@ -56,6 +58,7 @@ class MyListViewState extends State<MyListView> {
                 color: loadingColor,
                 onRefresh: this.onRefresh,
                 child: ListView.builder(
+                  scrollDirection: widget.scrollDirection,
                   itemCount: _dataList.length + 1,
                   itemBuilder: (context, index) {
                     if (index == _dataList.length) {

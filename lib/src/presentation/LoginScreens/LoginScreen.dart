@@ -4,6 +4,10 @@ import 'LoginScreen_viewmodel.dart';
 import 'RegisterScreen.dart';
 
 class LoginScreen extends StatefulWidget {
+  LoginScreen({this.productId = -1, this.productVideoLink = ""});
+  int productId;
+  String productVideoLink;
+
   @override
   State<StatefulWidget> createState() {
     return LoginSreenState();
@@ -49,10 +53,7 @@ class LoginSreenState extends State<LoginScreen> {
                         )),
                     Text(
                       "ĐĂNG NHẬP",
-                      style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.6),
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 0.6),
                     )
                   ],
                 )),
@@ -68,10 +69,7 @@ class LoginSreenState extends State<LoginScreen> {
                       height: 56,
                       padding: EdgeInsets.symmetric(horizontal: 30),
                       child: Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(width: 0.5),
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(28))),
+                        decoration: BoxDecoration(border: Border.all(width: 0.5), borderRadius: BorderRadius.all(Radius.circular(28))),
                         child: Row(
                           children: [
                             Container(
@@ -88,9 +86,7 @@ class LoginSreenState extends State<LoginScreen> {
                               child: Container(
                                 child: TextField(
                                   controller: emailController,
-                                  decoration: InputDecoration(
-                                      border: InputBorder.none,
-                                      hintText: "Email hoặc Số điện thoại"),
+                                  decoration: InputDecoration(border: InputBorder.none, hintText: "Email hoặc Số điện thoại"),
                                 ),
                               ),
                             )
@@ -104,9 +100,7 @@ class LoginSreenState extends State<LoginScreen> {
                     height: 56,
                     padding: EdgeInsets.symmetric(horizontal: 30),
                     child: Container(
-                      decoration: BoxDecoration(
-                          border: Border.all(width: 0.5),
-                          borderRadius: BorderRadius.all(Radius.circular(28))),
+                      decoration: BoxDecoration(border: Border.all(width: 0.5), borderRadius: BorderRadius.all(Radius.circular(28))),
                       child: Row(
                         children: [
                           Container(
@@ -124,9 +118,7 @@ class LoginSreenState extends State<LoginScreen> {
                               child: TextField(
                                 controller: passwordController,
                                 obscureText: true,
-                                decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: "Mật khẩu"),
+                                decoration: InputDecoration(border: InputBorder.none, hintText: "Mật khẩu"),
                               ),
                             ),
                           )
@@ -149,15 +141,10 @@ class LoginSreenState extends State<LoginScreen> {
                                 child: GestureDetector(
                               child: Text(
                                 "Quên mật khẩu?",
-                                style: TextStyle(
-                                    fontSize: 17, fontWeight: FontWeight.w500),
+                                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
                               ),
                               onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            ForgetPassword()));
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => ForgetPassword()));
                               },
                             )),
                           ),
@@ -165,22 +152,19 @@ class LoginSreenState extends State<LoginScreen> {
                               child: Container(
                                   child: ButtonTheme(
                             height: 56,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                             buttonColor: Colors.red.shade800,
                             child: RaisedButton(
-                              child: Text("Đăng nhập",
-                                  style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white)),
-                              // xử lý API => đăng nhập thành công => vào trang Home
-                              onPressed: () => loginViewModel.getLoginData(
-                                context,
-                                "0979629204",
-                                "12345678",
-                              ),
-                            ),
+                                child: Text("Đăng nhập", style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500, color: Colors.white)),
+                                onPressed: () async {
+                                  await loginViewModel.getLoginData(
+                                    context,
+                                    widget.productId,
+                                    widget.productVideoLink,
+                                    "0979629204",
+                                    "12345678",
+                                  );
+                                }),
                           )))
                         ],
                       ),
@@ -206,19 +190,14 @@ class LoginSreenState extends State<LoginScreen> {
                       Container(
                         height: 40,
                         width: 40,
-                        decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(20))),
+                        decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.all(Radius.circular(20))),
                         child: Image.asset("assets/facebook.png"),
                       ),
                       SizedBox(width: 10),
                       Container(
                         height: 40,
                         width: 40,
-                        decoration: BoxDecoration(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(20))),
+                        decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20))),
                         child: Image.asset("assets/google.jpg"),
                       ),
                     ],
@@ -229,23 +208,15 @@ class LoginSreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("Không có tài khoản ?",
-                          style: TextStyle(
-                              fontSize: 17, fontWeight: FontWeight.w500)),
+                      Text("Không có tài khoản ?", style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500)),
                       SizedBox(width: 10),
                       GestureDetector(
                         child: Text(
                           "Đăng ký",
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              decoration: TextDecoration.underline),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, decoration: TextDecoration.underline),
                         ),
                         onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => RegisterScreen()));
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
                         },
                       )
                     ],

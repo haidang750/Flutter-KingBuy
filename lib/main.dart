@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/presentation/splash/Splash.dart';
 import 'package:projectui/src/resource/model/AddressModel.dart';
-import 'package:projectui/src/resource/model/ContactModel.dart';
 import 'package:projectui/src/resource/model/Data.dart';
+import 'package:projectui/src/resource/model/NotificationModel.dart';
+import 'package:projectui/src/resource/model/ViewedProductLocalStorage.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -13,6 +14,12 @@ void main() {
       ),
       ChangeNotifierProvider(
         create: (context) => AddressModel(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => NotificationModel(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => ViewedProductLocalStorage(),
       ),
     ],
     child: MyApp(),

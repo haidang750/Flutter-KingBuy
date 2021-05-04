@@ -4,7 +4,7 @@ import 'package:projectui/src/presentation/ProfileScreens/ViewedProducts/ViewedP
 import 'package:projectui/src/presentation/widgets/MyGridView.dart';
 import 'package:projectui/src/presentation/widgets/ShowOneProduct.dart';
 import 'package:projectui/src/presentation/widgets/ShowPath.dart';
-import 'package:projectui/src/resource/model/ProductModel.dart';
+import 'package:projectui/src/resource/model/ListProductsModel.dart';
 
 class ViewedProducts extends StatefulWidget {
   @override
@@ -51,7 +51,7 @@ class ViewedProductsState extends State<ViewedProducts> {
         itemBuilder: itemBuilder,
         dataRequester: viewedProductsViewModel.dataRequester,
         initRequester: viewedProductsViewModel.initRequester,
-        childAspectRatio: 1 / 2.26,
+        childAspectRatio: 1 / 2.2,
         crossAxisCount: 2,
       ),
     );

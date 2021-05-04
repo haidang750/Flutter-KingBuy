@@ -1,4 +1,4 @@
-import 'package:projectui/src/resource/model/ProductModel.dart';
+import 'package:projectui/src/resource/model/ListProductsModel.dart';
 import 'package:projectui/src/resource/model/network_state.dart';
 import 'package:projectui/src/resource/repo/auth_repository.dart';
 
@@ -15,7 +15,7 @@ class ViewedProductsViewModel {
 
   Future<List<Product>> loadData(int offset) async {
     // Lấy dữ liệu theo limit = 6, offset
-    NetworkState<ProductModel> result =
+    NetworkState<ListProductsModel> result =
         await authRepository.getViewedProducts(6, offset);
     if (result.isSuccess) {
       List<Product> products = result.data.products;

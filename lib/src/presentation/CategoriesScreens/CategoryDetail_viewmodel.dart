@@ -3,7 +3,7 @@ import 'package:projectui/src/resource/model/SearchedProductModel.dart';
 import 'package:projectui/src/resource/model/network_state.dart';
 import 'package:projectui/src/resource/repo/category_repository.dart';
 import 'package:rxdart/rxdart.dart';
-import '../../resource/model/ProductModel.dart';
+import '../../resource/model/ListProductsModel.dart';
 
 class CategoryDetailViewModel {
   CategoryDetailViewModel(
@@ -31,7 +31,7 @@ class CategoryDetailViewModel {
   }
 
   Future<List<Product>> loadDataCategoryProduct(int offset) async {
-    NetworkState<ProductModel> result =
+    NetworkState<ListProductsModel> result =
         await categoryRepository.getProductsByCategory(productCategoryId, searchWord, limit, offset, brandId, priceFrom, priceTo);
     if (result.isSuccess) {
       List<Product> products = result.data.products;

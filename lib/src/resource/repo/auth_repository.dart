@@ -5,7 +5,7 @@ import 'package:projectui/src/resource/model/DistrictModel.dart';
 import 'package:projectui/src/resource/model/LoginModel.dart';
 import 'package:projectui/src/resource/model/NotificationModel.dart';
 import 'package:projectui/src/resource/model/OrderHistoryModel.dart';
-import 'package:projectui/src/resource/model/ProductModel.dart';
+import 'package:projectui/src/resource/model/ListProductsModel.dart';
 import 'package:projectui/src/resource/model/ProvinceModel.dart';
 import 'package:projectui/src/resource/model/WardModel.dart';
 import '../../configs/configs.dart';
@@ -355,7 +355,7 @@ class AuthRepository {
     }
   }
 
-  Future<NetworkState<ProductModel>> getViewedProducts(
+  Future<NetworkState<ListProductsModel>> getViewedProducts(
       int limit, int offset) async {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
@@ -373,7 +373,7 @@ class AuthRepository {
         status: response.statusCode,
         response: NetworkResponse.fromJson(
           response.data,
-          converter: (data) => ProductModel.fromJson(data),
+          converter: (data) => ListProductsModel.fromJson(data),
         ),
       );
     } on DioError catch (e) {

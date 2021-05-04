@@ -1,4 +1,6 @@
-class NotificationModel {
+import 'package:flutter/material.dart';
+
+class NotificationModel with ChangeNotifier{
   NotificationModel({
     this.notifications,
     this.recordsTotal,
@@ -6,6 +8,7 @@ class NotificationModel {
 
   List<Notification> notifications;
   int recordsTotal;
+  int countNotification;
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) =>
       NotificationModel(
@@ -19,6 +22,11 @@ class NotificationModel {
             List<dynamic>.from(notifications.map((x) => x.toJson())),
         "recordsTotal": recordsTotal,
       };
+
+  setCountNotification(int countNotification){
+    this.countNotification = countNotification;
+    notifyListeners();
+  }
 }
 
 class Notification {

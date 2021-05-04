@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:projectui/src/presentation/Notifications/Notifications_viewmodel.dart';
+import 'package:projectui/src/utils/app_shared.dart';
+import 'package:projectui/src/utils/app_utils.dart';
 
 class Notifications extends StatefulWidget {
   @override
@@ -37,7 +40,7 @@ class _NotificationsState extends State<Notifications> {
       stream: notificationViewModel.listNotificationStream,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return ListView.builder(
+          return snapshot.data.length > 0 ? ListView.builder(
             itemCount: snapshot.data.length,
             itemBuilder: (context, index) {
               return Column(
@@ -62,16 +65,10 @@ class _NotificationsState extends State<Notifications> {
                                 Container(
                                     padding: EdgeInsets.only(bottom: 15),
                                     child: Text(snapshot.data[index].title,
-                                        style: TextStyle(
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.w400))),
+                                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w400))),
                                 Container(
-                                    child: Text(
-                                        DateFormat("dd/MM/yyyy").format(
-                                            snapshot.data[index].createdAt),
-                                        style: TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w400))),
+                                    child: Text(DateFormat("dd/MM/yyyy").format(snapshot.data[index].createdAt),
+                                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400))),
                               ],
                             ),
                           )
@@ -84,10 +81,10 @@ class _NotificationsState extends State<Notifications> {
                 ],
               );
             },
-          );
+          ) : Center(child: Text("Không có dữ liệu"));
         } else {
           return Center(
-            child: CircularProgressIndicator(),
+            child: SpinKitCircle(color: Colors.blue, size: 40),
           );
         }
       },

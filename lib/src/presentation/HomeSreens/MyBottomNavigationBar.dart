@@ -1,10 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/presentation/CategoriesScreens/RootCategories_screen.dart';
 import 'package:projectui/src/presentation/HomeSreens/MyBottomNavigationBar_viewmodel.dart';
+import 'package:projectui/src/resource/model/model.dart';
+import 'package:provider/provider.dart';
+import '../LoginScreens/LoginScreen_viewmodel.dart';
 import 'HomeScreen.dart';
 import '../CategoriesScreens/RootCategories_screen.dart';
 import '../Notifications/Notifications_screen.dart';
 import '../ProfileScreens/RootProfileScreen.dart';
+
+class MainTabControlDelegate {
+  int index;
+  Function(int index) tabJumpTo;
+
+  static MainTabControlDelegate _instance;
+
+  static MainTabControlDelegate getInstance() {
+    return _instance ??= MainTabControlDelegate._();
+  }
+
+  MainTabControlDelegate._();
+}
 
 class MyBottomNavigationBar extends StatefulWidget {
   @override
@@ -13,9 +29,8 @@ class MyBottomNavigationBar extends StatefulWidget {
   }
 }
 
-class MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
+class MyBottomNavigationBarState extends State<MyBottomNavigationBar> with WidgetsBindingObserver {
   int currentIndex = 0;
-  final myBottomNavigationBarViewModel = MyBottomNavigationBarViewModel();
   final controller = PageController(
     initialPage: 0, // HomeScreen
   );
@@ -23,24 +38,29 @@ class MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
   @override
   void initState() {
     super.initState();
-    myBottomNavigationBarViewModel.getCountNotification();
+    MainTabControlDelegate.getInstance().tabJumpTo = (int index) {
+      controller?.jumpToPage(index);
+    };
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
     super.dispose();
-    myBottomNavigationBarViewModel.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    int countNotification = Provider.of<NotificationModel>(context).countNotification;
+
     return Scaffold(
         body: Column(
       children: [
         Expanded(
             child: PageView(
           controller: controller,
-          scrollDirection: Axis.horizontal, // hướng swipe
+          scrollDirection: Axis.horizontal,
+          // hướng swipe
           physics: NeverScrollableScrollPhysics(),
           // Chỉ số Page sẽ bắt đầu từ 0
           children: [
@@ -72,16 +92,14 @@ class MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              buildBottomItem(0),
-              buildBottomItem(1),
+              buildBottomItem(0, null),
+              buildBottomItem(1, null),
               // Payment Button (middle of BottomNavigationBar)
               GestureDetector(
                 child: Container(
                   height: 56,
                   width: 56,
-                  decoration: BoxDecoration(
-                      color: Colors.red.shade700,
-                      borderRadius: BorderRadius.all(Radius.circular(28))),
+                  decoration: BoxDecoration(color: Colors.red.shade700, borderRadius: BorderRadius.all(Radius.circular(28))),
                   child: Center(
                     child: Container(
                         height: 50,
@@ -89,8 +107,7 @@ class MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
                         decoration: BoxDecoration(
                             color: Colors.red.shade700,
                             border: Border.all(width: 2, color: Colors.white),
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(25))),
+                            borderRadius: BorderRadius.all(Radius.circular(25))),
                         child: Icon(
                           Icons.payment_outlined,
                           size: 22,
@@ -102,8 +119,8 @@ class MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
                   print("Press on Payment Button");
                 },
               ),
-              buildBottomItem(2),
-              buildBottomItem(3)
+              buildBottomItem(2, countNotification),
+              buildBottomItem(3, null)
             ],
           ),
         )
@@ -111,9 +128,10 @@ class MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
     ));
   }
 
-  buildBottomItem(int index) {
+  buildBottomItem(int index, int countNotification) {
     String image;
     String name;
+    int count = countNotification;
 
     switch (index) {
       case 0:
@@ -140,7 +158,7 @@ class MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
             Padding(
               padding: EdgeInsets.only(top: 12),
             ),
-            buildOneItem(image, name, index)
+            buildOneItem(image, name, index, count)
           ],
         ),
         // thay đổi Page khi click item bottom
@@ -152,7 +170,7 @@ class MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
         });
   }
 
-  Widget buildOneItem(String image, String name, int index) {
+  Widget buildOneItem(String image, String name, int index, int countNotification) {
     return Column(
       children: [
         Stack(
@@ -163,52 +181,35 @@ class MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
               width: 40,
               child: Image.asset(
                 image,
-                color: index == currentIndex
-                    ? Colors.red.shade700
-                    : Colors.grey.shade500,
+                color: index == currentIndex ? Colors.red.shade700 : Colors.grey.shade500,
               ),
             ),
             // build Badge
-            index == 2 ? buildNotificationItem() : Container()
+            index == 2 ? buildNotificationItem(countNotification) : Container()
           ],
         ),
         // build Title
         Text(name,
             style: TextStyle(
-                fontSize: 14,
-                color: index == currentIndex
-                    ? Colors.red.shade700
-                    : Colors.grey.shade500,
-                fontWeight: FontWeight.w600)),
+                fontSize: 14, color: index == currentIndex ? Colors.red.shade700 : Colors.grey.shade500, fontWeight: FontWeight.w600)),
       ],
     );
   }
 
-  Widget buildNotificationItem() {
-    return StreamBuilder(
-      stream: myBottomNavigationBarViewModel.countNotificationStream,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return Positioned(
-            top: 0,
-            right: 2,
-            child: Container(
-              width: 16,
-              height: 16,
-              decoration: BoxDecoration(
-                  color: Colors.red.shade500,
-                  borderRadius: BorderRadius.all(Radius.circular(8))),
-              child: Center(
-                  child: Text(
-                snapshot.data.toString(),
-                style: TextStyle(color: Colors.white),
-              )),
-            ),
-          );
-        } else {
-          return Container();
-        }
-      },
-    );
+  Widget buildNotificationItem(int countNotification) {
+    return countNotification != null ? Positioned(
+      top: 0,
+      right: 2,
+      child: Container(
+        width: 16,
+        height: 16,
+        decoration: BoxDecoration(color: Colors.red.shade500, borderRadius: BorderRadius.all(Radius.circular(8))),
+        child: Center(
+            child: Text(
+              countNotification.toString(),
+              style: TextStyle(color: Colors.white),
+            )),
+      ),
+    ) : Container();
   }
 }

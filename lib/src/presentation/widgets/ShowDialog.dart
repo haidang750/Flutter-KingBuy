@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/presentation/LoginScreens/LoginScreen.dart';
 
-class ShowDialog extends StatelessWidget {
+class ShowDialog extends StatefulWidget {
+  ShowDialog({this.productId = -1, this.productVideoLink = ""});
+  int productId;
+  String productVideoLink;
+
+  @override
+  ShowDialogState createState() => ShowDialogState();
+}
+
+class ShowDialogState extends State<ShowDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -60,7 +69,7 @@ class ShowDialog extends StatelessWidget {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => LoginScreen(),
+                          builder: (context) => LoginScreen(productId: widget.productId, productVideoLink: widget.productVideoLink),
                         ));
                   },
                 )

@@ -19,6 +19,8 @@ class MyNetworkImageState extends State<MyNetworkImage> {
   Widget build(BuildContext context) {
     return CachedNetworkImage(
       height: widget.height,
+      width: widget.width,
+      fit: BoxFit.fill,
       imageUrl: Uri.encodeFull(widget.url),
       placeholder: (context, url) => Center(
         child: SpinKitCircle(

@@ -1,5 +1,6 @@
 // Ảnh 44 - Chi tiết đơn hàng
 import 'package:flutter/material.dart';
+import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/widgets/ShowMoney.dart';
 import 'package:projectui/src/resource/model/OrderHistoryModel.dart';
 
@@ -198,7 +199,7 @@ class OrderDetailState extends State<OrderDetail> {
                 height: 90,
                 width: 90,
                 child: Image.network(
-                  "https://kingbuy.vn$imageSource",
+                  "${AppEndpoint.BASE_URL}$imageSource",
                   fit: BoxFit.fill,
                 )),
             Expanded(

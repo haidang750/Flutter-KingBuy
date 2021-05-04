@@ -1,26 +1,16 @@
+import 'package:projectui/src/resource/model/network_state.dart';
 import 'package:projectui/src/resource/repo/auth_repository.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:projectui/src/utils/app_utils.dart';
 
 class MyBottomNavigationBarViewModel {
   final authRepository = AuthRepository();
 
-  final countNotificationSubject = BehaviorSubject<int>();
-
-  Stream<int> get countNotificationStream => countNotificationSubject.stream;
-
-  getCountNotification() async {
-    int countNotification =
-        await authRepository.getCountNotification().then((value) {
-      if (value.isSuccess) {
-        return value.data;
-      } else {
-        return null;
-      }
-    });
-    countNotificationSubject.sink.add(countNotification);
-  }
-
-  void dispose() {
-    countNotificationSubject.close();
+  Future<int> getCountNotification() async {
+    if(await AppUtils.checkLogin()){
+      NetworkState<int> result = await authRepository.getCountNotification();
+      return result.data;
+    }else{
+      return 0;
+    }
   }
 }

@@ -1,5 +1,5 @@
-class ProductModel {
-  ProductModel({
+class ListProductsModel {
+  ListProductsModel({
     this.id,
     this.name,
     this.products,
@@ -11,7 +11,7 @@ class ProductModel {
   List<Product> products;
   int recordsTotal;
 
-  factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
+  factory ListProductsModel.fromJson(Map<String, dynamic> json) => ListProductsModel(
         products: List<Product>.from(
             json["products"].map((x) => Product.fromJson(x))),
         recordsTotal: json["recordsTotal"],
