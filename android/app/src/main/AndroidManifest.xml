@@ -2,7 +2,7 @@
     package="com.example.projectui">
     <uses-permission android:name="android.permission.INTERNET"/>
    <application
-        android:label="projectui"
+        android:label="KingBuy"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true">       
         <activity

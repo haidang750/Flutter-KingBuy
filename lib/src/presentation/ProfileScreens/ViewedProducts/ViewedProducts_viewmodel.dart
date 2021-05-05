@@ -1,10 +1,8 @@
+import 'package:projectui/src/presentation/base/base_viewmodel.dart';
 import 'package:projectui/src/resource/model/ListProductsModel.dart';
 import 'package:projectui/src/resource/model/network_state.dart';
-import 'package:projectui/src/resource/repo/auth_repository.dart';
 
-class ViewedProductsViewModel {
-  final authRepository = AuthRepository();
-
+class ViewedProductsViewModel extends BaseViewModel {
   Future<List<Product>> initRequester() async {
     return await loadData(0);
   }

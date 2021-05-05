@@ -1,2 +1,2 @@
-export 'SplashScreen_screen.dart';
-export 'SplashScreen_viewmodel.dart';
+export 'Splash_screen.dart';
+export 'Splash_viewmodel.dart';

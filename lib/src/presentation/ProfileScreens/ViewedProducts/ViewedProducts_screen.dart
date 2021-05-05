@@ -1,6 +1,7 @@
 // Sản phẩm đã xem
 import 'package:flutter/material.dart';
 import 'package:projectui/src/presentation/ProfileScreens/ViewedProducts/ViewedProducts.dart';
+import 'package:projectui/src/presentation/base/base.dart';
 import 'package:projectui/src/presentation/widgets/MyGridView.dart';
 import 'package:projectui/src/presentation/widgets/ShowOneProduct.dart';
 import 'package:projectui/src/presentation/widgets/ShowPath.dart';
@@ -11,19 +12,23 @@ class ViewedProducts extends StatefulWidget {
   ViewedProductsState createState() => ViewedProductsState();
 }
 
-class ViewedProductsState extends State<ViewedProducts> {
+class ViewedProductsState extends State<ViewedProducts> with ResponsiveWidget {
   final viewedProductsViewModel = ViewedProductsViewModel();
   final keyGridView = GlobalKey<MyGridViewState>();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(titleSpacing: 0, title: Text("Sản phẩm đã xem")),
-        body: Container(
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            child: Column(
-              children: [buildPath(), buildListProduct()],
-            )));
+    return BaseWidget(
+        viewModel: viewedProductsViewModel,
+        builder: (context, viewModel, child) => Scaffold(
+            appBar: AppBar(titleSpacing: 0, title: Text("Sản phẩm đã xem")),
+            body: Container(padding: EdgeInsets.symmetric(horizontal: 10), child: buildUi(context: context))));
+  }
+
+  Widget buildScreen() {
+    return Column(
+      children: [buildPath(), buildListProduct()],
+    );
   }
 
   Widget buildPath() {
@@ -55,5 +60,23 @@ class ViewedProductsState extends State<ViewedProducts> {
         crossAxisCount: 2,
       ),
     );
+  }
+
+  @override
+  Widget buildDesktop(BuildContext context) {
+    // TODO: implement buildDesktop
+    return buildScreen();
+  }
+
+  @override
+  Widget buildMobile(BuildContext context) {
+    // TODO: implement buildMobile
+    return buildScreen();
+  }
+
+  @override
+  Widget buildTablet(BuildContext context) {
+    // TODO: implement buildTablet
+    return buildScreen();
   }
 }

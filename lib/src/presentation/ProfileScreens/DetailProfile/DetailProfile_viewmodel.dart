@@ -1,10 +1,8 @@
+import 'package:projectui/src/presentation/base/base_viewmodel.dart';
 import 'package:projectui/src/resource/model/Data.dart';
 import 'package:projectui/src/resource/model/model.dart';
-import 'package:projectui/src/resource/repo/auth_repository.dart';
 
-class ProfileViewModel {
-  final authRepository = AuthRepository();
-
+class DetailProfileViewModel extends BaseViewModel {
   getProfile() async {
     NetworkState<Data> result = await authRepository.getProfile();
     if (result.isSuccess) {

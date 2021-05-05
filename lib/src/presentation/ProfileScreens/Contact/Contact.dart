@@ -1,2 +1,3 @@
-export 'Contact_screen.dart';
-export 'Contact_viewmodel.dart';
+export 'ContactTypes/ContactTypes.dart';
+export 'CreateContact/CreateContact.dart';
+export 'DetailContact/DetailContact.dart';

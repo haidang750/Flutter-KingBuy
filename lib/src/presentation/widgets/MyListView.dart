@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:projectui/src/presentation/widgets/MyLoading.dart';
 
 typedef Future<List> DataRequester(int offset);
 typedef Future<List> InitRequester();
@@ -8,7 +9,7 @@ typedef Widget ItemBuilder(List data, BuildContext context, int index);
 class MyListView extends StatefulWidget {
   MyListView.build(
       {Key key,
-        this.scrollDirection = Axis.vertical,
+      this.scrollDirection = Axis.vertical,
       @required this.itemBuilder,
       @required this.dataRequester,
       @required this.initRequester})
@@ -62,8 +63,7 @@ class MyListViewState extends State<MyListView> {
                   itemCount: _dataList.length + 1,
                   itemBuilder: (context, index) {
                     if (index == _dataList.length) {
-                      return opacityLoadingProgress(
-                          isPerformingRequest, loadingColor);
+                      return opacityLoadingProgress(isPerformingRequest, loadingColor);
                     } else {
                       return widget.itemBuilder(_dataList, context, index);
                     }
@@ -94,13 +94,10 @@ class MyListViewState extends State<MyListView> {
       if (newDataList != null) {
         if (newDataList.length == 0) {
           double edge = 50.0;
-          double offsetFromBottom = _controller.position.maxScrollExtent -
-              _controller.position.pixels;
+          double offsetFromBottom = _controller.position.maxScrollExtent - _controller.position.pixels;
           if (offsetFromBottom < edge) {
-            _controller.animateTo(
-                _controller.offset - (edge - offsetFromBottom),
-                duration: new Duration(milliseconds: 500),
-                curve: Curves.easeOut);
+            _controller.animateTo(_controller.offset - (edge - offsetFromBottom),
+                duration: Duration(milliseconds: 500), curve: Curves.easeOut);
           }
         } else {
           _dataList.addAll(newDataList);
@@ -112,25 +109,14 @@ class MyListViewState extends State<MyListView> {
 }
 
 Widget loadingProgress(loadingColor) {
-  return Center(
-    child: CircularProgressIndicator(
-      strokeWidth: 2.0,
-      valueColor: AlwaysStoppedAnimation<Color>(loadingColor),
-    ),
-  );
+  return MyLoading();
 }
 
 Widget opacityLoadingProgress(isPerformingRequest, loadingColor) {
-  return new Padding(
+  return Padding(
     padding: const EdgeInsets.all(8.0),
-    child: new Center(
-      child: new Opacity(
-        opacity: isPerformingRequest ? 1.0 : 0.0,
-        child: new CircularProgressIndicator(
-          strokeWidth: 2.0,
-          valueColor: AlwaysStoppedAnimation<Color>(loadingColor),
-        ),
-      ),
+    child: Center(
+      child: Opacity(opacity: isPerformingRequest ? 1.0 : 0.0, child: MyLoading()),
     ),
   );
 }

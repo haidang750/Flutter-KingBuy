@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:projectui/src/presentation/widgets/MyLoading.dart';
 
 typedef Future<List> DataRequester(int offset);
 typedef Future<List> InitRequester();
@@ -50,15 +51,13 @@ class MyGridViewState extends State<MyGridView> {
     var footer;
     if (this.isLoadMore) {
       footer = Container(
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: MyLoading()
       );
     } else {
       footer = Container();
     }
     if (this.isLoading)
-      return Center(child: CircularProgressIndicator());
+      return MyLoading();
     else if (data == null || data.length == 0) {
       return Center(child: Text("Không có dữ liệu"));
     } else {

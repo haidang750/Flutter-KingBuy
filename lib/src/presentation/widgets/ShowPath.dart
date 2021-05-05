@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projectui/src/configs/configs.dart';
 
 class ShowPath extends StatefulWidget {
   ShowPath({this.rootTab, this.parentTab, this.childTab});
@@ -23,7 +24,7 @@ class ShowPathState extends State<ShowPath> {
         scrollDirection: Axis.horizontal,
         children: [
           Image.asset(
-            "assets/home.png",
+            AppImages.icHome,
             height: 20,
             width: 20,
             color: Colors.black,

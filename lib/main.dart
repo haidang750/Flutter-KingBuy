@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projectui/src/configs/constants/app_values.dart';
 import 'package:projectui/src/presentation/splash/Splash.dart';
 import 'package:projectui/src/resource/model/AddressModel.dart';
 import 'package:projectui/src/resource/model/Data.dart';
@@ -30,7 +31,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: "KingBuy",
+        debugShowCheckedModeBanner: false,
+        title: AppValues.APP_NAME,
         builder: (context, child) {
           return ScrollConfiguration(
             behavior: MyBehavior(),

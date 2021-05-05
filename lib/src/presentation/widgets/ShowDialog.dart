@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:projectui/src/presentation/LoginScreens/LoginScreen.dart';
+import 'package:projectui/src/configs/configs.dart';
+import 'package:projectui/src/presentation/LoginScreens/Login/Login_screen.dart';
 
 class ShowDialog extends StatefulWidget {
   ShowDialog({this.productId = -1, this.productVideoLink = ""});
@@ -38,12 +39,12 @@ class ShowDialogState extends State<ShowDialog> {
                       width: 80,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                          color: Colors.grey.shade500,
+                          color: AppColors.disableButton,
                           borderRadius: BorderRadius.all(Radius.circular(15))),
                       child: Text(
                         "Hủy",
                         style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.w500),
+                            color: AppColors.buttonContent, fontWeight: FontWeight.w500),
                       ),
                     ),
                     onTap: () {
@@ -59,11 +60,11 @@ class ShowDialogState extends State<ShowDialog> {
                     width: 80,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                        color: Colors.red.shade700,
+                        color: AppColors.primary,
                         borderRadius: BorderRadius.all(Radius.circular(15))),
                     child: Text("Đăng nhập",
                         style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.w500)),
+                            color: AppColors.buttonContent, fontWeight: FontWeight.w500)),
                   ),
                   onTap: () {
                     Navigator.push(

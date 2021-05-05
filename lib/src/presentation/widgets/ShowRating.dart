@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projectui/src/configs/configs.dart';
 
 class ShowRating extends StatefulWidget {
   ShowRating({this.star, this.starSize});
@@ -24,7 +25,7 @@ class ShowRatingState extends State<ShowRating> {
     for (var i = 0; i < star; i++) {
       stars.add(Icon(
         Icons.star_rounded,
-        color: Colors.yellow.shade600,
+        color: AppColors.starColor,
         size: starSize,
       ));
     }

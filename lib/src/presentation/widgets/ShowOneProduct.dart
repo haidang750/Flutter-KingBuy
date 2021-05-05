@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/configs/constants/app_endpoint.dart';
-import 'package:projectui/src/presentation/CategoriesScreens/ProductDetail_screen.dart';
+import 'package:projectui/src/presentation/CategoriesScreens/ProductDetail/ProductDetail_screen.dart';
 import 'package:projectui/src/presentation/widgets/MyNetworkImage.dart';
 import 'package:projectui/src/presentation/widgets/ShowMoney.dart';
 import 'package:projectui/src/presentation/widgets/ShowRating.dart';
@@ -53,7 +54,7 @@ class ShowOneProductState extends State<ShowOneProduct> {
                         price: widget.product.salePrice,
                         fontSizeLarge: 13,
                         fontSizeSmall: 9.5,
-                        color: Colors.red.shade700,
+                        color: AppColors.primary,
                         fontWeight: FontWeight.bold,
                         isLineThrough: false,
                       ),
@@ -115,7 +116,7 @@ class ShowOneProductState extends State<ShowOneProduct> {
         child: Container(
           height: 32,
           width: 56,
-          decoration: BoxDecoration(color: Colors.red.shade600, borderRadius: BorderRadius.all(Radius.circular(19))),
+          decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(19))),
           child: Center(
             child: Text(
               "-${widget.product.saleOff.toString()}%",
@@ -131,7 +132,7 @@ class ShowOneProductState extends State<ShowOneProduct> {
         Container(
           height: 24,
           child: Image.asset(
-            "assets/gift.png",
+            AppImages.icGift,
             fit: BoxFit.fill,
           ),
         ),

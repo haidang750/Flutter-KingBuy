@@ -1,3 +1,5 @@
+import 'package:projectui/src/resource/model/ListProductsModel.dart';
+
 class OrderHistoryModel {
   OrderHistoryModel({
     this.orders,
@@ -219,26 +221,3 @@ class Item {
       };
 }
 
-class Gift {
-  Gift({
-    this.name,
-    this.price,
-    this.imageSource,
-  });
-
-  String name;
-  int price;
-  String imageSource;
-
-  factory Gift.fromJson(Map<String, dynamic> json) => Gift(
-        name: json["name"],
-        price: json["price"],
-        imageSource: json["image_source"],
-      );
-
-  Map<String, dynamic> toJson() => {
-        "name": name,
-        "price": price,
-        "image_source": imageSource,
-      };
-}

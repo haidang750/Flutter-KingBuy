@@ -41,6 +41,9 @@ dependencies:
   youtube_player_flutter: ^8.0.0
   dio:
   connectivity: ^3.0.3
+  device_info: ^2.0.0
+  crypto: ^3.0.1
+  responsive_builder: ^0.4.1
   flutter_image: ^3.0.0
   flutter_picker: ^2.0.1
   cached_network_image: ^3.0.0
@@ -57,48 +60,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/chat.png
-    - assets/logo.png
-    - assets/facebook.png
-    - assets/google.jpg
-    - assets/lock.png
-    - assets/user.png
-    - assets/phone.png
-    - assets/user@2x.png
-    - assets/home.png
-    - assets/person.png
-    - assets/promotion.png
-    - assets/pin.png
-    - assets/star.png
-    - assets/history.png
-    - assets/eye.png
-    - assets/group.png
-    - assets/policy.png
-    - assets/image.png
-    - assets/1.jpg
-    - assets/zalo.png
-    - assets/messenger.png
-    - assets/menu.png
-    - assets/alarm.png
-    - assets/Image 18.png
-    - assets/Image 18@2x.png
-    - assets/call-answer.png
-    - assets/-e-calendar.png
-    - assets/-e-envelope.png
-    - assets/email.png
-    - assets/bike.png
-    - assets/Image 1.png
-    - assets/Image 3.png
-    - assets/Image 4.png
-    - assets/Image 5.png
-    - assets/Image 6.jpg
-    - assets/Image 7.jpg
-    - assets/Image 8.png
-    - assets/banner.jpg
-    - assets/splashBackground.jpg
-    - assets/gift.png
-    - assets/filter_black.png
-    - assets/search.jpg
-    - assets/shopping-cart.png
-    - assets/location.png
-    - assets/success.png
+    - assets/langs/
+    - assets/icons/
+    - assets/backgrounds/
+    - assets/images/
