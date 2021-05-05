@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/base/base.dart';
+import 'package:projectui/src/presentation/routers.dart';
 import '../PersonalInfo/PersonalInfo_screen.dart';
 import 'Register_viewmodel.dart';
 
@@ -70,11 +71,7 @@ class RegisterScreenState extends State<RegisterScreen> with ResponsiveWidget {
                               child: Text("Đăng ký",
                                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500, color: AppColors.buttonContent)),
                               onPressed: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PersonalInfo(),
-                                    ));
+                                Navigator.pushNamed(context, Routers.Personal_Info);
                               },
                             ),
                           )))

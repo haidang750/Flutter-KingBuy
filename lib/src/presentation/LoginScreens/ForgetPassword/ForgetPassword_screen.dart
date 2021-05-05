@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/LoginScreens/ForgetPassword/ForgetPassword.dart';
 import 'package:projectui/src/presentation/base/base.dart';
+import 'package:projectui/src/presentation/presentation.dart';
 
 import '../NewPassword/NewPassword_screen.dart';
 
@@ -99,11 +100,7 @@ class ForgetPasswordState extends State<ForgetPassword> with ResponsiveWidget {
                               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500, color: AppColors.buttonContent)),
                           onPressed: forgetPasswordViewModel.validateEmail(email)
                               ? () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => NewPassword(),
-                                      ));
+                                  Navigator.pushNamed(context, Routers.New_Password);
                                 }
                               : null),
                     )))

@@ -4,6 +4,7 @@ import 'package:projectui/src/presentation/CategoriesScreens/ProductDetail/Produ
 import 'package:projectui/src/presentation/Navigation/Navigation_screen.dart';
 import 'package:projectui/src/presentation/Navigation/Navigation_viewmodel.dart';
 import 'package:projectui/src/presentation/base/base.dart';
+import 'package:projectui/src/presentation/presentation.dart';
 import 'package:projectui/src/resource/model/model.dart';
 import 'package:provider/provider.dart';
 import 'package:projectui/src/resource/model/Data.dart';
@@ -25,11 +26,7 @@ class LoginViewModel extends BaseViewModel {
           // thành công sẽ vào lại màn hình ProductDetail trước đó. Nếu từ các màn hình khác navigate sang màn hình Login thì khi đăng
           // nhập thành công sẽ vào màn hình Home
           if(productId == -1){
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NavigationScreen(),
-                ));
+            Navigator.pushNamed(context, Routers.Navigation);
           }else{
             Navigator.pop(
                 context,

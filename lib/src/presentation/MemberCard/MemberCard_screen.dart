@@ -14,8 +14,9 @@ class MemberCardScreenState extends State<MemberCardScreen> with ResponsiveWidge
   Widget build(BuildContext context) {
     return BaseWidget(
         viewModel: memberCardViewModel,
-        builder: (context, viewModel, child) =>
-            Scaffold(appBar: AppBar(title: Text("Thẻ thành viên"), titleSpacing: 0), body: buildUi(context: context)));
+        builder: (context, viewModel, child) => Scaffold(
+            appBar: AppBar(title: Text("Thẻ thành viên"), automaticallyImplyLeading: false),
+            body: buildUi(context: context)));
   }
 
   Widget buildScreen() {

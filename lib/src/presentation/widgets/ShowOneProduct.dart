@@ -43,7 +43,10 @@ class ShowOneProductState extends State<ShowOneProduct> {
                   SizedBox(
                     height: 5,
                   ),
-                  ShowRating(star: widget.product.star, starSize: 15),
+                  ShowRating(
+                    star: widget.product.star,
+                    starSize: 16,
+                  ),
                   SizedBox(
                     height: 5,
                   ),

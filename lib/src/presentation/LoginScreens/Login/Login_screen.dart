@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/base/base.dart';
+import 'package:projectui/src/presentation/presentation.dart';
 import '../ForgetPassword/ForgetPassword_screen.dart';
 import 'Login_viewmodel.dart';
 import '../Register/Register_screen.dart';
@@ -79,7 +80,7 @@ class LoginSreenState extends State<LoginScreen> with ResponsiveWidget {
                                     style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
                                   ),
                                   onTap: () {
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => ForgetPassword()));
+                                    Navigator.pushNamed(context, Routers.Forget_Password);
                                   },
                                 )),
                           ),
@@ -152,7 +153,7 @@ class LoginSreenState extends State<LoginScreen> with ResponsiveWidget {
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, decoration: TextDecoration.underline),
                         ),
                         onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
+                          Navigator.pushNamed(context, Routers.Register);
                         },
                       )
                     ],

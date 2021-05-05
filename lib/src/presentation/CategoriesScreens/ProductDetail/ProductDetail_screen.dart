@@ -331,7 +331,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
         ));
   }
 
-  Widget buildProductRating(int star, int totalComments) {
+  Widget buildProductRating(double star, int totalComments) {
     return Padding(
         padding: EdgeInsets.only(top: 5),
         child: Row(
@@ -656,7 +656,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
     return Column(
       children: [
         buildTitleContainer("Thông số kỹ thuật", 32.5, Alignment.bottomLeft),
-        Html(padding: EdgeInsets.fromLTRB(10, 5, 10, 0), data: productSpecifications),
+        productSpecifications != null ? Html(padding: EdgeInsets.fromLTRB(10, 5, 10, 0), data: productSpecifications) : Container(),
         SizedBox(height: 15)
       ],
     );

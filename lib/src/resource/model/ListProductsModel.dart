@@ -12,8 +12,7 @@ class ListProductsModel {
   int recordsTotal;
 
   factory ListProductsModel.fromJson(Map<String, dynamic> json) => ListProductsModel(
-        products: List<Product>.from(
-            json["products"].map((x) => Product.fromJson(x))),
+        products: List<Product>.from(json["products"].map((x) => Product.fromJson(x))),
         recordsTotal: json["recordsTotal"],
       );
 
@@ -87,7 +86,7 @@ class Product {
   dynamic brandInfo;
   int saleOff;
   List<Gift> gifts;
-  int star;
+  double star;
   List<dynamic> colors;
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
@@ -100,8 +99,7 @@ class Product {
         brandId: json["brand_id"],
         giftIds: List<int>.from(json["gift_ids"].map((x) => x)),
         imageSource: json["image_source"],
-        imageSourceList:
-            List<String>.from(json["image_source_list"].map((x) => x)),
+        imageSourceList: List<String>.from(json["image_source_list"].map((x) => x)),
         description: json["description"],
         content: json["content"],
         specifications: json["specifications"],
@@ -111,10 +109,8 @@ class Product {
         goodsStatus: json["goods_status"],
         isBulky: json["is_bulky"],
         isInstallment: json["is_installment"],
-        installmentMonths:
-            List<String>.from(json["installment_months"].map((x) => x)),
-        installmentPrepay:
-            List<String>.from(json["installment_prepay"].map((x) => x)),
+        installmentMonths: List<String>.from(json["installment_months"].map((x) => x)),
+        installmentPrepay: List<String>.from(json["installment_prepay"].map((x) => x)),
         barcode: json["barcode"],
         createdAt: json["created_at"],
         updatedAt: json["updated_at"],
@@ -123,7 +119,7 @@ class Product {
         brandInfo: json["brand_info"],
         saleOff: json["sale_off"],
         gifts: List<Gift>.from(json["gifts"].map((x) => Gift.fromJson(x))),
-        star: json["star"],
+        star: json["star"] * 1.0,
         colors: List<dynamic>.from(json["colors"].map((x) => x)),
       );
 
@@ -147,10 +143,8 @@ class Product {
         "goods_status": goodsStatus,
         "is_bulky": isBulky,
         "is_installment": isInstallment,
-        "installment_months":
-            List<dynamic>.from(installmentMonths.map((x) => x)),
-        "installment_prepay":
-            List<dynamic>.from(installmentPrepay.map((x) => x)),
+        "installment_months": List<dynamic>.from(installmentMonths.map((x) => x)),
+        "installment_prepay": List<dynamic>.from(installmentPrepay.map((x) => x)),
         "barcode": barcode,
         "created_at": createdAt,
         "updated_at": updatedAt,
@@ -178,8 +172,7 @@ class ProductCategory {
   factory ProductCategory.fromJson(Map<String, dynamic> json) => ProductCategory(
         id: json["id"],
         name: json["name"],
-        parent:
-            json["parent"] == null ? null : ProductCategory.fromJson(json["parent"]),
+        parent: json["parent"] == null ? null : ProductCategory.fromJson(json["parent"]),
       );
 
   Map<String, dynamic> toJson() => {
@@ -196,8 +189,6 @@ class Gift {
     this.price,
     this.imageSource,
     this.description,
-    this.createdAt,
-    this.updatedAt,
   });
 
   int id;
@@ -205,8 +196,6 @@ class Gift {
   int price;
   String imageSource;
   dynamic description;
-  DateTime createdAt;
-  DateTime updatedAt;
 
   factory Gift.fromJson(Map<String, dynamic> json) => Gift(
         id: json["id"],
@@ -214,8 +203,6 @@ class Gift {
         price: json["price"],
         imageSource: json["image_source"],
         description: json["description"],
-        createdAt: DateTime.parse(json["created_at"]),
-        updatedAt: DateTime.parse(json["updated_at"]),
       );
 
   Map<String, dynamic> toJson() => {
@@ -224,7 +211,5 @@ class Gift {
         "price": price,
         "image_source": imageSource,
         "description": description,
-        "created_at": createdAt.toIso8601String(),
-        "updated_at": updatedAt.toIso8601String(),
       };
 }

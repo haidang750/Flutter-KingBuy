@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/configs/constants/app_values.dart';
+import 'package:projectui/src/presentation/presentation.dart';
 import 'package:projectui/src/presentation/splash/Splash.dart';
 import 'package:projectui/src/resource/model/AddressModel.dart';
 import 'package:projectui/src/resource/model/Data.dart';
@@ -39,7 +40,9 @@ class MyApp extends StatelessWidget {
             child: child,
           );
         },
-        home: SplashScreen());
+        home: SplashScreen(),
+        onGenerateRoute: Routers.generateRoute,
+    );
   }
 }
 // remove the glow when scroll on the whole application

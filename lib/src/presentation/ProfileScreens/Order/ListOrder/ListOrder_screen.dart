@@ -16,7 +16,6 @@ class ListOrder extends StatefulWidget {
 }
 
 class ListOrderState extends State<ListOrder> with ResponsiveWidget {
-  final keyListView = GlobalKey<MyListViewState>();
   final listOrderViewModel = ListOrderViewModel();
 
   @override
@@ -25,7 +24,8 @@ class ListOrderState extends State<ListOrder> with ResponsiveWidget {
   }
 
   Widget buildScreen() {
-    return MyListView.build(key: keyListView, itemBuilder: itemBuilder, dataRequester: dataRequester, initRequester: initRequester);
+    return KeyedSubtree(
+        key: UniqueKey(), child: MyListView.build(itemBuilder: itemBuilder, dataRequester: dataRequester, initRequester: initRequester));
   }
 
   String getStatus(int status) {

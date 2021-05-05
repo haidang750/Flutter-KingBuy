@@ -7,6 +7,7 @@ import 'package:projectui/src/presentation/Navigation/Navigation.dart';
 import 'package:projectui/src/presentation/Notifications/Notifications_screen.dart';
 import 'package:projectui/src/presentation/ProfileScreens/RootProfile/RootProfile_screen.dart';
 import 'package:projectui/src/presentation/base/base.dart';
+import 'package:projectui/src/presentation/presentation.dart';
 import 'package:projectui/src/resource/model/model.dart';
 import 'package:provider/provider.dart';
 
@@ -71,8 +72,9 @@ class NavigationScreenState extends State<NavigationScreen> with WidgetsBindingO
           children: [
             HomeScreen(), // 0
             RootCategoriesScreen(), // 1
-            Notifications(), // 2
-            RootProfileScreen() // 3
+            MemberCardScreen(), // 2
+            Notifications(), // 3
+            RootProfileScreen() // 4
           ],
           // thay đổi UI bottom khi lướt
           onPageChanged: (value) {
@@ -99,33 +101,9 @@ class NavigationScreenState extends State<NavigationScreen> with WidgetsBindingO
             children: [
               buildBottomItem(0, null),
               buildBottomItem(1, null),
-              // Payment Button (middle of BottomNavigationBar)
-              GestureDetector(
-                child: Container(
-                  height: 56,
-                  width: 56,
-                  decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(28))),
-                  child: Center(
-                    child: Container(
-                        height: 50,
-                        width: 50,
-                        decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            border: Border.all(width: 2, color: AppColors.white),
-                            borderRadius: BorderRadius.all(Radius.circular(25))),
-                        child: Icon(
-                          Icons.payment_outlined,
-                          size: 22,
-                          color: AppColors.white,
-                        )),
-                  ),
-                ),
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => MemberCardScreen()));
-                },
-              ),
-              buildBottomItem(2, countNotification),
-              buildBottomItem(3, null)
+              buildBottomItem(2, null),
+              buildBottomItem(3, countNotification),
+              buildBottomItem(4, null)
             ],
           ),
         )
@@ -148,10 +126,14 @@ class NavigationScreenState extends State<NavigationScreen> with WidgetsBindingO
         name = "Danh mục";
         break;
       case 2:
+        image = null;
+        name = null;
+        break;
+      case 3:
         image = AppImages.icAlarm;
         name = "Thông báo";
         break;
-      case 3:
+      case 4:
         image = AppImages.icUser;
         name = "Tài khoản";
         break;
@@ -160,10 +142,12 @@ class NavigationScreenState extends State<NavigationScreen> with WidgetsBindingO
     return GestureDetector(
         child: Column(
           children: [
-            Padding(
-              padding: EdgeInsets.only(top: 12),
-            ),
-            buildOneItem(image, name, index, count)
+            index != 2
+                ? Padding(
+                    padding: EdgeInsets.only(top: 12),
+                  )
+                : Container(),
+            index != 2 ? buildOneItem(image, name, index, count) : buildButtonMemberCard()
           ],
         ),
         // thay đổi Page khi click item bottom
@@ -190,7 +174,7 @@ class NavigationScreenState extends State<NavigationScreen> with WidgetsBindingO
               ),
             ),
             // build Badge
-            index == 2 ? buildNotificationItem(countNotification) : Container()
+            index == 3 ? buildNotificationItem(countNotification) : Container()
           ],
         ),
         // build Title
@@ -200,6 +184,28 @@ class NavigationScreenState extends State<NavigationScreen> with WidgetsBindingO
                 color: index == currentIndex ? AppColors.enableButton : AppColors.disableButton,
                 fontWeight: FontWeight.w600)),
       ],
+    );
+  }
+
+  Widget buildButtonMemberCard() {
+    return Container(
+      height: 56,
+      width: 56,
+      decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(28))),
+      child: Center(
+        child: Container(
+            height: 50,
+            width: 50,
+            decoration: BoxDecoration(
+                color: AppColors.primary,
+                border: Border.all(width: 2, color: AppColors.white),
+                borderRadius: BorderRadius.all(Radius.circular(25))),
+            child: Icon(
+              Icons.payment_outlined,
+              size: 22,
+              color: AppColors.white,
+            )),
+      ),
     );
   }
 

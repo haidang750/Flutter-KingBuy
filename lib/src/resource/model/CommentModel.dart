@@ -43,7 +43,7 @@ class Comment {
   int status;
   DateTime createdAt;
   DateTime updatedAt;
-  int star;
+  double star;
   String avatarSource;
   int isBuy;
 
@@ -57,7 +57,7 @@ class Comment {
     status: json["status"],
     createdAt: DateTime.parse(json["created_at"]),
     updatedAt: DateTime.parse(json["updated_at"]),
-    star: json["star"],
+    star: json["star"] * 1.0,
     avatarSource: json["avatar_source"],
     isBuy: json["is_buy"],
   );

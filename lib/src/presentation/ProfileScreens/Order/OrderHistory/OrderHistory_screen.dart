@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/presentation/ProfileScreens/Order/ListOrder/ListOrder_screen.dart';
 import 'package:projectui/src/presentation/presentation.dart';
+import 'package:projectui/src/presentation/widgets/MyLoading.dart';
+import 'package:rxdart/rxdart.dart';
 
 List<String> status = [
   "Quản lý đơn hàng",
@@ -20,7 +22,19 @@ class OrderHistory extends StatefulWidget {
 
 class OrderHistoryState extends State<OrderHistory> with ResponsiveWidget {
   final orderHistoryViewModel = OrderHistoryViewModel();
-  int currentIndex = 0;
+  final filterSubject = BehaviorSubject<int>();
+
+  @override
+  void initState() {
+    super.initState();
+    filterSubject.sink.add(-1);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    filterSubject.close();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,32 +75,46 @@ class OrderHistoryState extends State<OrderHistory> with ResponsiveWidget {
   }
 
   Widget buildOneStatus(int index) {
-    return GestureDetector(
-      child: Container(
-        width: 140,
-        height: 100,
-        alignment: Alignment.center,
-        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-        child: Card(
-          color: currentIndex == index ? Colors.blue : Colors.white,
-          child: Text(
-            status[index],
-            style: TextStyle(fontSize: 17, color: currentIndex == index ? Colors.white : Colors.black),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ),
-      onTap: () {
-        setState(() {
-          currentIndex = index;
-        });
+    return StreamBuilder(
+      stream: filterSubject.stream,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return GestureDetector(
+            child: Container(
+              width: 140,
+              height: 100,
+              alignment: Alignment.center,
+              padding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+              child: Card(
+                color: snapshot.data + 1 == index ? Colors.blue : Colors.white,
+                child: Text(
+                  status[index],
+                  style: TextStyle(fontSize: 17, color: snapshot.data + 1 == index ? Colors.white : Colors.black),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+            onTap: () {
+              filterSubject.sink.add(index - 1);
+            },
+          );
+        } else {
+          return MyLoading();
+        }
       },
     );
   }
 
   Widget buildListOrder() {
-    return ListOrder(
-      filter: currentIndex - 1,
+    return StreamBuilder(
+      stream: filterSubject.stream,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return ListOrder(filter: snapshot.data);
+        } else {
+          return MyLoading();
+        }
+      },
     );
   }
 

@@ -1,10 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:projectui/src/configs/configs.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class ShowRating extends StatefulWidget {
-  ShowRating({this.star, this.starSize});
-  int star;
+  ShowRating(
+      {this.star,
+      this.minRating = 1,
+      this.ratingDirection = Axis.horizontal,
+      this.allowHalfRating = true,
+      this.starCount = 5,
+      this.starSize,
+      this.starColor = Colors.amber,
+      this.permitRating = false});
+
+  double star;
+  double minRating;
+  Axis ratingDirection;
+  bool allowHalfRating;
+  int starCount;
   double starSize;
+  Color starColor;
+  bool permitRating;
 
   @override
   ShowRatingState createState() => ShowRatingState();
@@ -13,30 +28,22 @@ class ShowRating extends StatefulWidget {
 class ShowRatingState extends State<ShowRating> {
   @override
   Widget build(BuildContext context) {
-    return buildRating(widget.star, widget.starSize);
-  }
-
-  Widget buildRating(int star, double starSize) {
-    return Row(children: buildStar(star, starSize));
-  }
-
-  List<Icon> buildStar(int star, double starSize) {
-    List<Icon> stars = [];
-    for (var i = 0; i < star; i++) {
-      stars.add(Icon(
+    return RatingBar.builder(
+      initialRating: widget.star,
+      minRating: widget.minRating,
+      direction: widget.ratingDirection,
+      allowHalfRating: widget.allowHalfRating,
+      itemCount: widget.starCount,
+      itemSize: widget.starSize,
+      itemBuilder: (context, _) => Icon(
         Icons.star_rounded,
-        color: AppColors.starColor,
-        size: starSize,
-      ));
-    }
-
-    for (var i = 0; i < 5 - star; i++) {
-      stars.add(Icon(
-        Icons.star_rounded,
-        color: Colors.grey,
-        size: starSize,
-      ));
-    }
-    return stars;
+        color: widget.starColor,
+      ),
+      onRatingUpdate: widget.permitRating
+          ? (rating) {
+              print(rating);
+            }
+          : null,
+    );
   }
 }
