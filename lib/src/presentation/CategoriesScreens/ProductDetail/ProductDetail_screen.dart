@@ -343,7 +343,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
                 style: TextStyle(fontSize: 12, color: Colors.blue),
               ),
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => RatingAndComment()));
+                Navigator.pushNamed(context, Routers.Rating_And_Comment);
               },
             )
           ],
@@ -834,11 +834,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
                         child: Text("Viết đánh giá", style: TextStyle(fontSize: 14, color: Colors.red))),
                     onTap: () async {
                       if (await AppUtils.checkLogin()) {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => WritingComment(),
-                            ));
+                        Navigator.pushNamed(context, Routers.Writing_Comment);
                       } else {
                         AppUtils.myShowDialog(context, widget.productId, widget.productVideoLink);
                       }
@@ -928,7 +924,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
                         ],
                       ),
                       onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => RatingAndComment()));
+                        Navigator.pushNamed(context, Routers.Rating_And_Comment);
                       },
                     ))
               ],
@@ -1224,7 +1220,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
           child: GestureDetector(
             child: Text("Xem thêm", style: TextStyle(fontSize: 14, color: Colors.blue, decoration: TextDecoration.underline)),
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ViewedProducts()));
+              Navigator.pushNamed(context, Routers.Viewed_Products);
             },
           ),
         )
@@ -1324,7 +1320,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
     //     if (buttonContent == "Mua ngay") {
     //       print("Handle Mua ngay");
     //     } else {
-    //       Navigator.push(context, MaterialPageRoute(builder: (context) => InstallmentScreen()));
+    //       Navigator.pushNamed(context, Routers.Installment);
     //     }
     //   } else {
     //     print("Sản phẩm đã hết hàng");

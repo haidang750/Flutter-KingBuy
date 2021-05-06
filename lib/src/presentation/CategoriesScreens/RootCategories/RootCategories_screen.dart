@@ -3,6 +3,7 @@ import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/CategoriesScreens/CategoriesScreens.dart';
 import 'package:projectui/src/presentation/CategoriesScreens/CategoryDetail/CategoryDetail_screen.dart';
 import 'package:projectui/src/presentation/base/base.dart';
+import 'package:projectui/src/presentation/presentation.dart';
 import 'package:projectui/src/presentation/widgets/MyLoading.dart';
 import 'package:projectui/src/resource/model/CategoryModel.dart';
 import 'RootCategories.dart';
@@ -234,13 +235,7 @@ class RootCategoriesScreenState extends State<RootCategoriesScreen> with Respons
   }
 
   handleTouchCategory(Category category) {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CategoryDetail(
-            category: category,
-          ),
-        ));
+    Navigator.pushNamed(context, Routers.Category_Detail, arguments: category);
   }
 
   @override

@@ -4,6 +4,7 @@ import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/ProfileScreens/Contact/ContactTypes/ContactTypes_viewmodel.dart';
 import 'package:projectui/src/presentation/ProfileScreens/Contact/DetailContact/DetailContact_screen.dart';
 import 'package:projectui/src/presentation/base/base.dart';
+import 'package:projectui/src/presentation/presentation.dart';
 import 'package:projectui/src/presentation/widgets/MyLoading.dart';
 import 'package:projectui/src/utils/utils.dart';
 import '../CreateContact/CreateContact_screen.dart';
@@ -106,16 +107,8 @@ class ContactTypesState extends State<ContactTypes> with ResponsiveWidget {
     if (await AppUtils.checkLogin()) {
       bool isContacted = await contactTypesViewModel.checkFeedbackOfUser();
       isContacted
-          ? Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => DetailContact(),
-              ))
-          : Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CreateContact(),
-              ));
+          ? Navigator.pushNamed(context, Routers.Detail_Contact)
+          : Navigator.pushNamed(context, Routers.Create_Contact);
     } else {
       AppUtils.myShowDialog(context, -1, "");
     }

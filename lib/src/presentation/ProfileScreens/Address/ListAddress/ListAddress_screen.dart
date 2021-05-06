@@ -7,12 +7,14 @@ import 'package:projectui/src/presentation/widgets/MyLoading.dart';
 import 'package:projectui/src/resource/model/AddressModel.dart';
 import 'package:provider/provider.dart';
 
+import '../../../routers.dart';
+
 class ListAddress extends StatefulWidget {
   @override
   ListAddressState createState() => ListAddressState();
 }
 
-class ListAddressState extends State<ListAddress> with ResponsiveWidget{
+class ListAddressState extends State<ListAddress> with ResponsiveWidget {
   final listAddressViewModel = ListAddressViewModel();
 
   @override
@@ -34,43 +36,38 @@ class ListAddressState extends State<ListAddress> with ResponsiveWidget{
   @override
   Widget build(BuildContext context) {
     return BaseWidget<ListAddressViewModel>(
-        viewModel: ListAddressViewModel(),
-        builder: (context, viewModel, child) => Scaffold(
-            appBar: AppBar(
-              titleSpacing: 0,
-              title: Text("Địa chỉ giao hàng"),
-              actions: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(0, 10, 15, 10),
-                  child: GestureDetector(
-                    child: CircleAvatar(
-                      radius: 12,
-                      child: Icon(
-                        Icons.add,
-                        size: 20,
-                      ),
-                      backgroundColor: Colors.white,
+      viewModel: ListAddressViewModel(),
+      builder: (context, viewModel, child) => Scaffold(
+          appBar: AppBar(
+            titleSpacing: 0,
+            title: Text("Địa chỉ giao hàng"),
+            actions: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(0, 10, 15, 10),
+                child: GestureDetector(
+                  child: CircleAvatar(
+                    radius: 12,
+                    child: Icon(
+                      Icons.add,
+                      size: 20,
                     ),
-                    onTap: () async {
-                      await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => CreateAddress(
-                                event: "create",
-                              )));
-                    },
+                    backgroundColor: Colors.white,
                   ),
+                  onTap: () async {
+                    await Navigator.pushNamed(context, Routers.Create_Address, arguments: "create");
+                  },
                 ),
-              ],
-            ),
-            body: buildUi(context: context)),
+              ),
+            ],
+          ),
+          body: buildUi(context: context)),
     );
   }
 
   Widget buildScreen() {
     // lấy dữ liệu đã set ở Provider ra sử dụng
     List<Address> listAddress = Provider.of<AddressModel>(context).addresses;
-    
+
     return listAddress != null
         ? Container(
             color: Colors.grey.shade300,
@@ -106,21 +103,14 @@ class ListAddressState extends State<ListAddress> with ResponsiveWidget{
                     address.fullName,
                     style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
                   ),
-                  Text(address.fullAddress,
-                      style:
-                          TextStyle(fontSize: 17, fontWeight: FontWeight.w400)),
-                  Text(address.firstPhone,
-                      style:
-                          TextStyle(fontSize: 17, fontWeight: FontWeight.w400)),
+                  Text(address.fullAddress, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w400)),
+                  Text(address.firstPhone, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w400)),
                   Container(
                     padding: EdgeInsets.only(top: 5),
                     child: address.isDefault == 1
                         ? Text(
                             "Địa chỉ mặc định",
-                            style: TextStyle(
-                                color: Colors.red.shade600,
-                                fontSize: 17,
-                                fontWeight: FontWeight.w600),
+                            style: TextStyle(color: Colors.red.shade600, fontSize: 17, fontWeight: FontWeight.w600),
                           )
                         : null,
                   )

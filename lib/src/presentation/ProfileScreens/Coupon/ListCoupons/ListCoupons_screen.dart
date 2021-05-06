@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/ProfileScreens/Coupon/ListCoupons/ListCoupons_viewmodel.dart';
 import 'package:projectui/src/presentation/base/base.dart';
+import 'package:projectui/src/presentation/presentation.dart';
 import 'package:projectui/src/presentation/widgets/MyLoading.dart';
 import 'package:projectui/src/resource/model/CouponModel.dart';
 
@@ -102,54 +103,47 @@ class ListCouponsState extends State<ListCoupons> with ResponsiveWidget {
             child: ListView.builder(
               itemCount: snapshot.data.count,
               itemBuilder: (context, index) {
+                Coupon coupon = snapshot.data.coupons[index];
+
                 return GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  child: Container(
-                    height: 120,
-                    padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 160,
-                          child: Image.network(
-                            "https://kingbuy.vn${snapshot.data.coupons[index].imageSource}",
-                            fit: BoxFit.fill,
-                          ),
-                        ),
-                        Expanded(
-                            child: Container(
-                          padding: EdgeInsets.only(top: 5, left: 10),
-                          child: Container(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  snapshot.data.coupons[index].name,
-                                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
-                                ),
-                                SizedBox(height: 10),
-                                Text("HSD: " + DateFormat("dd/MM/yyyy").format(snapshot.data.coupons[index].expiresAt),
-                                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.primary))
-                              ],
+                    behavior: HitTestBehavior.translucent,
+                    child: Container(
+                      height: 120,
+                      padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 160,
+                            child: Image.network(
+                              "${AppEndpoint.BASE_URL}${coupon.imageSource}",
+                              fit: BoxFit.fill,
                             ),
                           ),
-                        ))
-                      ],
+                          Expanded(
+                              child: Container(
+                            padding: EdgeInsets.only(top: 5, left: 10),
+                            child: Container(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    coupon.name,
+                                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+                                  ),
+                                  SizedBox(height: 10),
+                                  Text("HSD: " + DateFormat("dd/MM/yyyy").format(coupon.expiresAt),
+                                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.primary))
+                                ],
+                              ),
+                            ),
+                          ))
+                        ],
+                      ),
                     ),
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CouponDetail(
-                            name: snapshot.data.coupons[index].name,
-                            description: snapshot.data.coupons[index].description,
-                            image: snapshot.data.coupons[index].imageSource,
-                          ),
-                        ));
-                  },
-                );
+                    onTap: () {
+                      Navigator.pushNamed(context, Routers.Coupon_Detail, arguments: coupon);
+                    });
               },
             ),
           );

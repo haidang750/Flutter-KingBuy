@@ -19,13 +19,7 @@ class SplashScreenState extends State<SplashScreen> with ResponsiveWidget {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       splashScreenViewModel.initApp(context);
     });
-    Timer(
-        Duration(seconds: 5),
-        () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => NavigationScreen(),
-            )));
+    Timer(Duration(seconds: 5), () => Navigator.pushNamed(context, Routers.Navigation));
   }
 
   @override

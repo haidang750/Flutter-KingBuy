@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/ProfileScreens/Order/Order.dart';
 import 'package:projectui/src/presentation/base/base.dart';
+import 'package:projectui/src/presentation/presentation.dart';
 import 'package:projectui/src/presentation/widgets/MyListView.dart';
 import 'package:projectui/src/presentation/widgets/ShowMoney.dart';
 import 'package:projectui/src/resource/model/OrderHistoryModel.dart';
@@ -93,13 +94,7 @@ class ListOrderState extends State<ListOrder> with ResponsiveWidget {
                 ],
               )),
           onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => OrderDetail(
-                    order: order,
-                  ),
-                ));
+            Navigator.pushNamed(context, Routers.Order_Detail, arguments: order);
           },
         ),
         Opacity(

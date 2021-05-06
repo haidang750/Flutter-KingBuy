@@ -2,13 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/presentation.dart';
+import 'package:projectui/src/resource/model/CouponModel.dart';
 
 class CouponDetail extends StatefulWidget {
-  CouponDetail({this.name, this.description, this.image});
+  CouponDetail({this.coupon});
 
-  String name;
-  String description;
-  String image;
+  Coupon coupon;
 
   @override
   CouponDetailState createState() => CouponDetailState();
@@ -32,13 +31,13 @@ class CouponDetailState extends State<CouponDetail> with ResponsiveWidget {
           Container(
             height: 240,
             padding: EdgeInsets.fromLTRB(20, 10, 5, 0),
-            child: Image.network("https://kingbuy.vn${widget.image}", fit: BoxFit.fill),
+            child: Image.network("${AppEndpoint.BASE_URL}${widget.coupon.imageSource}", fit: BoxFit.fill),
           ),
           SizedBox(height: 15),
           Container(
             padding: EdgeInsets.only(left: 20, right: 10),
             child: Text(
-              widget.name,
+              widget.coupon.name,
               style: TextStyle(fontSize: 17, color: AppColors.primary, fontWeight: FontWeight.w700, height: 1.3),
             ),
           ),
@@ -46,7 +45,7 @@ class CouponDetailState extends State<CouponDetail> with ResponsiveWidget {
           Container(
             padding: EdgeInsets.only(left: 20, right: 10),
             child: Text(
-              widget.description,
+              widget.coupon.description,
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w400, height: 1.3),
             ),
           ),

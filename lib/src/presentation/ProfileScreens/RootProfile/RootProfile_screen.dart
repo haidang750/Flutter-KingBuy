@@ -212,93 +212,53 @@ class RootProfileScreenState extends State<RootProfileScreen> with ResponsiveWid
     switch (id) {
       case 1:
         if (await AppUtils.checkLogin()) {
-          await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => DetailProfile(),
-              ));
+          await Navigator.pushNamed(context, Routers.Detail_Profile);
         } else {
           AppUtils.myShowDialog(context, -1, "");
         }
         break;
       case 2:
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ListPromotion(),
-            ));
+        Navigator.pushNamed(context, Routers.List_Promotion);
         break;
       case 3:
         if (await AppUtils.checkLogin()) {
-          await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ListAddress(),
-              ));
+          await Navigator.pushNamed(context, Routers.List_Address);
         } else {
           AppUtils.myShowDialog(context, -1, "");
         }
         break;
       case 4:
         if (await AppUtils.checkLogin()) {
-          await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ListCoupons(),
-              ));
+          await Navigator.pushNamed(context, Routers.List_Coupons);
         } else {
           AppUtils.myShowDialog(context, -1, "");
         }
         break;
       case 5:
         if (await AppUtils.checkLogin()) {
-          await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => OrderHistory(),
-              ));
+          await Navigator.pushNamed(context, Routers.Order_History);
         } else {
           AppUtils.myShowDialog(context, -1, "");
         }
         break;
       case 6:
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ViewedProducts(),
-            ));
+        Navigator.pushNamed(context, Routers.Viewed_Products);
         break;
       case 7:
         if (await AppUtils.checkLogin()) {
-          await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChangePassword(),
-              ));
+          await Navigator.pushNamed(context, Routers.Change_Password);
         } else {
           AppUtils.myShowDialog(context, -1, "");
         }
         break;
       case 8:
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CommitmentScreen(),
-            ));
+        Navigator.pushNamed(context, Routers.Commitment);
         break;
       case 9:
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ContactTypes(),
-            ));
+        Navigator.pushNamed(context, Routers.Contact_Types);
         break;
       case 10:
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TermsOfUse(),
-            ));
+        Navigator.pushNamed(context, Routers.Term_Of_Use);
         break;
     }
   }
@@ -314,14 +274,10 @@ class RootProfileScreenState extends State<RootProfileScreen> with ResponsiveWid
 
         // Xóa dữ liệu Notification khi đăng xuất
         Provider.of<NotificationModel>(context, listen: false).setCountNotification(null);
-        await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => NavigationScreen(),
-            ));
+        await Navigator.pushNamed(context, Routers.Navigation);
       }
     } else {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+      Navigator.pushNamed(context, Routers.Login);
     }
   }
 
