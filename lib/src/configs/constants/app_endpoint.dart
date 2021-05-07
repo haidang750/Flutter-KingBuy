@@ -42,6 +42,8 @@ class AppEndpoint {
   static const String RATING_INFO_BY_PRODUCT = "/api/ratingInfoByProduct";
   static const String USER_RATING_PRODUCT = "/api/userRatingProduct";
   static const String GET_REVIEW_BY_PRODUCT = "/api/getReviewByProduct";
+  static const String GET_PRODUCT_QUESTIONS = "/api/getProductQuestions";
+  static const String REQUEST_ANSWER_QUESTION = "/api/requestAnswerQuestion";
   static const String PURCHASED_TOGETHER_PRODUCTS = "/api/purchasedTogetherProducts";
   static const String RELATED_PRODUCT = "/api/relatedProduct";
   static const String GET_PRODUCTS_BY_IDS = "/api/getProductsByIds";

@@ -520,6 +520,7 @@ class CategoryDetailState extends State<CategoryDetail> with ResponsiveWidget {
         itemCount: 2,
         itemBuilder: (context, index) => BorderTextField(
           textPaddingLeft: 5,
+          transformText: -2,
           borderColor: AppColors.borderTextField,
           borderRadius: 8,
           textController: index == 0 ? priceFromController : priceToController,

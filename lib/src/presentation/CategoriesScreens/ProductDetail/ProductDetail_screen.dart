@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/CategoriesScreens/ProductDetail/ProductDetail_viewmodel.dart';
@@ -14,6 +13,7 @@ import 'package:projectui/src/presentation/widgets/ShowMoney.dart';
 import 'package:projectui/src/resource/model/CommentModel.dart';
 import 'package:projectui/src/resource/model/DetailProductModel.dart';
 import 'package:projectui/src/resource/model/ListProductsModel.dart';
+import 'package:projectui/src/resource/model/ProductQuestionModel.dart';
 import 'package:projectui/src/resource/model/ViewedProductLocalStorage.dart';
 import 'package:projectui/src/utils/app_utils.dart';
 import 'package:provider/provider.dart';
@@ -21,9 +21,10 @@ import 'package:rxdart/rxdart.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import '../Installment/Installment_screen.dart';
 import '../WritingComment/WritingComment_screen.dart';
+import 'package:toast/toast.dart';
 
 class ProductDetail extends StatefulWidget {
   ProductDetail({Key key, this.productId, this.productVideoLink}) : super(key: key);
@@ -34,7 +35,7 @@ class ProductDetail extends StatefulWidget {
   ProductDetailState createState() => ProductDetailState();
 }
 
-class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
+class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, TickerProviderStateMixin {
   final productDetailViewModel = ProductDetailViewModel();
   final subImageProductSubject = BehaviorSubject<List<dynamic>>(); // list ảnh phụ
   final currentSubImageSubject = BehaviorSubject<int>();
@@ -50,6 +51,9 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
   bool isLogin; // biến kiểm tra xem user đã login chưa để quyết định cách show phần Sản phẩm đã xem
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   Product product;
+  final productQuestionController = TextEditingController();
+  final reloadQuestionSubject = BehaviorSubject<bool>();
+  int productStatus;
 
   @override
   void initState() {
@@ -57,6 +61,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
     productDetailViewModel.getSingleProduct(widget.productId);
     productDetailViewModel.ratingInfoByProduct(widget.productId);
     productDetailViewModel.getReviewByProduct(widget.productId);
+    getProductQuestions();
     productDetailViewModel.purchasedTogetherProducts(widget.productId);
     productDetailViewModel.getRelatedProducts(widget.productId, 0);
     currentSubImageSubject.sink.add(0);
@@ -65,10 +70,15 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
     if (widget.productVideoLink != null) {
       youtubePlayerController = YoutubePlayerController(
         initialVideoId: YoutubePlayer.convertUrlToId(widget.productVideoLink),
-        flags: YoutubePlayerFlags(mute: false, autoPlay: false, disableDragSeek: true, loop: false, enableCaption: false),
+        flags: YoutubePlayerFlags(mute: false,
+            autoPlay: false,
+            disableDragSeek: true,
+            loop: false,
+            enableCaption: false),
       );
     }
     showFullBrandInfoSubject.sink.add(false);
+    reloadQuestionSubject.sink.add(false);
     showFullPurchasedTogetherProductSubject.sink.add(false);
     countCheckPurchasedTogetherProductSubject.sink.add(0);
     countRelatedProductLoadedSubject.sink.add(0);
@@ -78,9 +88,20 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
     });
   }
 
+  getProductQuestions() {
+    productDetailViewModel.getProductQuestions(widget.productId);
+  }
+
   checkLogin() async {
+    List<int> idViewedProducts = Provider
+        .of<ViewedProductLocalStorage>(context, listen: false)
+        .idViewedProducts;
     isLogin = await AppUtils.checkLogin();
-    if (isLogin) productDetailViewModel.getViewedProducts();
+
+    if (isLogin)
+      productDetailViewModel.getViewedProducts();
+    else
+      productDetailViewModel.getViewedProductsLocal(idViewedProducts);
   }
 
   @override
@@ -96,19 +117,47 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
     showFullPurchasedTogetherProductSubject.close();
     countCheckPurchasedTogetherProductSubject.close();
     countRelatedProductLoadedSubject.close();
+    reloadQuestionSubject.close();
   }
 
   @override
   Widget build(BuildContext context) {
     return BaseWidget(
         viewModel: productDetailViewModel,
-        builder: (context, viewModel, child) => Scaffold(
-            key: scaffoldKey,
-            appBar: AppBar(
-              titleSpacing: 0,
-              title: Text("Chi tiết sản phẩm"),
-            ),
-            body: buildUi(context: context)));
+        builder: (context, viewModel, child) => Scaffold(key: scaffoldKey, appBar: buildAppBar(), body: buildUi(context: context)));
+  }
+
+  Widget buildAppBar() {
+    return AppBar(
+      actions: [
+        Padding(
+            padding: EdgeInsets.fromLTRB(0, 12, 15, 10),
+            child: Row(
+              children: [
+                GestureDetector(
+                  child: Image.asset(AppImages.icSearchWhite, height: 26, width: 26),
+                  onTap: () {
+                    print("handleSearch");
+                  },
+                ),
+                SizedBox(width: 10),
+                GestureDetector(
+                  child: Image.asset(AppImages.icHome, height: 28, width: 28, color: AppColors.white),
+                  onTap: () {
+                    Navigator.pushNamed(context, Routers.Navigation);
+                  },
+                ),
+                SizedBox(width: 10),
+                GestureDetector(
+                  child: Image.asset(AppImages.icShoppingCart, height: 28, width: 28, color: AppColors.white),
+                  onTap: () {
+                    Navigator.pushNamed(context, Routers.Cart);
+                  },
+                ),
+              ],
+            ))
+      ],
+    );
   }
 
   Widget buildScreen() {
@@ -145,6 +194,8 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
                   buildBrandInfoContainer(product.brandInfo),
                   buildLineSpacing(),
                   buildProductRatingAndComments(product.id),
+                  buildLineSpacing(),
+                  buildProductQuestions(),
                   buildLineSpacing(),
                   buildPurchasedTogetherProducts(product.id),
                   buildLineSpacing(),
@@ -210,14 +261,18 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
                   carouselController: carouselController,
                   options: CarouselOptions(
                     initialPage: 0,
-                    height: MediaQuery.of(context).size.height * 0.5,
+                    height: MediaQuery
+                        .of(context)
+                        .size
+                        .height * 0.5,
                     enlargeCenterPage: true,
                     viewportFraction: 1,
                     onPageChanged: (index, reason) => currentSubImageSubject.sink.add(index),
                   ),
-                  itemBuilder: (context, index, realIndex) => MyNetworkImage(
-                    url: "${AppEndpoint.BASE_URL}${snapshot.data[index]}",
-                  ),
+                  itemBuilder: (context, index, realIndex) =>
+                      MyNetworkImage(
+                        url: "${AppEndpoint.BASE_URL}${snapshot.data[index]}",
+                      ),
                 );
               } else {
                 return MyLoading();
@@ -237,26 +292,28 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
                       physics: BouncingScrollPhysics(),
                       scrollDirection: Axis.horizontal,
                       itemCount: snapshot.data.length,
-                      itemBuilder: (context, index) => Row(
+                      itemBuilder: (context, index) =>
+                          Row(
                             children: [
                               GestureDetector(
                                 child: StreamBuilder(
                                   stream: currentSubImageSubject.stream,
-                                  builder: (context, snapshot2) => Container(
-                                      height: 90,
-                                      width: 90,
-                                      decoration: BoxDecoration(
-                                          border: index == snapshot2.data
-                                              ? Border.all(width: 2, color: Colors.blue)
-                                              : Border.all(width: 0, color: Colors.white),
-                                          borderRadius: BorderRadius.all(Radius.circular(4))),
-                                      child: Container(
-                                        clipBehavior: Clip.antiAlias,
-                                        decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(4))),
-                                        child: MyNetworkImage(
-                                          url: "${AppEndpoint.BASE_URL}${snapshot.data[index]}",
-                                        ),
-                                      )),
+                                  builder: (context, snapshot2) =>
+                                      Container(
+                                          height: 90,
+                                          width: 90,
+                                          decoration: BoxDecoration(
+                                              border: index == snapshot2.data
+                                                  ? Border.all(width: 2, color: Colors.blue)
+                                                  : Border.all(width: 0, color: Colors.white),
+                                              borderRadius: BorderRadius.all(Radius.circular(4))),
+                                          child: Container(
+                                            clipBehavior: Clip.antiAlias,
+                                            decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(4))),
+                                            child: MyNetworkImage(
+                                              url: "${AppEndpoint.BASE_URL}${snapshot.data[index]}",
+                                            ),
+                                          )),
                                 ),
                                 onTap: () {
                                   carouselController.jumpToPage(index);
@@ -275,43 +332,45 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
           // build product colors
           colors.length > 0
               ? Container(
-                  height: 43,
-                  alignment: Alignment.centerLeft,
-                  child: ListView.builder(
-                      shrinkWrap: true,
-                      physics: BouncingScrollPhysics(),
-                      scrollDirection: Axis.horizontal,
-                      itemCount: colors.length,
-                      itemBuilder: (context, index) => Row(
-                            children: [
-                              GestureDetector(
-                                child: StreamBuilder(
-                                    stream: currentColorProductSubject.stream,
-                                    builder: (context, snapshot2) => Container(
-                                          height: 43,
-                                          width: 95,
-                                          alignment: Alignment.center,
-                                          decoration: BoxDecoration(
-                                              color: Colors.grey.withOpacity(0.5),
-                                              border: index == snapshot2.data
-                                                  ? Border.all(width: 2, color: Colors.blue)
-                                                  : Border.all(width: 0, color: Colors.white),
-                                              borderRadius: BorderRadius.all(Radius.circular(4))),
-                                          child: Text(
-                                            colors[index]["name"],
-                                            style: TextStyle(fontSize: 14),
-                                          ),
-                                        )),
-                                onTap: () {
-                                  currentColorProductSubject.sink.add(index);
-                                  subImageProductSubject.sink.add(colors[index]["image_source"]);
-                                  carouselController.jumpToPage(0);
-                                },
-                              ),
-                              SizedBox(width: 5)
-                            ],
-                          )),
-                )
+            height: 43,
+            alignment: Alignment.centerLeft,
+            child: ListView.builder(
+                shrinkWrap: true,
+                physics: BouncingScrollPhysics(),
+                scrollDirection: Axis.horizontal,
+                itemCount: colors.length,
+                itemBuilder: (context, index) =>
+                    Row(
+                      children: [
+                        GestureDetector(
+                          child: StreamBuilder(
+                              stream: currentColorProductSubject.stream,
+                              builder: (context, snapshot2) =>
+                                  Container(
+                                    height: 43,
+                                    width: 95,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                        color: Colors.grey.withOpacity(0.5),
+                                        border: index == snapshot2.data
+                                            ? Border.all(width: 2, color: Colors.blue)
+                                            : Border.all(width: 0, color: Colors.white),
+                                        borderRadius: BorderRadius.all(Radius.circular(4))),
+                                    child: Text(
+                                      colors[index]["name"],
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                  )),
+                          onTap: () {
+                            currentColorProductSubject.sink.add(index);
+                            subImageProductSubject.sink.add(colors[index]["image_source"]);
+                            carouselController.jumpToPage(0);
+                          },
+                        ),
+                        SizedBox(width: 5)
+                      ],
+                    )),
+          )
               : Container()
         ],
       ),
@@ -406,6 +465,8 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
   }
 
   Widget buildProductStatus(int goodsStatus) {
+    productStatus = goodsStatus;
+
     return Container(
         height: 40,
         alignment: Alignment.centerLeft,
@@ -441,7 +502,10 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
           child: GestureDetector(
               child: Container(
                 height: 40,
-                width: MediaQuery.of(context).size.width * 0.5,
+                width: MediaQuery
+                    .of(context)
+                    .size
+                    .width * 0.5,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(color: Colors.orange.shade700, borderRadius: BorderRadius.all(Radius.circular(4))),
                 child: Center(
@@ -477,7 +541,8 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
               shrinkWrap: true,
               physics: BouncingScrollPhysics(),
               itemCount: gifts.length,
-              itemBuilder: (context, index) => Column(
+              itemBuilder: (context, index) =>
+                  Column(
                     children: [
                       Container(
                         child: Row(
@@ -529,46 +594,47 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
     return Column(
       children: [
         // build Title
-        buildTitleContainer("Hệ thống KingBuy", 50, Alignment.centerLeft),
+        buildTitleContainer("Hệ thống KingBuy", 50, Alignment.centerLeft, false),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 10),
           child: ListView.builder(
             shrinkWrap: true,
             physics: BouncingScrollPhysics(),
             itemCount: shopAddress.length,
-            itemBuilder: (context, index) => Column(
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            itemBuilder: (context, index) =>
+                Column(
                   children: [
-                    Image.asset(AppImages.icPin, height: 24, width: 24, color: AppColors.primary),
-                    SizedBox(width: 5),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("KingBuy", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                        SizedBox(height: 5),
-                        Text(shopAddress[index].address, style: TextStyle(fontSize: 14)),
-                        SizedBox(height: 5),
-                        Row(
+                        Image.asset(AppImages.icPin, height: 24, width: 24, color: AppColors.primary),
+                        SizedBox(width: 5),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Image.asset(AppImages.icPhone, height: 14, width: 14, color: Colors.blue),
-                            SizedBox(width: 5),
-                            GestureDetector(
-                              child: Text(shopAddress[index].hotLine,
-                                  style: TextStyle(fontSize: 14, color: Colors.blue, decoration: TextDecoration.underline)),
-                              onTap: () => AppUtils.handlePhone(context, shopAddress[index].hotLine),
-                            )
+                            Text("KingBuy", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                            SizedBox(height: 5),
+                            Text(shopAddress[index].address, style: TextStyle(fontSize: 14)),
+                            SizedBox(height: 5),
+                            Row(
+                              children: [
+                                Image.asset(AppImages.icPhone, height: 14, width: 14, color: Colors.blue),
+                                SizedBox(width: 5),
+                                GestureDetector(
+                                  child: Text(shopAddress[index].hotLine,
+                                      style: TextStyle(fontSize: 14, color: Colors.blue, decoration: TextDecoration.underline)),
+                                  onTap: () => AppUtils.handlePhone(context, shopAddress[index].hotLine),
+                                )
+                              ],
+                            ),
                           ],
-                        ),
+                        )
                       ],
-                    )
+                    ),
+                    SizedBox(height: 10)
                   ],
                 ),
-                SizedBox(height: 10)
-              ],
-            ),
           ),
         ),
         SizedBox(height: 5)
@@ -587,12 +653,15 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
                 Stack(
                   children: [
                     Container(
-                      height: snapshot.data ? null : MediaQuery.of(context).size.height * 0.5,
+                      height: snapshot.data ? null : MediaQuery
+                          .of(context)
+                          .size
+                          .height * 0.5,
                       child: ListView(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
                         children: [
-                          buildTitleContainer("Thông tin sản phẩm", 32.5, Alignment.bottomLeft),
+                          buildTitleContainer("Thông tin sản phẩm", 50, Alignment.centerLeft, false),
                           Html(data: productInfo, padding: EdgeInsets.symmetric(horizontal: 10)),
                         ],
                       ),
@@ -600,29 +669,35 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
                     snapshot.data
                         ? Container()
                         : Container(
-                            height: snapshot.data ? null : MediaQuery.of(context).size.height * 0.5,
-                            alignment: Alignment.bottomCenter,
-                            child: Container(
-                              height: snapshot.data ? null : MediaQuery.of(context).size.height * 0.25,
-                              decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                begin: Alignment.bottomCenter,
-                                end: Alignment.topCenter,
-                                stops: [
-                                  0.1,
-                                  0.35,
-                                  0.6,
-                                  0.85,
-                                ],
-                                colors: [
-                                  Colors.white.withOpacity(0.75),
-                                  Colors.white.withOpacity(0.5),
-                                  Colors.white.withOpacity(0.3),
-                                  Colors.white.withOpacity(0.1),
-                                ],
-                              )),
-                            ),
-                          )
+                      height: snapshot.data ? null : MediaQuery
+                          .of(context)
+                          .size
+                          .height * 0.5,
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        height: snapshot.data ? null : MediaQuery
+                            .of(context)
+                            .size
+                            .height * 0.25,
+                        decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              stops: [
+                                0.1,
+                                0.35,
+                                0.6,
+                                0.85,
+                              ],
+                              colors: [
+                                Colors.white.withOpacity(0.75),
+                                Colors.white.withOpacity(0.5),
+                                Colors.white.withOpacity(0.3),
+                                Colors.white.withOpacity(0.1),
+                              ],
+                            )),
+                      ),
+                    )
                   ],
                 ),
                 Container(
@@ -655,7 +730,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
   Widget buildProductSpecificationsContainer(String productSpecifications) {
     return Column(
       children: [
-        buildTitleContainer("Thông số kỹ thuật", 32.5, Alignment.bottomLeft),
+        buildTitleContainer("Thông số kỹ thuật", 32.5, Alignment.bottomLeft, false),
         productSpecifications != null ? Html(padding: EdgeInsets.fromLTRB(10, 5, 10, 0), data: productSpecifications) : Container(),
         SizedBox(height: 15)
       ],
@@ -666,15 +741,15 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
   Widget buildProductVideoContainer(String productVideoLink) {
     return Column(
       children: [
-        buildTitleContainer("Video", 50, Alignment.centerLeft),
+        buildTitleContainer("Video", 50, Alignment.centerLeft, false),
         Container(
             padding: EdgeInsets.symmetric(horizontal: 10),
             alignment: Alignment.centerLeft,
             child: productVideoLink == null
                 ? Container()
                 : Container(
-                    child: YoutubePlayer(controller: youtubePlayerController, showVideoProgressIndicator: true),
-                  )),
+              child: YoutubePlayer(controller: youtubePlayerController, showVideoProgressIndicator: true),
+            )),
         productVideoLink == null ? Container() : SizedBox(height: 15)
       ],
     );
@@ -689,38 +764,41 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
             return Column(
               children: [
                 Container(
-                  height: brandInfo != null ? (snapshot.data ? null : MediaQuery.of(context).size.height * 0.25) : null,
+                  height: brandInfo != null ? (snapshot.data ? null : MediaQuery
+                      .of(context)
+                      .size
+                      .height * 0.25) : null,
                   child: ListView(
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
                     children: [
-                      buildTitleContainer("Thông tin thương hiệu", 32.5, Alignment.bottomLeft),
+                      buildTitleContainer("Thông tin thương hiệu", 32.5, Alignment.bottomLeft, false),
                       brandInfo != null ? Html(data: brandInfo, padding: EdgeInsets.symmetric(horizontal: 10)) : Container(),
                     ],
                   ),
                 ),
                 brandInfo != null
                     ? Container(
-                        height: 40,
-                        color: Colors.white,
-                        alignment: Alignment.center,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(snapshot.data ? "Rút gọn" : "Xem tất cả", style: TextStyle(fontSize: 14, color: Colors.blue)),
-                              SizedBox(width: 5),
-                              Icon(snapshot.data ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 18, color: Colors.blue)
-                            ],
-                          ),
-                          onTap: () {
-                            showFullBrandInfoSubject.sink.add(!showFullBrandInfoSubject.stream.value);
-                          },
-                        ))
+                    height: 40,
+                    color: Colors.white,
+                    alignment: Alignment.center,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(snapshot.data ? "Rút gọn" : "Xem tất cả", style: TextStyle(fontSize: 14, color: Colors.blue)),
+                          SizedBox(width: 5),
+                          Icon(snapshot.data ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 18, color: Colors.blue)
+                        ],
+                      ),
+                      onTap: () {
+                        showFullBrandInfoSubject.sink.add(!showFullBrandInfoSubject.stream.value);
+                      },
+                    ))
                     : Container(
-                        height: 15,
-                      )
+                  height: 15,
+                )
               ],
             );
           } else {
@@ -733,7 +811,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
   Widget buildProductRatingAndComments(int productId) {
     return Column(
       children: [
-        buildTitleContainer("Đánh giá & Bình luận", 50, Alignment.centerLeft),
+        buildTitleContainer("Đánh giá & Bình luận", 50, Alignment.centerLeft, false),
         Container(
             padding: EdgeInsets.symmetric(horizontal: 10),
             child: Column(
@@ -746,7 +824,10 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
                         children: [
                           Container(
                             height: 100,
-                            width: MediaQuery.of(context).size.width * 0.4,
+                            width: MediaQuery
+                                .of(context)
+                                .size
+                                .width * 0.4,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -763,60 +844,66 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
                           ),
                           Expanded(
                               child: Container(
-                            height: 100,
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              reverse: true,
-                              physics: BouncingScrollPhysics(),
-                              itemCount: 5,
-                              itemBuilder: (context, index) {
-                                int oneRatingCount = index == 0
-                                    ? snapshot.data.oneStarCount
-                                    : (index == 1
+                                height: 100,
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  reverse: true,
+                                  physics: BouncingScrollPhysics(),
+                                  itemCount: 5,
+                                  itemBuilder: (context, index) {
+                                    int oneRatingCount = index == 0
+                                        ? snapshot.data.oneStarCount
+                                        : (index == 1
                                         ? snapshot.data.twoStarCount
                                         : (index == 2
-                                            ? snapshot.data.threeStarCount
-                                            : (index == 3 ? snapshot.data.fourStarCount : snapshot.data.fiveStarCount)));
+                                        ? snapshot.data.threeStarCount
+                                        : (index == 3 ? snapshot.data.fourStarCount : snapshot.data.fiveStarCount)));
 
-                                return Column(
-                                  children: [
-                                    Row(
+                                    return Column(
                                       children: [
-                                        Text((index + 1).toString(), style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
-                                        SizedBox(width: 3),
-                                        Icon(Icons.star_rounded, size: 13, color: Colors.grey.shade600),
-                                        SizedBox(width: 3),
-                                        Stack(
+                                        Row(
                                           children: [
-                                            Container(
-                                              height: 13,
-                                              width: MediaQuery.of(context).size.width * 0.261,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.grey.shade400, borderRadius: BorderRadius.all(Radius.circular(6.5))),
-                                            ),
-                                            Container(
-                                              height: 13,
-                                              width: snapshot.data.ratingCount != 0
-                                                  ? MediaQuery.of(context).size.width *
+                                            Text((index + 1).toString(), style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
+                                            SizedBox(width: 3),
+                                            Icon(Icons.star_rounded, size: 13, color: Colors.grey.shade600),
+                                            SizedBox(width: 3),
+                                            Stack(
+                                              children: [
+                                                Container(
+                                                  height: 13,
+                                                  width: MediaQuery
+                                                      .of(context)
+                                                      .size
+                                                      .width * 0.261,
+                                                  decoration: BoxDecoration(
+                                                      color: Colors.grey.shade400, borderRadius: BorderRadius.all(Radius.circular(6.5))),
+                                                ),
+                                                Container(
+                                                  height: 13,
+                                                  width: snapshot.data.ratingCount != 0
+                                                      ? MediaQuery
+                                                      .of(context)
+                                                      .size
+                                                      .width *
                                                       0.261 *
                                                       (oneRatingCount * 1.0 / snapshot.data.ratingCount)
-                                                  : 0,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.yellow.shade700, borderRadius: BorderRadius.all(Radius.circular(6.5))),
+                                                      : 0,
+                                                  decoration: BoxDecoration(
+                                                      color: Colors.yellow.shade700, borderRadius: BorderRadius.all(Radius.circular(6.5))),
+                                                ),
+                                              ],
                                             ),
+                                            SizedBox(width: 7),
+                                            Text("${oneRatingCount.toString()} đánh giá",
+                                                style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
                                           ],
                                         ),
-                                        SizedBox(width: 7),
-                                        Text("${oneRatingCount.toString()} đánh giá",
-                                            style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
+                                        SizedBox(height: 5)
                                       ],
-                                    ),
-                                    SizedBox(height: 5)
-                                  ],
-                                );
-                              },
-                            ),
-                          ))
+                                    );
+                                  },
+                                ),
+                              ))
                         ],
                       );
                     } else {
@@ -836,7 +923,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
                       if (await AppUtils.checkLogin()) {
                         Navigator.pushNamed(context, Routers.Writing_Comment);
                       } else {
-                        AppUtils.myShowDialog(context, widget.productId, widget.productVideoLink);
+                        AppUtils.myShowDialog(scaffoldKey.currentContext, widget.productId, widget.productVideoLink);
                       }
                     }),
                 SizedBox(height: 15),
@@ -857,47 +944,49 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
                                 SizedBox(height: 15),
                                 Container(
                                     child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 20,
-                                      backgroundImage: NetworkImage(
-                                        "${AppEndpoint.BASE_URL}${comment.avatarSource}",
-                                      ),
-                                    ),
-                                    SizedBox(width: 5),
-                                    Expanded(
-                                        child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.start,
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Row(
-                                          children: [
-                                            Text("${comment.name}", style: TextStyle(fontSize: 12)),
-                                            SizedBox(width: 10),
-                                            comment.isBuy == 1 ? Image.asset(AppImages.icSuccess, height: 12, width: 12) : Container(),
-                                            comment.isBuy == 1 ? SizedBox(width: 3) : Container(),
-                                            comment.isBuy == 1
-                                                ? Text("Đã mua hàng ở KingBuy", style: TextStyle(fontSize: 12, color: Colors.green))
-                                                : Container(),
-                                            Spacer(),
-                                            comment.phoneNumber != ""
-                                                ? Text(comment.phoneNumber.substring(0, 6) + "****",
+                                        CircleAvatar(
+                                          radius: 20,
+                                          backgroundImage: NetworkImage(
+                                            "${AppEndpoint.BASE_URL}${comment.avatarSource}",
+                                          ),
+                                        ),
+                                        SizedBox(width: 5),
+                                        Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Text("${comment.name}", style: TextStyle(fontSize: 12)),
+                                                    SizedBox(width: 10),
+                                                    comment.isBuy == 1
+                                                        ? Image.asset(AppImages.icSuccess, height: 12, width: 12)
+                                                        : Container(),
+                                                    comment.isBuy == 1 ? SizedBox(width: 3) : Container(),
+                                                    comment.isBuy == 1
+                                                        ? Text("Đã mua hàng ở KingBuy", style: TextStyle(fontSize: 12, color: Colors.green))
+                                                        : Container(),
+                                                    Spacer(),
+                                                    comment.phoneNumber != ""
+                                                        ? Text(comment.phoneNumber.substring(0, 6) + "****",
+                                                        style: TextStyle(fontSize: 12, color: Colors.grey.shade500))
+                                                        : Container()
+                                                  ],
+                                                ),
+                                                Container(height: 18, child: ShowRating(star: comment.star, starSize: 12)),
+                                                Container(
+                                                  child: Text(comment.comment, style: TextStyle(fontSize: 14)),
+                                                ),
+                                                SizedBox(height: 10),
+                                                Text(DateFormat("dd-MM-yyyy").format(comment.createdAt),
                                                     style: TextStyle(fontSize: 12, color: Colors.grey.shade500))
-                                                : Container()
-                                          ],
-                                        ),
-                                        Container(height: 18, child: ShowRating(star: comment.star, starSize: 12)),
-                                        Container(
-                                          child: Text(comment.comment, style: TextStyle(fontSize: 14)),
-                                        ),
-                                        SizedBox(height: 10),
-                                        Text(DateFormat("dd-MM-yyyy").format(comment.createdAt),
-                                            style: TextStyle(fontSize: 12, color: Colors.grey.shade500))
+                                              ],
+                                            ))
                                       ],
-                                    ))
-                                  ],
-                                )),
+                                    )),
                                 SizedBox(height: 10),
                               ],
                             );
@@ -933,199 +1022,344 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
     );
   }
 
+  // build phần Hỏi đáp về sản phẩm
+  Widget buildProductQuestions() {
+    return Column(
+      children: [
+        buildTitleContainer("Hỏi đáp về sản phẩm", 50, Alignment.centerLeft, true),
+        Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: Column(
+              children: [
+                StreamBuilder(
+                  stream: Rx.combineLatest2(
+                      productDetailViewModel.productQuestionsStream, reloadQuestionSubject.stream, (stream1, stream2) => stream1),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return snapshot.data.length > 0
+                          ? ListView.builder(
+                          shrinkWrap: true,
+                          physics: BouncingScrollPhysics(),
+                          itemCount: snapshot.data.length,
+                          itemBuilder: (context, index) {
+                            Question productQuestion = snapshot.data[index];
+
+                            return Container(
+                                height: 50,
+                                color: AppColors.grey2,
+                                padding: EdgeInsets.symmetric(horizontal: 5),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 16,
+                                      child: Image.asset(AppImages.icUser2),
+                                      backgroundColor: Colors.white,
+                                    ),
+                                    SizedBox(width: 10),
+                                    Container(
+                                        width: MediaQuery
+                                            .of(context)
+                                            .size
+                                            .width * 0.8,
+                                        child: Text(productQuestion.content, style: TextStyle(fontSize: 14)))
+                                  ],
+                                ));
+                          })
+                          : Container(
+                          height: 20,
+                          alignment: Alignment.center,
+                          child: Text("Chưa có câu hỏi nào!", style: TextStyle(fontSize: 14, color: Colors.red)));
+                    } else {
+                      return MyLoading();
+                    }
+                  },
+                ),
+                SizedBox(height: 10),
+                GestureDetector(
+                    child: Container(
+                        height: 30,
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width * 0.7,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(15))),
+                        child: Text("Đặt câu hỏi cho sản phẩm",
+                            style: TextStyle(color: AppColors.buttonContent, fontSize: 14, fontWeight: FontWeight.bold))),
+                    onTap: () async {
+                      if (await AppUtils.checkLogin()) {
+                        showMaterialModalBottomSheet(
+                            context: context,
+                            builder: (context) =>
+                                Container(
+                                    height: 160,
+                                    padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text("Đặt câu hỏi", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                                        SizedBox(height: 10),
+                                        BorderTextField(
+                                          height: 75,
+                                          textController: productQuestionController,
+                                          color: AppColors.white,
+                                          borderColor: AppColors.black.withOpacity(0.5),
+                                          isChangeBorderColor: true,
+                                          borderRadius: 4,
+                                          borderWidth: 0.7,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.normal,
+                                          hintText: "Nội dung",
+                                          hintTextFontSize: 14,
+                                          hintTextFontWeight: FontWeight.normal,
+                                          textPaddingLeft: 5,
+                                          textPaddingRight: 5,
+                                          transformText: -12,
+                                        ),
+                                        SizedBox(height: 10),
+                                        Center(
+                                            child: GestureDetector(
+                                              child: Container(
+                                                  height: 30,
+                                                  width: MediaQuery
+                                                      .of(context)
+                                                      .size
+                                                      .width * 0.7,
+                                                  alignment: Alignment.center,
+                                                  decoration:
+                                                  BoxDecoration(
+                                                      color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(15))),
+                                                  child: Text("Gửi",
+                                                      style: TextStyle(
+                                                          color: AppColors.buttonContent, fontSize: 14, fontWeight: FontWeight.bold))),
+                                              onTap: () async {
+                                                int status = await productDetailViewModel.requestAnswerQuestion(
+                                                    widget.productId, productQuestionController.text);
+                                                if (status == 1) {
+                                                  productQuestionController.clear();
+                                                  Navigator.pop(context);
+                                                  Toast.show("Câu hỏi đã được gửi đi", context, gravity: Toast.CENTER);
+                                                  getProductQuestions();
+                                                  reloadQuestionSubject.sink.add(!reloadQuestionSubject.stream.value);
+                                                } else {
+                                                  Toast.show("Đặt câu hỏi thất bại", context, gravity: Toast.CENTER);
+                                                }
+                                              },
+                                            ))
+                                      ],
+                                    )));
+                      } else {
+                        AppUtils.myShowDialog(context, widget.productId, widget.productVideoLink);
+                      }
+                    }),
+                SizedBox(height: 15)
+              ],
+            ))
+      ],
+    );
+  }
+
   // build phần Sản phẩm mua cùng
   Widget buildPurchasedTogetherProducts(int productId) {
     return Column(
       children: [
-        buildTitleContainer("Sản phẩm mua cùng", 50, Alignment.centerLeft),
+        buildTitleContainer("Sản phẩm mua cùng", 50, Alignment.centerLeft, false),
         Container(
             child: StreamBuilder(
-          stream: productDetailViewModel.purchasedTogetherProductsStream,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              List<bool> checkList = [];
-              for (int i = 0; i < snapshot.data.length; i++) {
-                checkList.add(false);
-              }
-              purchasedTogetherProductSubject.sink.add(checkList);
+              stream: productDetailViewModel.purchasedTogetherProductsStream,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  List<bool> checkList = [];
+                  for (int i = 0; i < snapshot.data.length; i++) {
+                    checkList.add(false);
+                  }
+                  purchasedTogetherProductSubject.sink.add(checkList);
 
-              return snapshot.data.length > 0
-                  ? Column(
-                      children: [
-                        // build Image PurchasedTogetherProducts
-                        Container(
-                            height: 100,
-                            padding: EdgeInsets.symmetric(horizontal: 10),
-                            child: ListView.builder(
-                                shrinkWrap: true,
-                                physics: BouncingScrollPhysics(),
-                                scrollDirection: Axis.horizontal,
-                                itemCount: snapshot.data.length,
-                                itemBuilder: (context, index) {
-                                  Product product = snapshot.data[index];
-
-                                  return Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      MyNetworkImage(url: "${AppEndpoint.BASE_URL}${product.imageSource}", height: 100, width: 100),
-                                      index != snapshot.data.length - 1
-                                          ? Container(height: 90, width: 60, child: Center(child: Icon(Icons.add, size: 34)))
-                                          : Container()
-                                    ],
-                                  );
-                                })),
-                        SizedBox(height: 15),
-                        // build List PurchasedTogetherProducts (name + checkbox)
-                        Container(
+                  return snapshot.data.length > 0
+                      ? Column(
+                    children: [
+                      // build Image PurchasedTogetherProducts
+                      Container(
+                          height: 100,
                           padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: StreamBuilder(
-                            stream: showFullPurchasedTogetherProductSubject.stream,
-                            builder: (context, snapshot2) {
-                              if (snapshot2.hasData) {
-                                return snapshot2.data
-                                    ? Column(
-                                        children: [
-                                          ListView.builder(
-                                            shrinkWrap: true,
-                                            physics: BouncingScrollPhysics(),
-                                            itemCount: snapshot.data.length,
-                                            itemBuilder: (context, index) {
-                                              Product product = snapshot.data[index];
+                          child: ListView.builder(
+                              shrinkWrap: true,
+                              physics: BouncingScrollPhysics(),
+                              scrollDirection: Axis.horizontal,
+                              itemCount: snapshot.data.length,
+                              itemBuilder: (context, index) {
+                                Product product = snapshot.data[index];
 
-                                              return Column(
-                                                children: [
-                                                  StreamBuilder(
-                                                    stream: purchasedTogetherProductSubject.stream,
-                                                    builder: (context, snapshot) {
-                                                      if (snapshot.hasData) {
-                                                        return Row(
+                                return Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    MyNetworkImage(url: "${AppEndpoint.BASE_URL}${product.imageSource}", height: 100, width: 100),
+                                    index != snapshot.data.length - 1
+                                        ? Container(height: 90, width: 60, child: Center(child: Icon(Icons.add, size: 34)))
+                                        : Container()
+                                  ],
+                                );
+                              })),
+                      SizedBox(height: 15),
+                      // build List PurchasedTogetherProducts (name + checkbox)
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: StreamBuilder(
+                          stream: showFullPurchasedTogetherProductSubject.stream,
+                          builder: (context, snapshot2) {
+                            if (snapshot2.hasData) {
+                              return snapshot2.data
+                                  ? Column(
+                                children: [
+                                  ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: BouncingScrollPhysics(),
+                                    itemCount: snapshot.data.length,
+                                    itemBuilder: (context, index) {
+                                      Product product = snapshot.data[index];
+
+                                      return Column(
+                                        children: [
+                                          StreamBuilder(
+                                            stream: purchasedTogetherProductSubject.stream,
+                                            builder: (context, snapshot) {
+                                              if (snapshot.hasData) {
+                                                return Row(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Container(
+                                                        height: 25,
+                                                        width: 18,
+                                                        alignment: Alignment.topLeft,
+                                                        child: Checkbox(
+                                                            value: snapshot.data[index],
+                                                            activeColor: AppColors.primary,
+                                                            onChanged: (value) {
+                                                              snapshot.data[index]
+                                                                  ? countCheckPurchasedTogetherProductSubject.sink.add(
+                                                                  countCheckPurchasedTogetherProductSubject.stream.value - 1)
+                                                                  : countCheckPurchasedTogetherProductSubject.sink.add(
+                                                                  countCheckPurchasedTogetherProductSubject.stream.value + 1);
+                                                              checkList.replaceRange(index, index + 1, [!snapshot.data[index]]);
+                                                              purchasedTogetherProductSubject.sink.add(checkList);
+                                                            })),
+                                                    SizedBox(width: 12),
+                                                    GestureDetector(
+                                                        child: Column(
                                                           crossAxisAlignment: CrossAxisAlignment.start,
                                                           children: [
                                                             Container(
-                                                                height: 25,
-                                                                width: 18,
-                                                                alignment: Alignment.topLeft,
-                                                                child: Checkbox(
-                                                                    value: snapshot.data[index],
-                                                                    activeColor: AppColors.primary,
-                                                                    onChanged: (value) {
-                                                                      snapshot.data[index]
-                                                                          ? countCheckPurchasedTogetherProductSubject.sink.add(
-                                                                              countCheckPurchasedTogetherProductSubject.stream.value - 1)
-                                                                          : countCheckPurchasedTogetherProductSubject.sink.add(
-                                                                              countCheckPurchasedTogetherProductSubject.stream.value + 1);
-                                                                      checkList.replaceRange(index, index + 1, [!snapshot.data[index]]);
-                                                                      purchasedTogetherProductSubject.sink.add(checkList);
-                                                                    })),
-                                                            SizedBox(width: 12),
-                                                            GestureDetector(
-                                                                child: Column(
-                                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                                  children: [
-                                                                    Container(
-                                                                        width: MediaQuery.of(context).size.width - 50,
-                                                                        child: Text(product.name, style: TextStyle(fontSize: 14))),
-                                                                    SizedBox(height: 4),
-                                                                    ShowMoney(
-                                                                        price: product.salePrice,
-                                                                        color: Colors.black,
-                                                                        fontSizeLarge: 14,
-                                                                        fontSizeSmall: 11,
-                                                                        fontWeight: FontWeight.bold,
-                                                                        isLineThrough: false)
-                                                                  ],
-                                                                ),
-                                                                onTap: () {
-                                                                  snapshot.data[index]
-                                                                      ? countCheckPurchasedTogetherProductSubject.sink
-                                                                          .add(countCheckPurchasedTogetherProductSubject.stream.value - 1)
-                                                                      : countCheckPurchasedTogetherProductSubject.sink
-                                                                          .add(countCheckPurchasedTogetherProductSubject.stream.value + 1);
-                                                                  checkList.replaceRange(index, index + 1, [!snapshot.data[index]]);
-                                                                  purchasedTogetherProductSubject.sink.add(checkList);
-                                                                })
+                                                                width: MediaQuery
+                                                                    .of(context)
+                                                                    .size
+                                                                    .width - 50,
+                                                                child: Text(product.name, style: TextStyle(fontSize: 14))),
+                                                            SizedBox(height: 4),
+                                                            ShowMoney(
+                                                                price: product.salePrice,
+                                                                color: Colors.black,
+                                                                fontSizeLarge: 14,
+                                                                fontSizeSmall: 11,
+                                                                fontWeight: FontWeight.bold,
+                                                                isLineThrough: false)
                                                           ],
-                                                        );
-                                                      } else {
-                                                        return MyLoading();
-                                                      }
-                                                    },
-                                                  ),
-                                                  SizedBox(height: 15)
-                                                ],
-                                              );
-                                            },
-                                          ),
-                                          SizedBox(height: 5),
-                                          StreamBuilder(
-                                            stream: countCheckPurchasedTogetherProductSubject.stream,
-                                            builder: (context, snapshot) {
-                                              if (snapshot.hasData) {
-                                                return GestureDetector(
-                                                    child: Container(
-                                                      height: 40,
-                                                      width: MediaQuery.of(context).size.width * 0.8,
-                                                      decoration: BoxDecoration(
-                                                          color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(20))),
-                                                      alignment: Alignment.center,
-                                                      child: Text("Thêm ${snapshot.data} sản phẩm vào giỏ hàng",
-                                                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
-                                                    ),
-                                                    onTap: () {
-                                                      print("Thêm vào giỏ hàng");
-                                                    });
+                                                        ),
+                                                        onTap: () {
+                                                          snapshot.data[index]
+                                                              ? countCheckPurchasedTogetherProductSubject.sink
+                                                              .add(countCheckPurchasedTogetherProductSubject.stream.value - 1)
+                                                              : countCheckPurchasedTogetherProductSubject.sink
+                                                              .add(countCheckPurchasedTogetherProductSubject.stream.value + 1);
+                                                          checkList.replaceRange(index, index + 1, [!snapshot.data[index]]);
+                                                          purchasedTogetherProductSubject.sink.add(checkList);
+                                                        })
+                                                  ],
+                                                );
                                               } else {
                                                 return MyLoading();
                                               }
                                             },
-                                          )
+                                          ),
+                                          SizedBox(height: 15)
                                         ],
-                                      )
-                                    : Container();
+                                      );
+                                    },
+                                  ),
+                                  SizedBox(height: 5),
+                                  StreamBuilder(
+                                    stream: countCheckPurchasedTogetherProductSubject.stream,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData) {
+                                        return GestureDetector(
+                                            child: Container(
+                                              height: 40,
+                                              width: MediaQuery
+                                                  .of(context)
+                                                  .size
+                                                  .width * 0.8,
+                                              decoration: BoxDecoration(
+                                                  color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(20))),
+                                              alignment: Alignment.center,
+                                              child: Text("Thêm ${snapshot.data} sản phẩm vào giỏ hàng",
+                                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+                                            ),
+                                            onTap: () {
+                                              print("Thêm vào giỏ hàng");
+                                            });
+                                      } else {
+                                        return MyLoading();
+                                      }
+                                    },
+                                  )
+                                ],
+                              )
+                                  : Container();
+                            } else {
+                              return MyLoading();
+                            }
+                          },
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Container(
+                          height: 40,
+                          color: Colors.white,
+                          child: StreamBuilder(
+                            stream: showFullPurchasedTogetherProductSubject.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return GestureDetector(
+                                  behavior: HitTestBehavior.translucent,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(snapshot.data ? "Rút gọn" : "Xem tất cả", style: TextStyle(fontSize: 14, color: Colors.blue)),
+                                      SizedBox(width: 5),
+                                      Icon(snapshot.data ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                                          size: 18, color: Colors.blue)
+                                    ],
+                                  ),
+                                  onTap: () {
+                                    showFullPurchasedTogetherProductSubject.sink
+                                        .add(!showFullPurchasedTogetherProductSubject.stream.value);
+                                  },
+                                );
                               } else {
                                 return MyLoading();
                               }
                             },
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Container(
-                            height: 40,
-                            color: Colors.white,
-                            child: StreamBuilder(
-                              stream: showFullPurchasedTogetherProductSubject.stream,
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData) {
-                                  return GestureDetector(
-                                    behavior: HitTestBehavior.translucent,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(snapshot.data ? "Rút gọn" : "Xem tất cả", style: TextStyle(fontSize: 14, color: Colors.blue)),
-                                        SizedBox(width: 5),
-                                        Icon(snapshot.data ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                                            size: 18, color: Colors.blue)
-                                      ],
-                                    ),
-                                    onTap: () {
-                                      showFullPurchasedTogetherProductSubject.sink
-                                          .add(!showFullPurchasedTogetherProductSubject.stream.value);
-                                    },
-                                  );
-                                } else {
-                                  return MyLoading();
-                                }
-                              },
-                            ))
-                      ],
-                    )
-                  : Container();
-            } else {
-              return MyLoading();
-            }
-          },
-        )),
+                          ))
+                    ],
+                  )
+                      : Container();
+                } else {
+                  return MyLoading();
+                }
+              },
+            )),
       ],
     );
   }
@@ -1134,7 +1368,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
   Widget buildRelatedProducts(int productId) {
     return Column(
       children: [
-        buildTitleContainer("Sản phẩm liên quan", 50, Alignment.centerLeft),
+        buildTitleContainer("Sản phẩm liên quan", 50, Alignment.centerLeft, false),
         StreamBuilder(
           stream: Rx.combineLatest2(
               productDetailViewModel.relatedProductStream, countRelatedProductLoadedSubject.stream, (stream1, stream2) => stream1),
@@ -1146,11 +1380,11 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
 
               return snapshot.data.length > 0 || countRelatedProductLoadedSubject.stream.value > 0
                   ? Column(
-                      children: [
-                        Container(height: 370, padding: EdgeInsets.symmetric(horizontal: 10), child: listRelatedProducts()),
-                        SizedBox(height: 15)
-                      ],
-                    )
+                children: [
+                  Container(height: 370, padding: EdgeInsets.symmetric(horizontal: 10), child: listRelatedProducts()),
+                  SizedBox(height: 15)
+                ],
+              )
                   : Container();
             } else {
               return MyLoading();
@@ -1185,33 +1419,29 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
 
   // build phần Sản phẩm đã xem
   buildViewedProducts() {
-    List<int> idViewedProducts = Provider.of<ViewedProductLocalStorage>(context).idViewedProducts;
-
     return Column(
       children: [
-        buildTitleContainer("Sản phẩm đã xem", 50, Alignment.centerLeft),
-        isLogin
-            ? Container(
-                height: 370,
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                child: StreamBuilder(
-                  stream: productDetailViewModel.viewedProductsStream,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        shrinkWrap: true,
-                        physics: BouncingScrollPhysics(),
-                        itemCount: snapshot.data.length,
-                        itemBuilder: (context, index) =>
-                            Container(height: 175 * 2.2, width: 175, child: ShowOneProduct(product: snapshot.data[index])),
-                      );
-                    } else {
-                      return MyLoading();
-                    }
-                  },
-                ))
-            : Container(alignment: Alignment.center, child: Text("Id Viewed Products: $idViewedProducts")),
+        buildTitleContainer("Sản phẩm đã xem", 50, Alignment.centerLeft, false),
+        Container(
+            height: 370,
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            alignment: Alignment.centerLeft,
+            child: StreamBuilder(
+                stream: isLogin ? productDetailViewModel.viewedProductsStream : productDetailViewModel.viewedProductsLocalStream,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      shrinkWrap: true,
+                      physics: BouncingScrollPhysics(),
+                      itemCount: snapshot.data.length,
+                      itemBuilder: (context, index) =>
+                          Container(height: 175 * 2.2, width: 175, child: ShowOneProduct(product: snapshot.data[index])),
+                    );
+                  } else {
+                    return MyLoading();
+                  }
+                })),
         SizedBox(height: 10),
         Container(
           height: 40,
@@ -1228,13 +1458,21 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
     );
   }
 
-  Widget buildTitleContainer(String title, double height, Alignment alignment) {
+  Widget buildTitleContainer(String title, double height, Alignment alignment, bool enableNavigation) {
     return Container(
-      height: height,
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      alignment: alignment,
-      child: Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-    );
+        height: height,
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        alignment: alignment,
+        child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            child: Row(
+              children: [
+                Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                Spacer(),
+                enableNavigation ? Icon(Icons.arrow_forward_ios, size: 15) : Container()
+              ],
+            ),
+            onTap: enableNavigation ? () => Navigator.pushNamed(context, Routers.Product_Questions) : null));
   }
 
   Widget buildBottomBar() {
@@ -1253,15 +1491,61 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
       ),
       child: Row(
         children: [
-          buildBottomBarItem(MediaQuery.of(context).size.width * 0.15 - 0.5, Colors.white, AppImages.icZalo, 24, false, "Chat Zalo", 11,
-              Colors.black, true, handleChatZalo),
+          buildBottomBarItem(
+              MediaQuery
+                  .of(context)
+                  .size
+                  .width * 0.15 - 0.5,
+              Colors.white,
+              AppImages.icZalo,
+              24,
+              false,
+              "Chat Zalo",
+              11,
+              Colors.black,
+              true,
+              handleChatZalo),
           buildVerticalSeperateLine(8, 0.5, Colors.grey),
-          buildBottomBarItem(MediaQuery.of(context).size.width * 0.22 - 0.5, Colors.white, AppImages.icMessenger, 24, false,
-              "Chat Facebook", 11, Colors.black, true, () => AppUtils.handleMessenger(context)),
+          buildBottomBarItem(
+              MediaQuery
+                  .of(context)
+                  .size
+                  .width * 0.22 - 0.5,
+              Colors.white,
+              AppImages.icMessenger,
+              24,
+              false,
+              "Chat Facebook",
+              11,
+              Colors.black,
+              true, () => AppUtils.handleMessenger(context)),
           buildVerticalSeperateLine(8, 0.5, Colors.grey),
-          buildBottomBarItem(MediaQuery.of(context).size.width * 0.28, Colors.white, AppImages.icShoppingCart, 24, true,
-              "Thêm vào giỏ hàng", 11, Colors.black, true, handleAddToCart),
-          buildBottomBarItem(MediaQuery.of(context).size.width * 0.35, AppColors.primary, null, null, false, "Mua ngay", 13, Colors.white,
+          buildBottomBarItem(
+              MediaQuery
+                  .of(context)
+                  .size
+                  .width * 0.28,
+              Colors.white,
+              AppImages.icShoppingCart,
+              24,
+              true,
+              "Thêm vào giỏ hàng",
+              11,
+              Colors.black,
+              true,
+              handleAddToCart),
+          buildBottomBarItem(
+              MediaQuery
+                  .of(context)
+                  .size
+                  .width * 0.35,
+              AppColors.primary,
+              null,
+              null,
+              false,
+              "Mua ngay",
+              13,
+              Colors.white,
               false, () => handlePurchaseButton("Mua ngay")),
         ],
       ),
@@ -1291,8 +1575,8 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
             isShowIcon ? Image.asset(iconSource, height: iconSize, width: iconSize, color: iconColor ? Colors.black : null) : Container(),
             isShowIcon
                 ? SizedBox(
-                    height: 2,
-                  )
+              height: 2,
+            )
                 : Container(),
             Text(
               title,
@@ -1306,7 +1590,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
   }
 
   handleChatZalo() {
-    print("handleChatZalo()");
+    AppUtils.handleZalo(context);
   }
 
   handleAddToCart() {
@@ -1315,20 +1599,48 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget {
 
   // hàm này sử dụng cho cả 2 button "Đặt mua trả góp" và "Mua ngay"
   void handlePurchaseButton(String buttonContent) async {
-    // if (await AppUtils.checkLogin()) {
-    //   if (product.goodsStatus == 1) {
-    //     if (buttonContent == "Mua ngay") {
-    //       print("Handle Mua ngay");
-    //     } else {
-    //       Navigator.pushNamed(context, Routers.Installment);
-    //     }
-    //   } else {
-    //     print("Sản phẩm đã hết hàng");
-    //   }
-    // } else {
-    //   AppUtils.myShowDialog(scaffoldKey.currentContext, widget.productId, widget.productVideoLink);
-    // }
-    print("Handle Mua ngay");
+    // nếu sản phẩm chưa hết hàng
+    if (productStatus == 1) {
+      if (buttonContent == "Mua ngay") {
+        Navigator.pushNamed(context, Routers.Cart);
+      } else {
+        Navigator.pushNamed(context, Routers.Installment);
+      }
+    } else {
+      // ngược lại sản phẩm đã hết hàng thì hiện popup thông báo
+      showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            insetPadding: EdgeInsets.symmetric(horizontal: 50),
+            child: Container(
+                height: 110,
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(10))),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("Sản phẩm đã hết hàng", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
+                    GestureDetector(
+                        child: Container(
+                            height: 30,
+                            width: MediaQuery
+                                .of(context)
+                                .size
+                                .width * 0.5,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(15))),
+                            child: Text("Đồng ý",
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.buttonContent))),
+                        onTap: () {
+                          Navigator.pop(context);
+                        })
+                  ],
+                )),
+          );
+        },
+      );
+    }
   }
 
   @override

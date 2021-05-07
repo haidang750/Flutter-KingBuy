@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:projectui/src/configs/configs.dart';
 
 class MyNetworkImage extends StatefulWidget {
   MyNetworkImage({this.height, this.width, this.url, this.sizePlaceHolder = 30, this.sizeErrorBuilder = 36});
@@ -28,10 +29,7 @@ class MyNetworkImageState extends State<MyNetworkImage> {
           size: widget.sizePlaceHolder,
         ),
       ),
-      errorWidget: (context, url, error) => SpinKitCircle(
-        color: Colors.blue,
-        size: widget.sizeErrorBuilder,
-      ),
+      errorWidget: (context, url, error) => Image.asset(AppImages.errorImage, fit: BoxFit.fill)
     );
   }
 }

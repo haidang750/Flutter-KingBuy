@@ -27,7 +27,7 @@ class ShowDialogState extends State<ShowDialog> {
           children: [
             Text(
               "Bạn chưa đăng nhập?",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,

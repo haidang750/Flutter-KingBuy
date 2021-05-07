@@ -44,6 +44,8 @@ dependencies:
   connectivity: ^3.0.3
   device_info: ^2.0.0
   crypto: ^3.0.1
+  modal_bottom_sheet: ^2.0.0
+  get: ^4.1.4
   responsive_builder: ^0.4.1
   flutter_image: ^3.0.0
   flutter_picker: ^2.0.1

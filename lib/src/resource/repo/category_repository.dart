@@ -4,6 +4,7 @@ import 'package:projectui/src/resource/model/CategoryModel.dart';
 import 'package:projectui/src/resource/model/CommentModel.dart';
 import 'package:projectui/src/resource/model/DetailProductModel.dart';
 import 'package:projectui/src/resource/model/ListProductsModel.dart';
+import 'package:projectui/src/resource/model/ProductQuestionModel.dart';
 import 'package:projectui/src/resource/model/RatingModel.dart';
 import 'package:projectui/src/resource/model/SearchedProductModel.dart';
 import '../../utils/utils.dart';
@@ -50,8 +51,8 @@ class CategoryRepository {
     }
   }
 
-  Future<NetworkState<ListProductsModel>> getProductsByCategory(
-      int productCategoryId, String searchWord, int limit, int offset, int brandId, int priceFrom, int priceTo) async {
+  Future<NetworkState<ListProductsModel>> getProductsByCategory(int productCategoryId, String searchWord, int limit, int offset,
+      int brandId, int priceFrom, int priceTo) async {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
 
@@ -95,8 +96,8 @@ class CategoryRepository {
     }
   }
 
-  Future<NetworkState<SearchedProductModel>> searchProduct(
-      String searchWord, int limit, int offset, int productCategoryId, int brandId, int priceFrom, int priceTo) async {
+  Future<NetworkState<SearchedProductModel>> searchProduct(String searchWord, int limit, int offset, int productCategoryId, int brandId,
+      int priceFrom, int priceTo) async {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
 
@@ -189,6 +190,51 @@ class CategoryRepository {
     }
   }
 
+  Future<NetworkState<ProductQuestionModel>> getProductQuestions(int productId, int limit, int offset) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+
+    try {
+      Response response = await AppClients().get(
+        AppEndpoint.GET_PRODUCT_QUESTIONS,
+        queryParameters: {"product_id": productId, "limit": limit, "offset": offset},
+      );
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => ProductQuestionModel.fromJson(data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<int>> requestAnswerQuestion(int productId, String content) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      Response response = await AppClients().post(AppEndpoint.REQUEST_ANSWER_QUESTION,
+          queryParameters: {"product_id": productId, "content": content, "type": 1},
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
+
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => response.data["status"],
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
   Future<NetworkState<ListProductsModel>> purchasedTogetherProducts(int productId) async {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
@@ -223,9 +269,40 @@ class CategoryRepository {
         status: response.statusCode,
         response: NetworkResponse.fromJson(
           response.data,
-          converter: (data) => ListProductsModel(
-            products: List<Product>.from(data.map((x) => Product.fromJson(x))),
-          ),
+          converter: (data) =>
+              ListProductsModel(
+                products: List<Product>.from(data.map((x) => Product.fromJson(x))),
+              ),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<ListProductsModel>> getProductById(List<int> productIds) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+
+    Map<String, int> queryParameters = {};
+    for (int i = 0; i < productIds.length; i++) {
+      queryParameters.addAll({"product_ids[$i]": productIds[i]});
+    }
+
+    try {
+      Response response = await AppClients().get(
+        AppEndpoint.GET_PRODUCTS_BY_IDS,
+        queryParameters: queryParameters,
+      );
+
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) =>
+              ListProductsModel(
+                products: List<Product>.from(data.map((x) => Product.fromJson(x))),
+              ),
         ),
       );
     } on DioError catch (e) {

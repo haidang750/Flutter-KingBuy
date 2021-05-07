@@ -27,6 +27,7 @@ class AppImages {
   static final String icPolicy = 'assets/icons/policy.png';
   static final String icPromotion = 'assets/icons/promotion.png';
   static final String icSearch = 'assets/icons/search.jpg';
+  static final String icSearchWhite = 'assets/icons/searchWhite.png';
   static final String icShoppingCart = 'assets/icons/shopping-cart.png';
   static final String icStar = 'assets/icons/star.png';
   static final String icSuccess = 'assets/icons/success.png';
@@ -40,5 +41,5 @@ class AppImages {
 
   //image
   static final String logo = 'assets/images/logo.png';
-
+  static final String errorImage = 'assets/images/no_image.jpg';
 }

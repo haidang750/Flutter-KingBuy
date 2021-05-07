@@ -1,4 +1,4 @@
-package com.example.projectui
+package com.example.KingBuy
 
 import io.flutter.embedding.android.FlutterActivity
 

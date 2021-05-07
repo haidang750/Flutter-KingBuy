@@ -147,6 +147,7 @@ class DetailContactState extends State<DetailContact> with ResponsiveWidget {
       color: Colors.grey.shade300,
       textPaddingLeft: 10,
       textPaddingRight: 5,
+      transformText: -9,
       borderWidth: 0,
       borderColor: Colors.white,
       borderRadius: 0,

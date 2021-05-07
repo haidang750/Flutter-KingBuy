@@ -14,7 +14,7 @@ class RatingModel {
   int threeStarCount;
   int fourStarCount;
   int fiveStarCount;
-  int avgRating;
+  double avgRating;
   int ratingCount;
 
   factory RatingModel.fromJson(Map<String, dynamic> json) => RatingModel(
@@ -23,7 +23,7 @@ class RatingModel {
     threeStarCount: json["three_star_count"],
     fourStarCount: json["four_star_count"],
     fiveStarCount: json["five_star_count"],
-    avgRating: json["avg_rating"],
+    avgRating: json["avg_rating"] * 1.0,
     ratingCount: json["rating_count"],
   );
 

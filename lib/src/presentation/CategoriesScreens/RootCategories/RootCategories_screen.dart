@@ -129,7 +129,7 @@ class RootCategoriesScreenState extends State<RootCategoriesScreen> with Respons
             color: Colors.white,
             child: Image.network(
               "${AppEndpoint.BASE_URL}$imageSource",
-              errorBuilder: (context, error, stackTrace) => MyLoading(),
+              errorBuilder: (context, error, stackTrace) => Image.asset(AppImages.errorImage, fit: BoxFit.cover),
             )),
         SizedBox(height: 6),
         Container(

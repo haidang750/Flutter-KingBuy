@@ -24,6 +24,10 @@ class AppUtils {
           duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
   }
 
+  static handleZalo(BuildContext context) async {
+    print("handleZalo()");
+  }
+
   static handlePhone(BuildContext context, String hotLine) async {
     if (await canLaunch('tel:$hotLine')) {
 

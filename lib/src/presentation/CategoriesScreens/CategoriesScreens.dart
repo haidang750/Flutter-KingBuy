@@ -5,3 +5,5 @@ export 'ProductDetail/ProductDetail.dart';
 export 'RatingAndComment/RatingAndComment.dart';
 export 'RootCategories/RootCategories.dart';
 export 'WritingComment/WritingComment.dart';
+export 'ProductQuestions/ProductQuestions.dart';
+export 'Cart/Cart.dart';
