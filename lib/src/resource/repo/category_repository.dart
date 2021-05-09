@@ -51,8 +51,8 @@ class CategoryRepository {
     }
   }
 
-  Future<NetworkState<ListProductsModel>> getProductsByCategory(int productCategoryId, String searchWord, int limit, int offset,
-      int brandId, int priceFrom, int priceTo) async {
+  Future<NetworkState<ListProductsModel>> getProductsByCategory(
+      int productCategoryId, String searchWord, int limit, int offset, int brandId, int priceFrom, int priceTo) async {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
 
@@ -96,8 +96,8 @@ class CategoryRepository {
     }
   }
 
-  Future<NetworkState<SearchedProductModel>> searchProduct(String searchWord, int limit, int offset, int productCategoryId, int brandId,
-      int priceFrom, int priceTo) async {
+  Future<NetworkState<SearchedProductModel>> searchProduct(
+      String searchWord, int limit, int offset, int productCategoryId, int brandId, int priceFrom, int priceTo) async {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
 
@@ -162,6 +162,30 @@ class CategoryRepository {
         response: NetworkResponse.fromJson(
           response.data,
           converter: (data) => RatingModel.fromJson(data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<int>> userRatingProduct(int productId, String name, String phoneNumber, String comment, double rating) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      Response response = await AppClients().post(AppEndpoint.USER_RATING_PRODUCT,
+          queryParameters: {"product_id": productId, "name": name, "phone_number": phoneNumber, "comment": comment, "rating": rating},
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
+
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => response.data["status"],
         ),
       );
     } on DioError catch (e) {
@@ -269,10 +293,9 @@ class CategoryRepository {
         status: response.statusCode,
         response: NetworkResponse.fromJson(
           response.data,
-          converter: (data) =>
-              ListProductsModel(
-                products: List<Product>.from(data.map((x) => Product.fromJson(x))),
-              ),
+          converter: (data) => ListProductsModel(
+            products: List<Product>.from(data.map((x) => Product.fromJson(x))),
+          ),
         ),
       );
     } on DioError catch (e) {
@@ -299,10 +322,9 @@ class CategoryRepository {
         status: response.statusCode,
         response: NetworkResponse.fromJson(
           response.data,
-          converter: (data) =>
-              ListProductsModel(
-                products: List<Product>.from(data.map((x) => Product.fromJson(x))),
-              ),
+          converter: (data) => ListProductsModel(
+            products: List<Product>.from(data.map((x) => Product.fromJson(x))),
+          ),
         ),
       );
     } on DioError catch (e) {

@@ -1,4 +1,6 @@
-class CommentModel {
+import 'package:flutter/material.dart';
+
+class CommentModel with ChangeNotifier {
   CommentModel({
     this.comments,
     this.totalRecords,
@@ -16,6 +18,12 @@ class CommentModel {
     "rows": List<dynamic>.from(comments.map((x) => x.toJson())),
     "total_records": totalRecords,
   };
+
+  setCommentInfo(CommentModel commentInfo){
+    this.comments = commentInfo.comments;
+    this.totalRecords = commentInfo.totalRecords;
+    notifyListeners();
+  }
 }
 
 class Comment {

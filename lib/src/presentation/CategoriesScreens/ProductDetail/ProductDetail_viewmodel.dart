@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:projectui/src/presentation/base/base.dart';
 import 'package:projectui/src/resource/model/CommentModel.dart';
 import 'package:projectui/src/resource/model/DetailProductModel.dart';
@@ -5,12 +6,11 @@ import 'package:projectui/src/resource/model/ListProductsModel.dart';
 import 'package:projectui/src/resource/model/ProductQuestionModel.dart';
 import 'package:projectui/src/resource/model/RatingModel.dart';
 import 'package:projectui/src/resource/model/network_state.dart';
+import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 
 class ProductDetailViewModel extends BaseViewModel {
   final productDetailSubject = BehaviorSubject<DetailProductModel>();
-  final ratingInfoSubject = BehaviorSubject<RatingModel>();
-  final commentInfoSubject = BehaviorSubject<CommentModel>();
   final purchasedTogetherProductsSubject = BehaviorSubject<List<Product>>();
   final relatedProductSubject = BehaviorSubject<List<Product>>();
   final viewedProductsSubject = BehaviorSubject<List<Product>>();
@@ -18,10 +18,6 @@ class ProductDetailViewModel extends BaseViewModel {
   final productQuestionsSubject = BehaviorSubject<List<Question>>();
 
   Stream<DetailProductModel> get productDetailStream => productDetailSubject.stream;
-
-  Stream<RatingModel> get ratingInfoStream => ratingInfoSubject.stream;
-
-  Stream<CommentModel> get commentInfoStream => commentInfoSubject.stream;
 
   Stream<List<Product>> get purchasedTogetherProductsStream => purchasedTogetherProductsSubject.stream;
 
@@ -42,19 +38,24 @@ class ProductDetailViewModel extends BaseViewModel {
     }
   }
 
-  ratingInfoByProduct(int productId) async {
+  ratingInfoByProduct(BuildContext context, int productId) async {
     NetworkState<RatingModel> result = await categoryRepository.ratingInfoByProduct(productId);
     if (result.isSuccess) {
-      ratingInfoSubject.sink.add(result.data);
+      Provider.of<RatingModel>(context, listen: false).setRatingInfo(result.data);
     } else {
       print("Vui lòng kiểm tra lại kết nối Internet!");
     }
   }
 
-  getReviewByProduct(int productId) async {
+  // kiểm tra xem tài khoản đã Đánh giá một sản phẩm nào đó hay chưa
+  bool isUserRated(int userId, List<Comment> comments) {
+    return comments.any((comment) => comment.userId == userId ? true : false);
+  }
+
+  getReviewByProduct(BuildContext context, int productId) async {
     NetworkState<CommentModel> result = await categoryRepository.getReviewByProduct(productId);
     if (result.isSuccess) {
-      commentInfoSubject.sink.add(result.data);
+      Provider.of<CommentModel>(context, listen: false).setCommentInfo(result.data);
     } else {
       print("Vui lòng kiểm tra lại kết nối Internet!");
     }
@@ -103,7 +104,7 @@ class ProductDetailViewModel extends BaseViewModel {
   }
 
   getViewedProductsLocal(List<int> productIds) async {
-    if(productIds.length != 0){
+    if (productIds.length != 0) {
       NetworkState<ListProductsModel> result = await categoryRepository.getProductById(productIds);
       if (result.isSuccess) {
         viewedProductsLocalSubject.sink.add(result.data.products);
@@ -111,7 +112,7 @@ class ProductDetailViewModel extends BaseViewModel {
         print("Vui lòng kiểm tra lại kết nối Internet!");
         viewedProductsLocalSubject.sink.add([]);
       }
-    }else{
+    } else {
       viewedProductsLocalSubject.sink.add([]);
     }
   }
@@ -128,8 +129,6 @@ class ProductDetailViewModel extends BaseViewModel {
 
   void dispose() {
     productDetailSubject.close();
-    ratingInfoSubject.close();
-    commentInfoSubject.close();
     purchasedTogetherProductsSubject.close();
     relatedProductSubject.close();
     viewedProductsSubject.close();

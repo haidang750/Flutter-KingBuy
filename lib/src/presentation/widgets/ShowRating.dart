@@ -10,7 +10,8 @@ class ShowRating extends StatefulWidget {
       this.starCount = 5,
       this.starSize,
       this.starColor = Colors.amber,
-      this.permitRating = false});
+      this.permitRating = false,
+      this.onRatingUpdate});
 
   double star;
   double minRating;
@@ -20,6 +21,7 @@ class ShowRating extends StatefulWidget {
   double starSize;
   Color starColor;
   bool permitRating;
+  Function onRatingUpdate;
 
   @override
   ShowRatingState createState() => ShowRatingState();
@@ -41,7 +43,7 @@ class ShowRatingState extends State<ShowRating> {
       ),
       onRatingUpdate: widget.permitRating
           ? (rating) {
-              print(rating);
+              widget.onRatingUpdate();
             }
           : null,
     );

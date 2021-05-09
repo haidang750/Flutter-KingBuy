@@ -60,7 +60,7 @@ class DetailProfileState extends State<DetailProfile> with ResponsiveWidget {
               actions: [
                 Builder(
                   builder: (context) => Padding(
-                    padding: EdgeInsets.only(right: 20, top: 16, bottom: 8),
+                    padding: EdgeInsets.only(right: 10, top: 16, bottom: 8),
                     child: ButtonTheme(
                         minWidth: 66,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
@@ -69,7 +69,7 @@ class DetailProfileState extends State<DetailProfile> with ResponsiveWidget {
                         child: RaisedButton(
                             child: Text("LƯU",
                                 style: TextStyle(
-                                  fontSize: 17,
+                                  fontSize: 16,
                                   color: Colors.white,
                                 )),
                             onPressed: () => updateProfile(context, nameController.text, phoneController.text, birthdayController.text,

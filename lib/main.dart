@@ -6,6 +6,7 @@ import 'package:projectui/src/resource/model/AddressModel.dart';
 import 'package:projectui/src/resource/model/Data.dart';
 import 'package:projectui/src/resource/model/NotificationModel.dart';
 import 'package:projectui/src/resource/model/ViewedProductLocalStorage.dart';
+import 'package:projectui/src/resource/model/model.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -23,6 +24,12 @@ void main() {
       ChangeNotifierProvider(
         create: (context) => ViewedProductLocalStorage(),
       ),
+      ChangeNotifierProvider(
+        create: (context) => RatingModel(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => CommentModel(),
+      )
     ],
     child: MyApp(),
   ));

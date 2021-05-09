@@ -12,6 +12,7 @@ class AppColors {
   static final Color black = Colors.black;
   static final Color grey = Colors.grey;
   static final Color grey2 = Colors.grey.shade300;
+  static final Color grey3 = Colors.grey.shade400;
   static final Color loading = Colors.blue;
   static final Color hintText = Colors.grey.shade500;
   static final Color borderTextField = Colors.grey.shade500;

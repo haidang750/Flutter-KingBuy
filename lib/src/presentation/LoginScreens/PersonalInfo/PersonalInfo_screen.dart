@@ -29,7 +29,7 @@ class PersonalInfoState extends State<PersonalInfo> with ResponsiveWidget {
               title: Text("Thông tin cá nhân"),
               actions: [
                 Padding(
-                  padding: EdgeInsets.only(right: 20, top: 16, bottom: 8),
+                  padding: EdgeInsets.only(right: 10, top: 16, bottom: 8),
                   child: ButtonTheme(
                       minWidth: 66,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
@@ -38,7 +38,7 @@ class PersonalInfoState extends State<PersonalInfo> with ResponsiveWidget {
                       child: RaisedButton(
                         child: Text("LƯU",
                             style: TextStyle(
-                              fontSize: 17,
+                              fontSize: 16,
                               color: AppColors.buttonContent,
                             )),
                         onPressed: () {},

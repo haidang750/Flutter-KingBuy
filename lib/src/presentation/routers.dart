@@ -10,7 +10,6 @@ class Routers {
   static const String Personal_Info = "/LoginScreens/PersonalInfo";
   static const String Register = "/LoginScreens/Register";
   static const String Member_Card = "/MemberCard";
-  static const String Rating_And_Comment = "/CategoriesScreens/RatingAndComment";
   static const String Category_Detail = "/CategoriesScreens/CategoryDetail";
   static const String Order_Detail = "/ProfileScreens/Order/OrderDetail";
   static const String Detail_Contact = "/ProfileScreens/Contact/DetailContact";
@@ -57,9 +56,6 @@ class Routers {
       case Member_Card:
         return animRoute(MemberCardScreen(), name: Member_Card, beginOffset: _center);
         break;
-      case Rating_And_Comment:
-        return animRoute(RatingAndComment(), name: Rating_And_Comment, beginOffset: _center);
-        break;
       case Category_Detail:
         return animRoute(CategoryDetail(category: arguments), name: Category_Detail, beginOffset: _center);
         break;
@@ -73,7 +69,7 @@ class Routers {
         return animRoute(CreateContact(), name: Create_Contact, beginOffset: _center);
         break;
       case Writing_Comment:
-        return animRoute(WritingComment(), name: Writing_Comment, beginOffset: _center);
+        return animRoute(WritingComment(productId: arguments), name: Writing_Comment, beginOffset: _center);
         break;
       case Viewed_Products:
         return animRoute(ViewedProducts(), name: Viewed_Products, beginOffset: _center);

@@ -1,4 +1,6 @@
-class RatingModel {
+import 'package:flutter/material.dart';
+
+class RatingModel with ChangeNotifier {
   RatingModel({
     this.oneStarCount,
     this.twoStarCount,
@@ -36,4 +38,15 @@ class RatingModel {
     "avg_rating": avgRating,
     "rating_count": ratingCount,
   };
+
+  setRatingInfo(RatingModel ratingInfo){
+    this.oneStarCount = ratingInfo.oneStarCount;
+    this.twoStarCount = ratingInfo.twoStarCount;
+    this.threeStarCount = ratingInfo.threeStarCount;
+    this.fourStarCount = ratingInfo.fourStarCount;
+    this.fiveStarCount = ratingInfo.fiveStarCount;
+    this.avgRating = ratingInfo.avgRating;
+    this.ratingCount = ratingInfo.ratingCount;
+    notifyListeners();
+  }
 }

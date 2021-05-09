@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/CategoriesScreens/ProductDetail/ProductDetail_viewmodel.dart';
-import 'package:projectui/src/presentation/CategoriesScreens/RatingAndComment/RatingAndComment_screen.dart';
 import 'package:projectui/src/presentation/presentation.dart';
 import 'package:projectui/src/presentation/widgets/MyListView.dart';
 import 'package:projectui/src/presentation/widgets/MyLoading.dart';
@@ -11,10 +10,13 @@ import 'package:projectui/src/presentation/widgets/ShowPath.dart';
 import 'package:projectui/src/presentation/widgets/ShowRating.dart';
 import 'package:projectui/src/presentation/widgets/ShowMoney.dart';
 import 'package:projectui/src/resource/model/CommentModel.dart';
+import 'package:projectui/src/resource/model/Data.dart';
 import 'package:projectui/src/resource/model/DetailProductModel.dart';
 import 'package:projectui/src/resource/model/ListProductsModel.dart';
 import 'package:projectui/src/resource/model/ProductQuestionModel.dart';
+import 'package:projectui/src/resource/model/Profile.dart';
 import 'package:projectui/src/resource/model/ViewedProductLocalStorage.dart';
+import 'package:projectui/src/resource/model/model.dart';
 import 'package:projectui/src/utils/app_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
@@ -22,8 +24,6 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import '../Installment/Installment_screen.dart';
-import '../WritingComment/WritingComment_screen.dart';
 import 'package:toast/toast.dart';
 
 class ProductDetail extends StatefulWidget {
@@ -54,13 +54,14 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
   final productQuestionController = TextEditingController();
   final reloadQuestionSubject = BehaviorSubject<bool>();
   int productStatus;
+  final isUserRatedSubject = BehaviorSubject<bool>();
+  final productCommentSubject = BehaviorSubject<List<Comment>>();
+  final userProfileSubject = BehaviorSubject<Profile>();
 
   @override
   void initState() {
     checkLogin();
     productDetailViewModel.getSingleProduct(widget.productId);
-    productDetailViewModel.ratingInfoByProduct(widget.productId);
-    productDetailViewModel.getReviewByProduct(widget.productId);
     getProductQuestions();
     productDetailViewModel.purchasedTogetherProducts(widget.productId);
     productDetailViewModel.getRelatedProducts(widget.productId, 0);
@@ -70,11 +71,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
     if (widget.productVideoLink != null) {
       youtubePlayerController = YoutubePlayerController(
         initialVideoId: YoutubePlayer.convertUrlToId(widget.productVideoLink),
-        flags: YoutubePlayerFlags(mute: false,
-            autoPlay: false,
-            disableDragSeek: true,
-            loop: false,
-            enableCaption: false),
+        flags: YoutubePlayerFlags(mute: false, autoPlay: false, disableDragSeek: true, loop: false, enableCaption: false),
       );
     }
     showFullBrandInfoSubject.sink.add(false);
@@ -82,10 +79,12 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
     showFullPurchasedTogetherProductSubject.sink.add(false);
     countCheckPurchasedTogetherProductSubject.sink.add(0);
     countRelatedProductLoadedSubject.sink.add(0);
-    super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      productDetailViewModel.ratingInfoByProduct(context, widget.productId);
+      productDetailViewModel.getReviewByProduct(context, widget.productId);
       Provider.of<ViewedProductLocalStorage>(context, listen: false).addViewedProduct(widget.productId);
     });
+    super.initState();
   }
 
   getProductQuestions() {
@@ -93,9 +92,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
   }
 
   checkLogin() async {
-    List<int> idViewedProducts = Provider
-        .of<ViewedProductLocalStorage>(context, listen: false)
-        .idViewedProducts;
+    List<int> idViewedProducts = Provider.of<ViewedProductLocalStorage>(context, listen: false).idViewedProducts;
     isLogin = await AppUtils.checkLogin();
 
     if (isLogin)
@@ -118,6 +115,9 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
     countCheckPurchasedTogetherProductSubject.close();
     countRelatedProductLoadedSubject.close();
     reloadQuestionSubject.close();
+    isUserRatedSubject.close();
+    productCommentSubject.close();
+    userProfileSubject.close();
   }
 
   @override
@@ -261,18 +261,14 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                   carouselController: carouselController,
                   options: CarouselOptions(
                     initialPage: 0,
-                    height: MediaQuery
-                        .of(context)
-                        .size
-                        .height * 0.5,
+                    height: MediaQuery.of(context).size.height * 0.5,
                     enlargeCenterPage: true,
                     viewportFraction: 1,
                     onPageChanged: (index, reason) => currentSubImageSubject.sink.add(index),
                   ),
-                  itemBuilder: (context, index, realIndex) =>
-                      MyNetworkImage(
-                        url: "${AppEndpoint.BASE_URL}${snapshot.data[index]}",
-                      ),
+                  itemBuilder: (context, index, realIndex) => MyNetworkImage(
+                    url: "${AppEndpoint.BASE_URL}${snapshot.data[index]}",
+                  ),
                 );
               } else {
                 return MyLoading();
@@ -292,28 +288,26 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                       physics: BouncingScrollPhysics(),
                       scrollDirection: Axis.horizontal,
                       itemCount: snapshot.data.length,
-                      itemBuilder: (context, index) =>
-                          Row(
+                      itemBuilder: (context, index) => Row(
                             children: [
                               GestureDetector(
                                 child: StreamBuilder(
                                   stream: currentSubImageSubject.stream,
-                                  builder: (context, snapshot2) =>
-                                      Container(
-                                          height: 90,
-                                          width: 90,
-                                          decoration: BoxDecoration(
-                                              border: index == snapshot2.data
-                                                  ? Border.all(width: 2, color: Colors.blue)
-                                                  : Border.all(width: 0, color: Colors.white),
-                                              borderRadius: BorderRadius.all(Radius.circular(4))),
-                                          child: Container(
-                                            clipBehavior: Clip.antiAlias,
-                                            decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(4))),
-                                            child: MyNetworkImage(
-                                              url: "${AppEndpoint.BASE_URL}${snapshot.data[index]}",
-                                            ),
-                                          )),
+                                  builder: (context, snapshot2) => Container(
+                                      height: 90,
+                                      width: 90,
+                                      decoration: BoxDecoration(
+                                          border: index == snapshot2.data
+                                              ? Border.all(width: 2, color: Colors.blue)
+                                              : Border.all(width: 0, color: Colors.white),
+                                          borderRadius: BorderRadius.all(Radius.circular(4))),
+                                      child: Container(
+                                        clipBehavior: Clip.antiAlias,
+                                        decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(4))),
+                                        child: MyNetworkImage(
+                                          url: "${AppEndpoint.BASE_URL}${snapshot.data[index]}",
+                                        ),
+                                      )),
                                 ),
                                 onTap: () {
                                   carouselController.jumpToPage(index);
@@ -332,45 +326,43 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
           // build product colors
           colors.length > 0
               ? Container(
-            height: 43,
-            alignment: Alignment.centerLeft,
-            child: ListView.builder(
-                shrinkWrap: true,
-                physics: BouncingScrollPhysics(),
-                scrollDirection: Axis.horizontal,
-                itemCount: colors.length,
-                itemBuilder: (context, index) =>
-                    Row(
-                      children: [
-                        GestureDetector(
-                          child: StreamBuilder(
-                              stream: currentColorProductSubject.stream,
-                              builder: (context, snapshot2) =>
-                                  Container(
-                                    height: 43,
-                                    width: 95,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                        color: Colors.grey.withOpacity(0.5),
-                                        border: index == snapshot2.data
-                                            ? Border.all(width: 2, color: Colors.blue)
-                                            : Border.all(width: 0, color: Colors.white),
-                                        borderRadius: BorderRadius.all(Radius.circular(4))),
-                                    child: Text(
-                                      colors[index]["name"],
-                                      style: TextStyle(fontSize: 14),
-                                    ),
-                                  )),
-                          onTap: () {
-                            currentColorProductSubject.sink.add(index);
-                            subImageProductSubject.sink.add(colors[index]["image_source"]);
-                            carouselController.jumpToPage(0);
-                          },
-                        ),
-                        SizedBox(width: 5)
-                      ],
-                    )),
-          )
+                  height: 43,
+                  alignment: Alignment.centerLeft,
+                  child: ListView.builder(
+                      shrinkWrap: true,
+                      physics: BouncingScrollPhysics(),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: colors.length,
+                      itemBuilder: (context, index) => Row(
+                            children: [
+                              GestureDetector(
+                                child: StreamBuilder(
+                                    stream: currentColorProductSubject.stream,
+                                    builder: (context, snapshot2) => Container(
+                                          height: 43,
+                                          width: 95,
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                              color: Colors.grey.withOpacity(0.5),
+                                              border: index == snapshot2.data
+                                                  ? Border.all(width: 2, color: Colors.blue)
+                                                  : Border.all(width: 0, color: Colors.white),
+                                              borderRadius: BorderRadius.all(Radius.circular(4))),
+                                          child: Text(
+                                            colors[index]["name"],
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                        )),
+                                onTap: () {
+                                  currentColorProductSubject.sink.add(index);
+                                  subImageProductSubject.sink.add(colors[index]["image_source"]);
+                                  carouselController.jumpToPage(0);
+                                },
+                              ),
+                              SizedBox(width: 5)
+                            ],
+                          )),
+                )
               : Container()
         ],
       ),
@@ -402,7 +394,13 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                 style: TextStyle(fontSize: 12, color: Colors.blue),
               ),
               onTap: () {
-                Navigator.pushNamed(context, Routers.Rating_And_Comment);
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => RatingAndComment(
+                            productId: widget.productId,
+                            productVideoLink: widget.productVideoLink,
+                            isUserRated: isUserRatedSubject.stream.value)));
               },
             )
           ],
@@ -502,10 +500,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
           child: GestureDetector(
               child: Container(
                 height: 40,
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width * 0.5,
+                width: MediaQuery.of(context).size.width * 0.5,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(color: Colors.orange.shade700, borderRadius: BorderRadius.all(Radius.circular(4))),
                 child: Center(
@@ -541,8 +536,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
               shrinkWrap: true,
               physics: BouncingScrollPhysics(),
               itemCount: gifts.length,
-              itemBuilder: (context, index) =>
-                  Column(
+              itemBuilder: (context, index) => Column(
                     children: [
                       Container(
                         child: Row(
@@ -601,40 +595,39 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
             shrinkWrap: true,
             physics: BouncingScrollPhysics(),
             itemCount: shopAddress.length,
-            itemBuilder: (context, index) =>
-                Column(
+            itemBuilder: (context, index) => Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    Image.asset(AppImages.icPin, height: 24, width: 24, color: AppColors.primary),
+                    SizedBox(width: 5),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Image.asset(AppImages.icPin, height: 24, width: 24, color: AppColors.primary),
-                        SizedBox(width: 5),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Text("KingBuy", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                        SizedBox(height: 5),
+                        Text(shopAddress[index].address, style: TextStyle(fontSize: 14)),
+                        SizedBox(height: 5),
+                        Row(
                           children: [
-                            Text("KingBuy", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                            SizedBox(height: 5),
-                            Text(shopAddress[index].address, style: TextStyle(fontSize: 14)),
-                            SizedBox(height: 5),
-                            Row(
-                              children: [
-                                Image.asset(AppImages.icPhone, height: 14, width: 14, color: Colors.blue),
-                                SizedBox(width: 5),
-                                GestureDetector(
-                                  child: Text(shopAddress[index].hotLine,
-                                      style: TextStyle(fontSize: 14, color: Colors.blue, decoration: TextDecoration.underline)),
-                                  onTap: () => AppUtils.handlePhone(context, shopAddress[index].hotLine),
-                                )
-                              ],
-                            ),
+                            Image.asset(AppImages.icPhone, height: 14, width: 14, color: Colors.blue),
+                            SizedBox(width: 5),
+                            GestureDetector(
+                              child: Text(shopAddress[index].hotLine,
+                                  style: TextStyle(fontSize: 14, color: Colors.blue, decoration: TextDecoration.underline)),
+                              onTap: () => AppUtils.handlePhone(context, shopAddress[index].hotLine),
+                            )
                           ],
-                        )
+                        ),
                       ],
-                    ),
-                    SizedBox(height: 10)
+                    )
                   ],
                 ),
+                SizedBox(height: 10)
+              ],
+            ),
           ),
         ),
         SizedBox(height: 5)
@@ -653,10 +646,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                 Stack(
                   children: [
                     Container(
-                      height: snapshot.data ? null : MediaQuery
-                          .of(context)
-                          .size
-                          .height * 0.5,
+                      height: snapshot.data ? null : MediaQuery.of(context).size.height * 0.5,
                       child: ListView(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
@@ -669,35 +659,29 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                     snapshot.data
                         ? Container()
                         : Container(
-                      height: snapshot.data ? null : MediaQuery
-                          .of(context)
-                          .size
-                          .height * 0.5,
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        height: snapshot.data ? null : MediaQuery
-                            .of(context)
-                            .size
-                            .height * 0.25,
-                        decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              stops: [
-                                0.1,
-                                0.35,
-                                0.6,
-                                0.85,
-                              ],
-                              colors: [
-                                Colors.white.withOpacity(0.75),
-                                Colors.white.withOpacity(0.5),
-                                Colors.white.withOpacity(0.3),
-                                Colors.white.withOpacity(0.1),
-                              ],
-                            )),
-                      ),
-                    )
+                            height: snapshot.data ? null : MediaQuery.of(context).size.height * 0.5,
+                            alignment: Alignment.bottomCenter,
+                            child: Container(
+                              height: snapshot.data ? null : MediaQuery.of(context).size.height * 0.25,
+                              decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                stops: [
+                                  0.1,
+                                  0.35,
+                                  0.6,
+                                  0.85,
+                                ],
+                                colors: [
+                                  Colors.white.withOpacity(0.75),
+                                  Colors.white.withOpacity(0.5),
+                                  Colors.white.withOpacity(0.3),
+                                  Colors.white.withOpacity(0.1),
+                                ],
+                              )),
+                            ),
+                          )
                   ],
                 ),
                 Container(
@@ -748,8 +732,8 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
             child: productVideoLink == null
                 ? Container()
                 : Container(
-              child: YoutubePlayer(controller: youtubePlayerController, showVideoProgressIndicator: true),
-            )),
+                    child: YoutubePlayer(controller: youtubePlayerController, showVideoProgressIndicator: true),
+                  )),
         productVideoLink == null ? Container() : SizedBox(height: 15)
       ],
     );
@@ -764,10 +748,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
             return Column(
               children: [
                 Container(
-                  height: brandInfo != null ? (snapshot.data ? null : MediaQuery
-                      .of(context)
-                      .size
-                      .height * 0.25) : null,
+                  height: brandInfo != null ? (snapshot.data ? null : MediaQuery.of(context).size.height * 0.25) : null,
                   child: ListView(
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
@@ -779,26 +760,26 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                 ),
                 brandInfo != null
                     ? Container(
-                    height: 40,
-                    color: Colors.white,
-                    alignment: Alignment.center,
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(snapshot.data ? "Rút gọn" : "Xem tất cả", style: TextStyle(fontSize: 14, color: Colors.blue)),
-                          SizedBox(width: 5),
-                          Icon(snapshot.data ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 18, color: Colors.blue)
-                        ],
-                      ),
-                      onTap: () {
-                        showFullBrandInfoSubject.sink.add(!showFullBrandInfoSubject.stream.value);
-                      },
-                    ))
+                        height: 40,
+                        color: Colors.white,
+                        alignment: Alignment.center,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(snapshot.data ? "Rút gọn" : "Xem tất cả", style: TextStyle(fontSize: 14, color: Colors.blue)),
+                              SizedBox(width: 5),
+                              Icon(snapshot.data ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 18, color: Colors.blue)
+                            ],
+                          ),
+                          onTap: () {
+                            showFullBrandInfoSubject.sink.add(!showFullBrandInfoSubject.stream.value);
+                          },
+                        ))
                     : Container(
-                  height: 15,
-                )
+                        height: 15,
+                      )
               ],
             );
           } else {
@@ -809,6 +790,11 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
 
   // build phần Đánh giá & Bình luận
   Widget buildProductRatingAndComments(int productId) {
+    Data userData = Provider.of<Data>(context, listen: false);
+    List<Comment> comments = Provider.of<CommentModel>(context, listen: false).comments;
+    productCommentSubject.sink.add(comments != null ? comments : []);
+    userProfileSubject.sink.add(userData.profile);
+
     return Column(
       children: [
         buildTitleContainer("Đánh giá & Bình luận", 50, Alignment.centerLeft, false),
@@ -816,94 +802,39 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
             padding: EdgeInsets.symmetric(horizontal: 10),
             child: Column(
               children: [
+                buildRating(),
+                SizedBox(height: 10),
                 StreamBuilder(
-                  stream: productDetailViewModel.ratingInfoStream,
+                  stream: Rx.combineLatest2(isUserRatedSubject.stream, userProfileSubject.stream, (stream1, stream2) => stream1),
                   builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return Row(
-                        children: [
-                          Container(
-                            height: 100,
-                            width: MediaQuery
-                                .of(context)
-                                .size
-                                .width * 0.4,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text("Đánh giá trung bình", style: TextStyle(fontSize: 14)),
-                                SizedBox(height: 5),
-                                Text("(${snapshot.data.ratingCount.toString()} đánh giá)",
-                                    style: TextStyle(fontSize: 14, color: Colors.grey.shade500)),
-                                SizedBox(height: 5),
-                                Text("${snapshot.data.avgRating.toString()}/5",
-                                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                              child: Container(
-                                height: 100,
-                                child: ListView.builder(
-                                  shrinkWrap: true,
-                                  reverse: true,
-                                  physics: BouncingScrollPhysics(),
-                                  itemCount: 5,
-                                  itemBuilder: (context, index) {
-                                    int oneRatingCount = index == 0
-                                        ? snapshot.data.oneStarCount
-                                        : (index == 1
-                                        ? snapshot.data.twoStarCount
-                                        : (index == 2
-                                        ? snapshot.data.threeStarCount
-                                        : (index == 3 ? snapshot.data.fourStarCount : snapshot.data.fiveStarCount)));
+                    userData.profile != null
+                        ? isUserRatedSubject.sink
+                            .add(productDetailViewModel.isUserRated(userData.profile.id, productCommentSubject.stream.value))
+                        : isUserRatedSubject.sink.add(false);
 
-                                    return Column(
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text((index + 1).toString(), style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
-                                            SizedBox(width: 3),
-                                            Icon(Icons.star_rounded, size: 13, color: Colors.grey.shade600),
-                                            SizedBox(width: 3),
-                                            Stack(
-                                              children: [
-                                                Container(
-                                                  height: 13,
-                                                  width: MediaQuery
-                                                      .of(context)
-                                                      .size
-                                                      .width * 0.261,
-                                                  decoration: BoxDecoration(
-                                                      color: Colors.grey.shade400, borderRadius: BorderRadius.all(Radius.circular(6.5))),
-                                                ),
-                                                Container(
-                                                  height: 13,
-                                                  width: snapshot.data.ratingCount != 0
-                                                      ? MediaQuery
-                                                      .of(context)
-                                                      .size
-                                                      .width *
-                                                      0.261 *
-                                                      (oneRatingCount * 1.0 / snapshot.data.ratingCount)
-                                                      : 0,
-                                                  decoration: BoxDecoration(
-                                                      color: Colors.yellow.shade700, borderRadius: BorderRadius.all(Radius.circular(6.5))),
-                                                ),
-                                              ],
-                                            ),
-                                            SizedBox(width: 7),
-                                            Text("${oneRatingCount.toString()} đánh giá",
-                                                style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
-                                          ],
-                                        ),
-                                        SizedBox(height: 5)
-                                      ],
-                                    );
-                                  },
-                                ),
-                              ))
+                    if (snapshot.hasData) {
+                      return Column(
+                        children: [
+                          GestureDetector(
+                              child: Container(
+                                  height: 45,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                      border: Border.all(width: 1, color: snapshot.data ? AppColors.grey : AppColors.primary),
+                                      borderRadius: BorderRadius.all(Radius.circular(6))),
+                                  child: Text(snapshot.data ? "Đã đánh giá" : "Viết đánh giá",
+                                      style: TextStyle(fontSize: 14, color: snapshot.data ? AppColors.grey : AppColors.primary))),
+                              onTap: snapshot.data
+                                  ? null
+                                  : () async {
+                                      if (await AppUtils.checkLogin()) {
+                                        await Navigator.pushNamed(scaffoldKey.currentContext, Routers.Writing_Comment,
+                                            arguments: widget.productId);
+                                      } else {
+                                        AppUtils.myShowDialog(scaffoldKey.currentContext, widget.productId, widget.productVideoLink);
+                                      }
+                                    }),
+                          SizedBox(height: 15)
                         ],
                       );
                     } else {
@@ -911,91 +842,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                     }
                   },
                 ),
-                SizedBox(height: 10),
-                GestureDetector(
-                    child: Container(
-                        height: 45,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                            border: Border.all(width: 1, color: AppColors.primary), borderRadius: BorderRadius.all(Radius.circular(6))),
-                        child: Text("Viết đánh giá", style: TextStyle(fontSize: 14, color: Colors.red))),
-                    onTap: () async {
-                      if (await AppUtils.checkLogin()) {
-                        Navigator.pushNamed(context, Routers.Writing_Comment);
-                      } else {
-                        AppUtils.myShowDialog(scaffoldKey.currentContext, widget.productId, widget.productVideoLink);
-                      }
-                    }),
-                SizedBox(height: 15),
-                StreamBuilder(
-                  stream: productDetailViewModel.commentInfoStream,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return ListView.builder(
-                          shrinkWrap: true,
-                          physics: BouncingScrollPhysics(),
-                          itemCount: snapshot.data.totalRecords > 3 ? 3 : snapshot.data.totalRecords,
-                          itemBuilder: (context, index) {
-                            Comment comment = snapshot.data.comments[index];
-
-                            return Column(
-                              children: [
-                                Container(height: 0.5, color: Colors.black.withOpacity(0.3)),
-                                SizedBox(height: 15),
-                                Container(
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 20,
-                                          backgroundImage: NetworkImage(
-                                            "${AppEndpoint.BASE_URL}${comment.avatarSource}",
-                                          ),
-                                        ),
-                                        SizedBox(width: 5),
-                                        Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Text("${comment.name}", style: TextStyle(fontSize: 12)),
-                                                    SizedBox(width: 10),
-                                                    comment.isBuy == 1
-                                                        ? Image.asset(AppImages.icSuccess, height: 12, width: 12)
-                                                        : Container(),
-                                                    comment.isBuy == 1 ? SizedBox(width: 3) : Container(),
-                                                    comment.isBuy == 1
-                                                        ? Text("Đã mua hàng ở KingBuy", style: TextStyle(fontSize: 12, color: Colors.green))
-                                                        : Container(),
-                                                    Spacer(),
-                                                    comment.phoneNumber != ""
-                                                        ? Text(comment.phoneNumber.substring(0, 6) + "****",
-                                                        style: TextStyle(fontSize: 12, color: Colors.grey.shade500))
-                                                        : Container()
-                                                  ],
-                                                ),
-                                                Container(height: 18, child: ShowRating(star: comment.star, starSize: 12)),
-                                                Container(
-                                                  child: Text(comment.comment, style: TextStyle(fontSize: 14)),
-                                                ),
-                                                SizedBox(height: 10),
-                                                Text(DateFormat("dd-MM-yyyy").format(comment.createdAt),
-                                                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500))
-                                              ],
-                                            ))
-                                      ],
-                                    )),
-                                SizedBox(height: 10),
-                              ],
-                            );
-                          });
-                    } else {
-                      return MyLoading();
-                    }
-                  },
-                ),
+                buildComments(),
                 Container(
                     height: 40,
                     decoration: BoxDecoration(border: Border(top: BorderSide(width: 0.5, color: Colors.black.withOpacity(0.3)))),
@@ -1013,11 +860,160 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                         ],
                       ),
                       onTap: () {
-                        Navigator.pushNamed(context, Routers.Rating_And_Comment);
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => RatingAndComment(
+                                    productId: widget.productId,
+                                    productVideoLink: widget.productVideoLink,
+                                    isUserRated: isUserRatedSubject.stream.value)));
                       },
                     ))
               ],
             )),
+      ],
+    );
+  }
+
+  // build phần Đánh giá
+  Widget buildRating() {
+    RatingModel ratingInfo = Provider.of<RatingModel>(context, listen: true);
+
+    return Row(
+      children: [
+        Container(
+          height: 100,
+          width: MediaQuery.of(context).size.width * 0.4,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text("Đánh giá trung bình", style: TextStyle(fontSize: 14)),
+              SizedBox(height: 5),
+              Text("(${ratingInfo.ratingCount.toString()} đánh giá)", style: TextStyle(fontSize: 14, color: Colors.grey.shade500)),
+              SizedBox(height: 5),
+              Text("${ratingInfo.avgRating.toString()}/5",
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
+            ],
+          ),
+        ),
+        Expanded(
+            child: Container(
+          height: 100,
+          child: ListView.builder(
+            shrinkWrap: true,
+            reverse: true,
+            physics: BouncingScrollPhysics(),
+            itemCount: 5,
+            itemBuilder: (context, index) {
+              int oneRatingCount = index == 0
+                  ? ratingInfo.oneStarCount
+                  : (index == 1
+                      ? ratingInfo.twoStarCount
+                      : (index == 2 ? ratingInfo.threeStarCount : (index == 3 ? ratingInfo.fourStarCount : ratingInfo.fiveStarCount)));
+
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      Text((index + 1).toString(), style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
+                      SizedBox(width: 3),
+                      Icon(Icons.star_rounded, size: 13, color: Colors.grey.shade600),
+                      SizedBox(width: 3),
+                      Stack(
+                        children: [
+                          Container(
+                            height: 13,
+                            width: MediaQuery.of(context).size.width * 0.261,
+                            decoration:
+                                BoxDecoration(color: Colors.grey.withOpacity(0.5), borderRadius: BorderRadius.all(Radius.circular(6.5))),
+                          ),
+                          Container(
+                            height: 13,
+                            width: ratingInfo.ratingCount != 0
+                                ? MediaQuery.of(context).size.width * 0.261 * (oneRatingCount * 1.0 / ratingInfo.ratingCount)
+                                : 0,
+                            decoration: BoxDecoration(color: Colors.yellow.shade700, borderRadius: BorderRadius.all(Radius.circular(6.5))),
+                          ),
+                        ],
+                      ),
+                      SizedBox(width: 7),
+                      Text("${oneRatingCount.toString()} đánh giá", style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
+                    ],
+                  ),
+                  SizedBox(height: 5)
+                ],
+              );
+            },
+          ),
+        ))
+      ],
+    );
+  }
+
+  // build phần Bình luận
+  Widget buildComments() {
+    List<Comment> comments = Provider.of<CommentModel>(context, listen: true).comments;
+
+    return ListView.builder(
+        shrinkWrap: true,
+        physics: BouncingScrollPhysics(),
+        reverse: comments.length > 3 ? true : false,
+        // nếu có nhiều hơn 3 bình luận thì chỉ hiển thị 3 bình luận ở màn hình ProductDetail
+        itemCount: comments.length,
+        itemBuilder: (context, index) {
+          Comment comment = comments[index];
+
+          // nếu có nhiều hơn 3 bình luận thì hiển thị 3 bình luận mới nhất, ngược lại thì in ra bình thường
+          return comments.length > 3 ? (comments.length - index <= 3 ? buildOneComment(comment) : Container()) : buildOneComment(comment);
+        });
+  }
+
+  Widget buildOneComment(Comment comment) {
+    return Column(
+      children: [
+        Container(height: 0.5, color: Colors.black.withOpacity(0.3)),
+        SizedBox(height: 10),
+        Container(
+            child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundImage: NetworkImage(
+                "${AppEndpoint.BASE_URL}${comment.avatarSource}",
+              ),
+            ),
+            SizedBox(width: 8),
+            Expanded(
+                child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text("${comment.name}", style: TextStyle(fontSize: 12)),
+                    SizedBox(width: 10),
+                    comment.isBuy == 1 ? Image.asset(AppImages.icSuccess, height: 12, width: 12) : Container(),
+                    comment.isBuy == 1 ? SizedBox(width: 3) : Container(),
+                    comment.isBuy == 1 ? Text("Đã mua hàng ở KingBuy", style: TextStyle(fontSize: 12, color: Colors.green)) : Container(),
+                    Spacer(),
+                    comment.phoneNumber != ""
+                        ? Text(comment.phoneNumber.substring(0, 6) + "****", style: TextStyle(fontSize: 12, color: Colors.grey.shade500))
+                        : Container()
+                  ],
+                ),
+                Container(height: 18, child: ShowRating(star: comment.star, starSize: 12)),
+                Container(
+                  child: Text(comment.comment, style: TextStyle(fontSize: 14)),
+                ),
+                SizedBox(height: 10),
+                Text(DateFormat("dd-MM-yyyy").format(comment.createdAt), style: TextStyle(fontSize: 12, color: Colors.grey.shade500))
+              ],
+            ))
+          ],
+        )),
+        SizedBox(height: 5),
       ],
     );
   }
@@ -1038,39 +1034,36 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                     if (snapshot.hasData) {
                       return snapshot.data.length > 0
                           ? ListView.builder(
-                          shrinkWrap: true,
-                          physics: BouncingScrollPhysics(),
-                          itemCount: snapshot.data.length,
-                          itemBuilder: (context, index) {
-                            Question productQuestion = snapshot.data[index];
+                              shrinkWrap: true,
+                              physics: BouncingScrollPhysics(),
+                              itemCount: snapshot.data.length,
+                              itemBuilder: (context, index) {
+                                Question productQuestion = snapshot.data[index];
 
-                            return Container(
-                                height: 50,
-                                color: AppColors.grey2,
-                                padding: EdgeInsets.symmetric(horizontal: 5),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 16,
-                                      child: Image.asset(AppImages.icUser2),
-                                      backgroundColor: Colors.white,
-                                    ),
-                                    SizedBox(width: 10),
-                                    Container(
-                                        width: MediaQuery
-                                            .of(context)
-                                            .size
-                                            .width * 0.8,
-                                        child: Text(productQuestion.content, style: TextStyle(fontSize: 14)))
-                                  ],
-                                ));
-                          })
+                                return Container(
+                                    height: 50,
+                                    color: AppColors.grey2,
+                                    padding: EdgeInsets.symmetric(horizontal: 5),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 16,
+                                          child: Image.asset(AppImages.icUser2),
+                                          backgroundColor: Colors.white,
+                                        ),
+                                        SizedBox(width: 10),
+                                        Container(
+                                            width: MediaQuery.of(context).size.width * 0.8,
+                                            child: Text(productQuestion.content, style: TextStyle(fontSize: 14)))
+                                      ],
+                                    ));
+                              })
                           : Container(
-                          height: 20,
-                          alignment: Alignment.center,
-                          child: Text("Chưa có câu hỏi nào!", style: TextStyle(fontSize: 14, color: Colors.red)));
+                              height: 20,
+                              alignment: Alignment.center,
+                              child: Text("Chưa có câu hỏi nào!", style: TextStyle(fontSize: 14, color: Colors.red)));
                     } else {
                       return MyLoading();
                     }
@@ -1080,10 +1073,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                 GestureDetector(
                     child: Container(
                         height: 30,
-                        width: MediaQuery
-                            .of(context)
-                            .size
-                            .width * 0.7,
+                        width: MediaQuery.of(context).size.width * 0.7,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(15))),
                         child: Text("Đặt câu hỏi cho sản phẩm",
@@ -1092,64 +1082,58 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                       if (await AppUtils.checkLogin()) {
                         showMaterialModalBottomSheet(
                             context: context,
-                            builder: (context) =>
-                                Container(
-                                    height: 160,
-                                    padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text("Đặt câu hỏi", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                                        SizedBox(height: 10),
-                                        BorderTextField(
-                                          height: 75,
-                                          textController: productQuestionController,
-                                          color: AppColors.white,
-                                          borderColor: AppColors.black.withOpacity(0.5),
-                                          isChangeBorderColor: true,
-                                          borderRadius: 4,
-                                          borderWidth: 0.7,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.normal,
-                                          hintText: "Nội dung",
-                                          hintTextFontSize: 14,
-                                          hintTextFontWeight: FontWeight.normal,
-                                          textPaddingLeft: 5,
-                                          textPaddingRight: 5,
-                                          transformText: -12,
-                                        ),
-                                        SizedBox(height: 10),
-                                        Center(
-                                            child: GestureDetector(
-                                              child: Container(
-                                                  height: 30,
-                                                  width: MediaQuery
-                                                      .of(context)
-                                                      .size
-                                                      .width * 0.7,
-                                                  alignment: Alignment.center,
-                                                  decoration:
-                                                  BoxDecoration(
-                                                      color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(15))),
-                                                  child: Text("Gửi",
-                                                      style: TextStyle(
-                                                          color: AppColors.buttonContent, fontSize: 14, fontWeight: FontWeight.bold))),
-                                              onTap: () async {
-                                                int status = await productDetailViewModel.requestAnswerQuestion(
-                                                    widget.productId, productQuestionController.text);
-                                                if (status == 1) {
-                                                  productQuestionController.clear();
-                                                  Navigator.pop(context);
-                                                  Toast.show("Câu hỏi đã được gửi đi", context, gravity: Toast.CENTER);
-                                                  getProductQuestions();
-                                                  reloadQuestionSubject.sink.add(!reloadQuestionSubject.stream.value);
-                                                } else {
-                                                  Toast.show("Đặt câu hỏi thất bại", context, gravity: Toast.CENTER);
-                                                }
-                                              },
-                                            ))
-                                      ],
-                                    )));
+                            builder: (context) => Container(
+                                height: 160,
+                                padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("Đặt câu hỏi", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 10),
+                                    BorderTextField(
+                                      height: 75,
+                                      textController: productQuestionController,
+                                      color: AppColors.white,
+                                      borderColor: AppColors.black.withOpacity(0.5),
+                                      isChangeBorderColor: true,
+                                      borderRadius: 4,
+                                      borderWidth: 0.7,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.normal,
+                                      hintText: "Nội dung",
+                                      hintTextFontSize: 14,
+                                      hintTextFontWeight: FontWeight.normal,
+                                      textPaddingLeft: 5,
+                                      textPaddingRight: 5,
+                                      transformText: -12,
+                                    ),
+                                    SizedBox(height: 10),
+                                    Center(
+                                        child: GestureDetector(
+                                      child: Container(
+                                          height: 30,
+                                          width: MediaQuery.of(context).size.width * 0.7,
+                                          alignment: Alignment.center,
+                                          decoration:
+                                              BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(15))),
+                                          child: Text("Gửi",
+                                              style: TextStyle(color: AppColors.buttonContent, fontSize: 14, fontWeight: FontWeight.bold))),
+                                      onTap: () async {
+                                        int status = await productDetailViewModel.requestAnswerQuestion(
+                                            widget.productId, productQuestionController.text);
+                                        if (status == 1) {
+                                          productQuestionController.clear();
+                                          Navigator.pop(context);
+                                          Toast.show("Câu hỏi đã được gửi đi", context, gravity: Toast.CENTER);
+                                          getProductQuestions();
+                                          reloadQuestionSubject.sink.add(!reloadQuestionSubject.stream.value);
+                                        } else {
+                                          Toast.show("Đặt câu hỏi thất bại", context, gravity: Toast.CENTER);
+                                        }
+                                      },
+                                    ))
+                                  ],
+                                )));
                       } else {
                         AppUtils.myShowDialog(context, widget.productId, widget.productVideoLink);
                       }
@@ -1168,198 +1152,192 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
         buildTitleContainer("Sản phẩm mua cùng", 50, Alignment.centerLeft, false),
         Container(
             child: StreamBuilder(
-              stream: productDetailViewModel.purchasedTogetherProductsStream,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  List<bool> checkList = [];
-                  for (int i = 0; i < snapshot.data.length; i++) {
-                    checkList.add(false);
-                  }
-                  purchasedTogetherProductSubject.sink.add(checkList);
+          stream: productDetailViewModel.purchasedTogetherProductsStream,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              List<bool> checkList = [];
+              for (int i = 0; i < snapshot.data.length; i++) {
+                checkList.add(false);
+              }
+              purchasedTogetherProductSubject.sink.add(checkList);
 
-                  return snapshot.data.length > 0
-                      ? Column(
-                    children: [
-                      // build Image PurchasedTogetherProducts
-                      Container(
-                          height: 100,
+              return snapshot.data.length > 0
+                  ? Column(
+                      children: [
+                        // build Image PurchasedTogetherProducts
+                        Container(
+                            height: 100,
+                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            child: ListView.builder(
+                                shrinkWrap: true,
+                                physics: BouncingScrollPhysics(),
+                                scrollDirection: Axis.horizontal,
+                                itemCount: snapshot.data.length,
+                                itemBuilder: (context, index) {
+                                  Product product = snapshot.data[index];
+
+                                  return Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      MyNetworkImage(url: "${AppEndpoint.BASE_URL}${product.imageSource}", height: 100, width: 100),
+                                      index != snapshot.data.length - 1
+                                          ? Container(height: 90, width: 60, child: Center(child: Icon(Icons.add, size: 34)))
+                                          : Container()
+                                    ],
+                                  );
+                                })),
+                        SizedBox(height: 15),
+                        // build List PurchasedTogetherProducts (name + checkbox)
+                        Container(
                           padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: ListView.builder(
-                              shrinkWrap: true,
-                              physics: BouncingScrollPhysics(),
-                              scrollDirection: Axis.horizontal,
-                              itemCount: snapshot.data.length,
-                              itemBuilder: (context, index) {
-                                Product product = snapshot.data[index];
-
-                                return Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    MyNetworkImage(url: "${AppEndpoint.BASE_URL}${product.imageSource}", height: 100, width: 100),
-                                    index != snapshot.data.length - 1
-                                        ? Container(height: 90, width: 60, child: Center(child: Icon(Icons.add, size: 34)))
-                                        : Container()
-                                  ],
-                                );
-                              })),
-                      SizedBox(height: 15),
-                      // build List PurchasedTogetherProducts (name + checkbox)
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: StreamBuilder(
-                          stream: showFullPurchasedTogetherProductSubject.stream,
-                          builder: (context, snapshot2) {
-                            if (snapshot2.hasData) {
-                              return snapshot2.data
-                                  ? Column(
-                                children: [
-                                  ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: BouncingScrollPhysics(),
-                                    itemCount: snapshot.data.length,
-                                    itemBuilder: (context, index) {
-                                      Product product = snapshot.data[index];
-
-                                      return Column(
+                          child: StreamBuilder(
+                            stream: showFullPurchasedTogetherProductSubject.stream,
+                            builder: (context, snapshot2) {
+                              if (snapshot2.hasData) {
+                                return snapshot2.data
+                                    ? Column(
                                         children: [
-                                          StreamBuilder(
-                                            stream: purchasedTogetherProductSubject.stream,
-                                            builder: (context, snapshot) {
-                                              if (snapshot.hasData) {
-                                                return Row(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Container(
-                                                        height: 25,
-                                                        width: 18,
-                                                        alignment: Alignment.topLeft,
-                                                        child: Checkbox(
-                                                            value: snapshot.data[index],
-                                                            activeColor: AppColors.primary,
-                                                            onChanged: (value) {
-                                                              snapshot.data[index]
-                                                                  ? countCheckPurchasedTogetherProductSubject.sink.add(
-                                                                  countCheckPurchasedTogetherProductSubject.stream.value - 1)
-                                                                  : countCheckPurchasedTogetherProductSubject.sink.add(
-                                                                  countCheckPurchasedTogetherProductSubject.stream.value + 1);
-                                                              checkList.replaceRange(index, index + 1, [!snapshot.data[index]]);
-                                                              purchasedTogetherProductSubject.sink.add(checkList);
-                                                            })),
-                                                    SizedBox(width: 12),
-                                                    GestureDetector(
-                                                        child: Column(
+                                          ListView.builder(
+                                            shrinkWrap: true,
+                                            physics: BouncingScrollPhysics(),
+                                            itemCount: snapshot.data.length,
+                                            itemBuilder: (context, index) {
+                                              Product product = snapshot.data[index];
+
+                                              return Column(
+                                                children: [
+                                                  StreamBuilder(
+                                                    stream: purchasedTogetherProductSubject.stream,
+                                                    builder: (context, snapshot) {
+                                                      if (snapshot.hasData) {
+                                                        return Row(
                                                           crossAxisAlignment: CrossAxisAlignment.start,
                                                           children: [
                                                             Container(
-                                                                width: MediaQuery
-                                                                    .of(context)
-                                                                    .size
-                                                                    .width - 50,
-                                                                child: Text(product.name, style: TextStyle(fontSize: 14))),
-                                                            SizedBox(height: 4),
-                                                            ShowMoney(
-                                                                price: product.salePrice,
-                                                                color: Colors.black,
-                                                                fontSizeLarge: 14,
-                                                                fontSizeSmall: 11,
-                                                                fontWeight: FontWeight.bold,
-                                                                isLineThrough: false)
+                                                                height: 25,
+                                                                width: 18,
+                                                                alignment: Alignment.topLeft,
+                                                                child: Checkbox(
+                                                                    value: snapshot.data[index],
+                                                                    activeColor: AppColors.primary,
+                                                                    onChanged: (value) {
+                                                                      snapshot.data[index]
+                                                                          ? countCheckPurchasedTogetherProductSubject.sink.add(
+                                                                              countCheckPurchasedTogetherProductSubject.stream.value - 1)
+                                                                          : countCheckPurchasedTogetherProductSubject.sink.add(
+                                                                              countCheckPurchasedTogetherProductSubject.stream.value + 1);
+                                                                      checkList.replaceRange(index, index + 1, [!snapshot.data[index]]);
+                                                                      purchasedTogetherProductSubject.sink.add(checkList);
+                                                                    })),
+                                                            SizedBox(width: 12),
+                                                            GestureDetector(
+                                                                child: Column(
+                                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                                  children: [
+                                                                    Container(
+                                                                        width: MediaQuery.of(context).size.width - 50,
+                                                                        child: Text(product.name, style: TextStyle(fontSize: 14))),
+                                                                    SizedBox(height: 4),
+                                                                    ShowMoney(
+                                                                        price: product.salePrice,
+                                                                        color: Colors.black,
+                                                                        fontSizeLarge: 14,
+                                                                        fontSizeSmall: 11,
+                                                                        fontWeight: FontWeight.bold,
+                                                                        isLineThrough: false)
+                                                                  ],
+                                                                ),
+                                                                onTap: () {
+                                                                  snapshot.data[index]
+                                                                      ? countCheckPurchasedTogetherProductSubject.sink
+                                                                          .add(countCheckPurchasedTogetherProductSubject.stream.value - 1)
+                                                                      : countCheckPurchasedTogetherProductSubject.sink
+                                                                          .add(countCheckPurchasedTogetherProductSubject.stream.value + 1);
+                                                                  checkList.replaceRange(index, index + 1, [!snapshot.data[index]]);
+                                                                  purchasedTogetherProductSubject.sink.add(checkList);
+                                                                })
                                                           ],
-                                                        ),
-                                                        onTap: () {
-                                                          snapshot.data[index]
-                                                              ? countCheckPurchasedTogetherProductSubject.sink
-                                                              .add(countCheckPurchasedTogetherProductSubject.stream.value - 1)
-                                                              : countCheckPurchasedTogetherProductSubject.sink
-                                                              .add(countCheckPurchasedTogetherProductSubject.stream.value + 1);
-                                                          checkList.replaceRange(index, index + 1, [!snapshot.data[index]]);
-                                                          purchasedTogetherProductSubject.sink.add(checkList);
-                                                        })
-                                                  ],
-                                                );
+                                                        );
+                                                      } else {
+                                                        return MyLoading();
+                                                      }
+                                                    },
+                                                  ),
+                                                  SizedBox(height: 15)
+                                                ],
+                                              );
+                                            },
+                                          ),
+                                          SizedBox(height: 5),
+                                          StreamBuilder(
+                                            stream: countCheckPurchasedTogetherProductSubject.stream,
+                                            builder: (context, snapshot) {
+                                              if (snapshot.hasData) {
+                                                return GestureDetector(
+                                                    child: Container(
+                                                      height: 40,
+                                                      width: MediaQuery.of(context).size.width * 0.8,
+                                                      decoration: BoxDecoration(
+                                                          color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(20))),
+                                                      alignment: Alignment.center,
+                                                      child: Text("Thêm ${snapshot.data} sản phẩm vào giỏ hàng",
+                                                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+                                                    ),
+                                                    onTap: () {
+                                                      print("Thêm vào giỏ hàng");
+                                                    });
                                               } else {
                                                 return MyLoading();
                                               }
                                             },
-                                          ),
-                                          SizedBox(height: 15)
+                                          )
                                         ],
-                                      );
-                                    },
-                                  ),
-                                  SizedBox(height: 5),
-                                  StreamBuilder(
-                                    stream: countCheckPurchasedTogetherProductSubject.stream,
-                                    builder: (context, snapshot) {
-                                      if (snapshot.hasData) {
-                                        return GestureDetector(
-                                            child: Container(
-                                              height: 40,
-                                              width: MediaQuery
-                                                  .of(context)
-                                                  .size
-                                                  .width * 0.8,
-                                              decoration: BoxDecoration(
-                                                  color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(20))),
-                                              alignment: Alignment.center,
-                                              child: Text("Thêm ${snapshot.data} sản phẩm vào giỏ hàng",
-                                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
-                                            ),
-                                            onTap: () {
-                                              print("Thêm vào giỏ hàng");
-                                            });
-                                      } else {
-                                        return MyLoading();
-                                      }
-                                    },
-                                  )
-                                ],
-                              )
-                                  : Container();
-                            } else {
-                              return MyLoading();
-                            }
-                          },
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Container(
-                          height: 40,
-                          color: Colors.white,
-                          child: StreamBuilder(
-                            stream: showFullPurchasedTogetherProductSubject.stream,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                return GestureDetector(
-                                  behavior: HitTestBehavior.translucent,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(snapshot.data ? "Rút gọn" : "Xem tất cả", style: TextStyle(fontSize: 14, color: Colors.blue)),
-                                      SizedBox(width: 5),
-                                      Icon(snapshot.data ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                                          size: 18, color: Colors.blue)
-                                    ],
-                                  ),
-                                  onTap: () {
-                                    showFullPurchasedTogetherProductSubject.sink
-                                        .add(!showFullPurchasedTogetherProductSubject.stream.value);
-                                  },
-                                );
+                                      )
+                                    : Container();
                               } else {
                                 return MyLoading();
                               }
                             },
-                          ))
-                    ],
-                  )
-                      : Container();
-                } else {
-                  return MyLoading();
-                }
-              },
-            )),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Container(
+                            height: 40,
+                            color: Colors.white,
+                            child: StreamBuilder(
+                              stream: showFullPurchasedTogetherProductSubject.stream,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  return GestureDetector(
+                                    behavior: HitTestBehavior.translucent,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(snapshot.data ? "Rút gọn" : "Xem tất cả", style: TextStyle(fontSize: 14, color: Colors.blue)),
+                                        SizedBox(width: 5),
+                                        Icon(snapshot.data ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                                            size: 18, color: Colors.blue)
+                                      ],
+                                    ),
+                                    onTap: () {
+                                      showFullPurchasedTogetherProductSubject.sink
+                                          .add(!showFullPurchasedTogetherProductSubject.stream.value);
+                                    },
+                                  );
+                                } else {
+                                  return MyLoading();
+                                }
+                              },
+                            ))
+                      ],
+                    )
+                  : Container();
+            } else {
+              return MyLoading();
+            }
+          },
+        )),
       ],
     );
   }
@@ -1380,11 +1358,11 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
 
               return snapshot.data.length > 0 || countRelatedProductLoadedSubject.stream.value > 0
                   ? Column(
-                children: [
-                  Container(height: 370, padding: EdgeInsets.symmetric(horizontal: 10), child: listRelatedProducts()),
-                  SizedBox(height: 15)
-                ],
-              )
+                      children: [
+                        Container(height: 370, padding: EdgeInsets.symmetric(horizontal: 10), child: listRelatedProducts()),
+                        SizedBox(height: 15)
+                      ],
+                    )
                   : Container();
             } else {
               return MyLoading();
@@ -1491,61 +1469,15 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
       ),
       child: Row(
         children: [
-          buildBottomBarItem(
-              MediaQuery
-                  .of(context)
-                  .size
-                  .width * 0.15 - 0.5,
-              Colors.white,
-              AppImages.icZalo,
-              24,
-              false,
-              "Chat Zalo",
-              11,
-              Colors.black,
-              true,
-              handleChatZalo),
+          buildBottomBarItem(MediaQuery.of(context).size.width * 0.15 - 0.5, Colors.white, AppImages.icZalo, 24, false, "Chat Zalo", 11,
+              Colors.black, true, handleChatZalo),
           buildVerticalSeperateLine(8, 0.5, Colors.grey),
-          buildBottomBarItem(
-              MediaQuery
-                  .of(context)
-                  .size
-                  .width * 0.22 - 0.5,
-              Colors.white,
-              AppImages.icMessenger,
-              24,
-              false,
-              "Chat Facebook",
-              11,
-              Colors.black,
-              true, () => AppUtils.handleMessenger(context)),
+          buildBottomBarItem(MediaQuery.of(context).size.width * 0.22 - 0.5, Colors.white, AppImages.icMessenger, 24, false,
+              "Chat Facebook", 11, Colors.black, true, () => AppUtils.handleMessenger(context)),
           buildVerticalSeperateLine(8, 0.5, Colors.grey),
-          buildBottomBarItem(
-              MediaQuery
-                  .of(context)
-                  .size
-                  .width * 0.28,
-              Colors.white,
-              AppImages.icShoppingCart,
-              24,
-              true,
-              "Thêm vào giỏ hàng",
-              11,
-              Colors.black,
-              true,
-              handleAddToCart),
-          buildBottomBarItem(
-              MediaQuery
-                  .of(context)
-                  .size
-                  .width * 0.35,
-              AppColors.primary,
-              null,
-              null,
-              false,
-              "Mua ngay",
-              13,
-              Colors.white,
+          buildBottomBarItem(MediaQuery.of(context).size.width * 0.28, Colors.white, AppImages.icShoppingCart, 24, true,
+              "Thêm vào giỏ hàng", 11, Colors.black, true, handleAddToCart),
+          buildBottomBarItem(MediaQuery.of(context).size.width * 0.35, AppColors.primary, null, null, false, "Mua ngay", 13, Colors.white,
               false, () => handlePurchaseButton("Mua ngay")),
         ],
       ),
@@ -1575,8 +1507,8 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
             isShowIcon ? Image.asset(iconSource, height: iconSize, width: iconSize, color: iconColor ? Colors.black : null) : Container(),
             isShowIcon
                 ? SizedBox(
-              height: 2,
-            )
+                    height: 2,
+                  )
                 : Container(),
             Text(
               title,
@@ -1598,7 +1530,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
   }
 
   // hàm này sử dụng cho cả 2 button "Đặt mua trả góp" và "Mua ngay"
-  void handlePurchaseButton(String buttonContent) async {
+  void handlePurchaseButton(String buttonContent) {
     // nếu sản phẩm chưa hết hàng
     if (productStatus == 1) {
       if (buttonContent == "Mua ngay") {
@@ -1624,10 +1556,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                     GestureDetector(
                         child: Container(
                             height: 30,
-                            width: MediaQuery
-                                .of(context)
-                                .size
-                                .width * 0.5,
+                            width: MediaQuery.of(context).size.width * 0.5,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(15))),
                             child: Text("Đồng ý",
