@@ -21,3 +21,4 @@ export 'SearchedProductModel.dart';
 export 'Shop.dart';
 export 'ViewedProductLocalStorage.dart';
 export 'WardModel.dart';
+export 'CartModel.dart';

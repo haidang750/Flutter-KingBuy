@@ -1,6 +1,7 @@
 export 'CategoryDetail/CategoryDetail.dart';
 export 'CategoryUtils/CategoryUtils.dart';
 export 'Installment/Installment.dart';
+export 'InstallmentDetail/InstallmentDetail.dart';
 export 'ProductDetail/ProductDetail.dart';
 export 'RatingAndComment/RatingAndComment.dart';
 export 'RootCategories/RootCategories.dart';

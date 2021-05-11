@@ -15,7 +15,6 @@ class ProductDetailViewModel extends BaseViewModel {
   final relatedProductSubject = BehaviorSubject<List<Product>>();
   final viewedProductsSubject = BehaviorSubject<List<Product>>();
   final viewedProductsLocalSubject = BehaviorSubject<List<Product>>();
-  final productQuestionsSubject = BehaviorSubject<List<Question>>();
 
   Stream<DetailProductModel> get productDetailStream => productDetailSubject.stream;
 
@@ -26,8 +25,6 @@ class ProductDetailViewModel extends BaseViewModel {
   Stream<List<Product>> get viewedProductsStream => viewedProductsSubject.stream;
 
   Stream<List<Product>> get viewedProductsLocalStream => viewedProductsLocalSubject.stream;
-
-  Stream<List<Question>> get productQuestionsStream => productQuestionsSubject.stream;
 
   getSingleProduct(int productId) async {
     NetworkState<DetailProductModel> result = await categoryRepository.getSingleProduct(productId);
@@ -61,11 +58,10 @@ class ProductDetailViewModel extends BaseViewModel {
     }
   }
 
-  getProductQuestions(int productId) async {
-    NetworkState<ProductQuestionModel> result = await categoryRepository.getProductQuestions(productId, 3, 0);
+  getProductQuestions(BuildContext context, int productId, int limit) async {
+    NetworkState<ProductQuestionModel> result = await categoryRepository.getProductQuestions(productId, limit, 0);
     if (result.isSuccess) {
-      List<Question> productQuestions = result.data.questions;
-      productQuestionsSubject.sink.add(productQuestions);
+      Provider.of<ProductQuestionModel>(context, listen: false).setProductQuestion(result.data);
     } else {
       print("Vui lòng kiểm tra lại kết nối Internet!");
     }
@@ -133,6 +129,5 @@ class ProductDetailViewModel extends BaseViewModel {
     relatedProductSubject.close();
     viewedProductsSubject.close();
     viewedProductsLocalSubject.close();
-    productQuestionsSubject.close();
   }
 }

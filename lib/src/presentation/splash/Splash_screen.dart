@@ -2,8 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:projectui/src/configs/configs.dart';
-import 'package:projectui/src/presentation/Navigation/Navigation_screen.dart';
 import 'package:projectui/src/presentation/presentation.dart';
+import 'package:projectui/src/resource/model/CartModel.dart';
+import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -20,6 +21,10 @@ class SplashScreenState extends State<SplashScreen> with ResponsiveWidget {
       splashScreenViewModel.initApp(context);
     });
     Timer(Duration(seconds: 5), () => Navigator.pushNamed(context, Routers.Navigation));
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      Provider.of<CartModel>(context, listen: false).setTotalProducts(0);
+      Provider.of<CartModel>(context, listen: false).setCartProducts([]);
+    });
   }
 
   @override

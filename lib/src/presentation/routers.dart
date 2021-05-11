@@ -17,7 +17,6 @@ class Routers {
   static const String Writing_Comment = "/CategoriesScreens/WritingComment";
   static const String Viewed_Products = "/ProfileScreens/ViewedProducts";
   static const String Create_Address = "/ProfileScreens/Address/CreateAddress";
-  static const String Installment = "/CategoriesScreens/Installment";
   static const String Coupon_Detail = "/ProfileScreens/Coupon/CouponDetail";
   static const String Detail_Profile = "/ProfileScreens/DetailProfile";
   static const String List_Promotion = "/ProfileScreens/Promotion/ListPromotion";
@@ -28,8 +27,8 @@ class Routers {
   static const String Commitment = "/ProfileScreens/Commitment";
   static const String Contact_Types = "ProfileScreens/Contact/ContactTypes";
   static const String Term_Of_Use = "/ProfileScreens/TermOfUse";
-  static const String Product_Questions = "/CategoriesScreens/ProductQuestions";
   static const String Cart = "/CategoriesScreens/Cart";
+  static const String Installment_Detail = "/CategoriesScreens/InstallmentDetail";
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     var arguments = settings.arguments;
@@ -77,9 +76,6 @@ class Routers {
       case Create_Address:
         return animRoute(CreateAddress(event: arguments), name: Create_Address, beginOffset: _center);
         break;
-      case Installment:
-        return animRoute(InstallmentScreen(), name: Installment, beginOffset: _center);
-        break;
       case Coupon_Detail:
         return animRoute(CouponDetail(coupon: arguments), name: Coupon_Detail, beginOffset: _center);
         break;
@@ -110,11 +106,11 @@ class Routers {
       case Term_Of_Use:
         return animRoute(TermsOfUse(), name: Term_Of_Use, beginOffset: _center);
         break;
-      case Product_Questions:
-        return animRoute(ProductQuestions(), name: Product_Questions, beginOffset: _center);
-        break;
       case Cart:
-        return animRoute(CartScreen(), name: Cart, beginOffset: _center);
+        return animRoute(CartScreen(cartProducts: arguments), name: Cart, beginOffset: _center);
+        break;
+      case Installment_Detail:
+        return animRoute(InstallmentDetailScreen(invoiceId: arguments), name: Installment_Detail, beginOffset: _center);
         break;
       default:
         return animRoute(Container(child: Center(child: Text('No route defined for ${settings.name}'))));

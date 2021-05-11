@@ -1,8 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:projectui/src/resource/model/BankModel.dart';
 import 'package:projectui/src/resource/model/BrandModel.dart';
 import 'package:projectui/src/resource/model/CategoryModel.dart';
 import 'package:projectui/src/resource/model/CommentModel.dart';
+import 'package:projectui/src/resource/model/CreditModel.dart';
 import 'package:projectui/src/resource/model/DetailProductModel.dart';
+import 'package:projectui/src/resource/model/InstallmentDetailModel.dart';
+import 'package:projectui/src/resource/model/InstallmentModel.dart';
 import 'package:projectui/src/resource/model/ListProductsModel.dart';
 import 'package:projectui/src/resource/model/ProductQuestionModel.dart';
 import 'package:projectui/src/resource/model/RatingModel.dart';
@@ -29,8 +33,7 @@ class CategoryRepository {
       Response response = await AppClients().get(AppEndpoint.GET_HOT_CATEGORIES);
 
       return NetworkState(
-          status: response.statusCode,
-          response: NetworkResponse.fromJson(response.data, converter: (data) => CategoryModel.fromJson(data)));
+          status: response.statusCode, response: NetworkResponse.fromJson(response.data, converter: (data) => CategoryModel.fromJson(data)));
     } on DioError catch (e) {
       return NetworkState.withError(e);
     }
@@ -44,8 +47,7 @@ class CategoryRepository {
       Response response = await AppClients().get(AppEndpoint.GET_ALL_CATEGORIES);
 
       return NetworkState(
-          status: response.statusCode,
-          response: NetworkResponse.fromJson(response.data, converter: (data) => CategoryModel.fromJson(data)));
+          status: response.statusCode, response: NetworkResponse.fromJson(response.data, converter: (data) => CategoryModel.fromJson(data)));
     } on DioError catch (e) {
       return NetworkState.withError(e);
     }
@@ -325,6 +327,103 @@ class CategoryRepository {
           converter: (data) => ListProductsModel(
             products: List<Product>.from(data.map((x) => Product.fromJson(x))),
           ),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<BankModel>> getBanks() async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+
+    try {
+      Response response = await AppClients().get(
+        AppEndpoint.GET_BANKS,
+        queryParameters: {"type": 1},
+      );
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => BankModel.fromJson(response.data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<CreditModel>> getCreditList() async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+
+    try {
+      Response response = await AppClients().get(AppEndpoint.GET_CREDIT_LIST);
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => CreditModel.fromJson(response.data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<InstallmentModel>> createInstallment(
+      int productId, int installmentType, int bankId, int installmentCardType, int monthsInstallment, int prepayInstallment) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      Response response = await AppClients().post(AppEndpoint.CREATE_INSTALLMENT,
+          queryParameters: {
+            "product_id": productId,
+            "installment_type": installmentType,
+            "bank_id": bankId,
+            "installment_card_type": installmentCardType,
+            "months_installment": monthsInstallment,
+            "prepay_installment": prepayInstallment
+          },
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
+
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => InstallmentModel.fromJson(response.data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<InstallmentDetailModel>> detailInstallment(int invoiceId) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      Response response = await AppClients().get(AppEndpoint.DETAIL_INSTALLMENT,
+          queryParameters: {
+            "invoice_id": invoiceId,
+          },
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
+
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => InstallmentDetailModel.fromJson(response.data["data"]["detail"]),
         ),
       );
     } on DioError catch (e) {

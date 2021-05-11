@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/base/base.dart';
+import 'package:projectui/src/presentation/presentation.dart';
 import 'package:projectui/src/presentation/widgets/BorderTextField.dart';
 import 'package:projectui/src/presentation/widgets/MyLoading.dart';
 import 'package:projectui/src/resource/model/ContactModel.dart';
+import 'package:projectui/src/resource/model/Data.dart';
+import 'package:provider/provider.dart';
 
 import 'DetailContact_viewmodel.dart';
 
@@ -121,6 +124,9 @@ class DetailContactState extends State<DetailContact> with ResponsiveWidget {
   }
 
   Widget buildOneFeedback(String content) {
+    Data userData = Provider.of<Data>(context);
+    String userAvatar = userData.profile.avatarSource;
+
     return Container(
         padding: EdgeInsets.fromLTRB(5, 10, 25, 10),
         child: Row(
@@ -128,7 +134,7 @@ class DetailContactState extends State<DetailContact> with ResponsiveWidget {
             CircleAvatar(
               radius: 15,
               backgroundColor: Colors.white,
-              backgroundImage: AssetImage(AppImages.icUser2),
+              backgroundImage: NetworkImage("${AppEndpoint.BASE_URL}$userAvatar"),
             ),
             SizedBox(
               width: 10,

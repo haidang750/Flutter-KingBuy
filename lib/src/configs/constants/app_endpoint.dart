@@ -47,4 +47,8 @@ class AppEndpoint {
   static const String PURCHASED_TOGETHER_PRODUCTS = "/api/purchasedTogetherProducts";
   static const String RELATED_PRODUCT = "/api/relatedProduct";
   static const String GET_PRODUCTS_BY_IDS = "/api/getProductsByIds";
+  static const String GET_BANKS = "/api/banks";
+  static const String GET_CREDIT_LIST = "/api/creditList";
+  static const String CREATE_INSTALLMENT = "/api/createInstallment";
+  static const String DETAIL_INSTALLMENT = "/api/detailInstallment";
 }

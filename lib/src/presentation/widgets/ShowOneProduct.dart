@@ -99,6 +99,7 @@ class ShowOneProductState extends State<ShowOneProduct> {
                   return ProductDetail(
                     productId: widget.product.id,
                     productVideoLink: widget.product.videoLink,
+                    product: widget.product,
                   );
                 }
               ));

@@ -5,6 +5,7 @@ import 'package:projectui/src/presentation/splash/Splash.dart';
 import 'package:projectui/src/resource/model/AddressModel.dart';
 import 'package:projectui/src/resource/model/Data.dart';
 import 'package:projectui/src/resource/model/NotificationModel.dart';
+import 'package:projectui/src/resource/model/ProductQuestionModel.dart';
 import 'package:projectui/src/resource/model/ViewedProductLocalStorage.dart';
 import 'package:projectui/src/resource/model/model.dart';
 import 'package:provider/provider.dart';
@@ -29,6 +30,12 @@ void main() {
       ),
       ChangeNotifierProvider(
         create: (context) => CommentModel(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => ProductQuestionModel(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => CartModel(),
       )
     ],
     child: MyApp(),

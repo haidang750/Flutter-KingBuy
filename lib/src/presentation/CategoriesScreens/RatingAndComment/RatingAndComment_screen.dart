@@ -64,54 +64,61 @@ class RatingAndCommentState extends State<RatingAndComment> with ResponsiveWidge
     productCommentSubject.sink.add(comments != null ? comments : []);
     userProfileSubject.sink.add(userData.profile);
 
-    return Container(
-        padding: EdgeInsets.symmetric(horizontal: 10),
-        child: ListView(
-          children: [
-            SizedBox(height: 30),
-            buildRating(),
-            SizedBox(height: 10),
-            StreamBuilder(
-              stream: Rx.combineLatest2(isUserRatedSubject.stream, userProfileSubject.stream, (stream1, stream2) => stream1),
-              builder: (context, snapshot) {
-                if (userData.profile != null) {
-                  isUserRatedSubject.sink.add(productDetailViewModel.isUserRated(userData.profile.id, productCommentSubject.stream.value));
-                } else {
-                  isUserRatedSubject.sink.add(false);
-                }
+    return SingleChildScrollView(
+      physics: BouncingScrollPhysics(),
+      child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 10),
+          child: ListView(
+            shrinkWrap: true,
+            physics: BouncingScrollPhysics(),
+            children: [
+              SizedBox(height: 30),
+              buildRating(),
+              SizedBox(height: 10),
+              StreamBuilder(
+                stream: Rx.combineLatest2(isUserRatedSubject.stream, userProfileSubject.stream, (stream1, stream2) => stream1),
+                builder: (context, snapshot) {
+                  if (userData.profile != null) {
+                    isUserRatedSubject.sink
+                        .add(productDetailViewModel.isUserRated(userData.profile.id, productCommentSubject.stream.value));
+                  } else {
+                    isUserRatedSubject.sink.add(false);
+                  }
 
-                if (snapshot.hasData) {
-                  return Column(
-                    children: [
-                      GestureDetector(
-                          child: Container(
-                              height: 45,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                  border: Border.all(width: 1, color: snapshot.data ? AppColors.grey : AppColors.primary),
-                                  borderRadius: BorderRadius.all(Radius.circular(6))),
-                              child: Text(snapshot.data ? "Đã đánh giá" : "Viết đánh giá",
-                                  style: TextStyle(fontSize: 14, color: snapshot.data ? AppColors.grey : AppColors.primary))),
-                          onTap: snapshot.data
-                              ? null
-                              : () async {
-                                  if (await AppUtils.checkLogin()) {
-                                    await Navigator.pushNamed(scaffoldKey.currentContext, Routers.Writing_Comment, arguments: widget.productId);
-                                  } else {
-                                    AppUtils.myShowDialog(scaffoldKey.currentContext, widget.productId, widget.productVideoLink);
-                                  }
-                                }),
-                      SizedBox(height: 15)
-                    ],
-                  );
-                } else {
-                  return MyLoading();
-                }
-              },
-            ),
-            buildComments(),
-          ],
-        ));
+                  if (snapshot.hasData) {
+                    return Column(
+                      children: [
+                        GestureDetector(
+                            child: Container(
+                                height: 45,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                    border: Border.all(width: 1, color: snapshot.data ? AppColors.grey : AppColors.primary),
+                                    borderRadius: BorderRadius.all(Radius.circular(6))),
+                                child: Text(snapshot.data ? "Đã đánh giá" : "Viết đánh giá",
+                                    style: TextStyle(fontSize: 14, color: snapshot.data ? AppColors.grey : AppColors.primary))),
+                            onTap: snapshot.data
+                                ? null
+                                : () async {
+                                    if (await AppUtils.checkLogin()) {
+                                      await Navigator.pushNamed(scaffoldKey.currentContext, Routers.Writing_Comment,
+                                          arguments: widget.productId);
+                                    } else {
+                                      AppUtils.myShowDialog(scaffoldKey.currentContext, widget.productId, widget.productVideoLink);
+                                    }
+                                  }),
+                        SizedBox(height: 15)
+                      ],
+                    );
+                  } else {
+                    return MyLoading();
+                  }
+                },
+              ),
+              buildComments(),
+            ],
+          )),
+    );
   }
 
   Widget buildRating() {

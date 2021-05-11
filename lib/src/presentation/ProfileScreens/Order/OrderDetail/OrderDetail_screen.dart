@@ -224,9 +224,7 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
                     ),
                     SizedBox(height: 3),
                     Container(
-                        child: isGift
-                            ? Text("Tặng kèm", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: Colors.purple))
-                            : null)
+                        child: isGift ? Text("Tặng kèm", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: Colors.purple)) : null)
                   ],
                 ),
               ),
@@ -291,7 +289,7 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
               ),
               Text(widget.order.orderAddress, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400, height: 1.3)),
               Text(
-                  "${widget.order.orderPhone != null ? widget.order.orderPhone : ""}${widget.order.orderPhone2 != null ? -widget.order.orderPhone2 : ""}",
+                  "${widget.order.orderPhone != null ? widget.order.orderPhone : ""}${widget.order.orderPhone2 != null ? "-${widget.order.orderPhone2}" : ""}",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400, height: 1.6))
             ],
           ))

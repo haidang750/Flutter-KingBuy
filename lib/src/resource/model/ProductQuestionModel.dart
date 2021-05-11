@@ -1,4 +1,6 @@
-class ProductQuestionModel {
+import 'package:flutter/material.dart';
+
+class ProductQuestionModel with ChangeNotifier {
   ProductQuestionModel({
     this.questions,
     this.totalRecords,
@@ -16,6 +18,11 @@ class ProductQuestionModel {
         "rows": List<dynamic>.from(questions.map((x) => x.toJson())),
         "total_records": totalRecords,
       };
+
+  setProductQuestion(ProductQuestionModel productQuestionModel){
+    this.questions = productQuestionModel.questions;
+    this.totalRecords = productQuestionModel.totalRecords;
+  }
 }
 
 class Question {
