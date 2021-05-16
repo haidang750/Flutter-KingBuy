@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' show Client, Response;
 import 'package:projectui/src/resource/model/CouponModel.dart';
-import 'package:projectui/src/resource/model/LoginModel.dart';
 import 'package:projectui/src/utils/app_shared.dart';
 
 class CouponRepository {

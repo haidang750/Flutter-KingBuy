@@ -36,6 +36,11 @@ class AppImages {
   static final String icUser2 = 'assets/icons/user@2x.png';
   static final String icZalo = 'assets/icons/zalo.png';
   static final String icEdit = 'assets/icons/editComment.png';
+  static final String icDisableRadio = 'assets/icons/disableRadio.png';
+  static final String icEnableRadio = 'assets/icons/enableRadio.png';
+  static final String icCoupon = 'assets/icons/coupon.png';
+  static final String icCoin = 'assets/icons/coin.png';
+  static final String icWallet = 'assets/icons/wallet.png';
 
   //background
   static final String bgSplashScreen = 'assets/backgrounds/splashBackground.jpg';

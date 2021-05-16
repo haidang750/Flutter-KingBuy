@@ -49,6 +49,7 @@ dependencies:
   responsive_builder: ^0.4.1
   flutter_image: ^3.0.0
   flutter_picker: ^2.0.1
+  sqflite: ^2.0.0+3
   cached_network_image: ^3.0.0
   carousel_slider: ^3.0.0
   rx_shared_preferences:

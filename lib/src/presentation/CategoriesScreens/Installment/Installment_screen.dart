@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/CategoriesScreens/CategoriesScreens.dart';
 import 'package:projectui/src/presentation/base/base.dart';

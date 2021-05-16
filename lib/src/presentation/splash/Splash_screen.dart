@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/presentation.dart';
-import 'package:projectui/src/resource/model/CartModel.dart';
-import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -17,14 +16,16 @@ class SplashScreenState extends State<SplashScreen> with ResponsiveWidget {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      splashScreenViewModel.initApp(context);
+    getCart();
+    splashScreenViewModel.getProfileUser();
+    splashScreenViewModel.getCountNotification();
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      Timer(Duration(seconds: 6), () => Navigator.pushNamed(context, Routers.Navigation));
     });
-    Timer(Duration(seconds: 5), () => Navigator.pushNamed(context, Routers.Navigation));
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      Provider.of<CartModel>(context, listen: false).setTotalProducts(0);
-      Provider.of<CartModel>(context, listen: false).setCartProducts([]);
-    });
+  }
+
+  getCart() async {
+    await splashScreenViewModel.getCart(context);
   }
 
   @override

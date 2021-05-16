@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/base/base.dart';
 import 'package:projectui/src/presentation/presentation.dart';
-import '../ForgetPassword/ForgetPassword_screen.dart';
 import 'Login_viewmodel.dart';
-import '../Register/Register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   LoginScreen({this.productId = -1, this.productVideoLink = ""});

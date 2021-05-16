@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/presentation/Navigation/Navigation_screen.dart';
 import 'package:projectui/src/presentation/base/base.dart';
-import 'package:projectui/src/resource/model/Data.dart';
-import 'package:provider/provider.dart';
+import 'package:projectui/src/resource/model/CartModel.dart';
 import 'Home_viewmodel.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,20 +26,13 @@ class HomeScreenState extends State<HomeScreen> with ResponsiveWidget {
   }
 
   Widget buildScreen() {
-    Data data = Provider.of<Data>(context);
-
-    return GestureDetector(
-      child: Center(
-          child: GestureDetector(
-        child: Text("Trang chủ"),
-        onTap: () {
-          MainTabControlDelegate.getInstance().tabJumpTo(1);
-        },
-      )),
+    return Center(
+        child: GestureDetector(
+      child: Text("Trang chủ"),
       onTap: () {
-        print(data.memberCardNumber);
+        MainTabControlDelegate.getInstance().tabJumpTo(1);
       },
-    );
+    ));
   }
 
   @override

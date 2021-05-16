@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/CategoriesScreens/ProductDetail/ProductDetail_viewmodel.dart';
@@ -9,6 +10,7 @@ import 'package:projectui/src/presentation/widgets/MyNetworkImage.dart';
 import 'package:projectui/src/presentation/widgets/ShowPath.dart';
 import 'package:projectui/src/presentation/widgets/ShowRating.dart';
 import 'package:projectui/src/presentation/widgets/ShowMoney.dart';
+import 'package:projectui/src/resource/database/CartProvider.dart';
 import 'package:projectui/src/resource/model/CommentModel.dart';
 import 'package:projectui/src/resource/model/Data.dart';
 import 'package:projectui/src/resource/model/DetailProductModel.dart';
@@ -59,8 +61,9 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
   final productCommentSubject = BehaviorSubject<List<Comment>>();
   final userProfileSubject = BehaviorSubject<Profile>();
   final productQuestionSubject = BehaviorSubject<List<Question>>();
-  final cartProductsSubject = BehaviorSubject<List<CartProduct>>();
-  final addPurchasedTogetherProductToCart = BehaviorSubject<List<CartProduct>>();
+  final cartSubject = BehaviorSubject<CartModel>();
+  final totalQuantitySubject = BehaviorSubject<int>();
+  final cartBadgeSubject = BehaviorSubject<int>();
 
   @override
   void initState() {
@@ -89,7 +92,9 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
       productDetailViewModel.getReviewByProduct(context, widget.productId);
       Provider.of<ViewedProductLocalStorage>(context, listen: false).addViewedProduct(widget.productId);
     });
-    addPurchasedTogetherProductToCart.sink.add([]);
+    cartSubject.sink.add(CartModel.of(context));
+    totalQuantitySubject.sink.add(CartModel.of(context).totalQuantity);
+    cartBadgeSubject.sink.add(CartModel.of(context).totalUnread);
     super.initState();
   }
 
@@ -125,8 +130,9 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
     productCommentSubject.close();
     userProfileSubject.close();
     productQuestionSubject.close();
-    cartProductsSubject.close();
-    addPurchasedTogetherProductToCart.close();
+    cartSubject.close();
+    totalQuantitySubject.close();
+    cartBadgeSubject.close();
   }
 
   @override
@@ -157,11 +163,39 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                   },
                 ),
                 SizedBox(width: 10),
-                GestureDetector(
-                  child: Image.asset(AppImages.icShoppingCart, height: 28, width: 28, color: AppColors.white),
-                  onTap: () {
-                    Navigator.pushNamed(context, Routers.Cart, arguments: cartProductsSubject.stream.value);
-                  },
+                Stack(
+                  children: [
+                    GestureDetector(
+                      child: Image.asset(AppImages.icShoppingCart, height: 28, width: 28, color: AppColors.white),
+                      onTap: () async {
+                        CartModel.of(context).readAll();
+                        cartBadgeSubject.sink.add(CartModel.of(context).totalUnread);
+                        totalQuantitySubject.sink.add(await Navigator.push(
+                            context, MaterialPageRoute(builder: (context) => CartScreen(totalQuantity: totalQuantitySubject.stream.value))));
+                      },
+                    ),
+                    StreamBuilder(
+                      stream: cartBadgeSubject.stream,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          if (snapshot.data == 0) {
+                            return Container();
+                          } else {
+                            return Container(
+                                height: 16,
+                                width: 16,
+                                transform: Matrix4.translationValues(18, -2, 0.0),
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(8))),
+                                child: Text(snapshot.data.toString(),
+                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.buttonContent)));
+                          }
+                        } else {
+                          return Container();
+                        }
+                      },
+                    )
+                  ],
                 ),
               ],
             ))
@@ -1212,7 +1246,6 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                                             itemCount: snapshot.data.length,
                                             itemBuilder: (context, index) {
                                               Product product = snapshot.data[index];
-                                              CartProduct cartProduct = CartProduct(product: product, total: 1);
 
                                               return Column(
                                                 children: [
@@ -1234,19 +1267,9 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                                                                       if (snapshot3.data[index]) {
                                                                         countCheckPurchasedTogetherProductSubject.sink
                                                                             .add(countCheckPurchasedTogetherProductSubject.stream.value - 1);
-                                                                        for (int i = 0;
-                                                                            i < addPurchasedTogetherProductToCart.stream.value.length;
-                                                                            i++) {
-                                                                          if (product.id ==
-                                                                              addPurchasedTogetherProductToCart.stream.value[i].product.id) {
-                                                                            addPurchasedTogetherProductToCart.stream.value.removeAt(i);
-                                                                            break;
-                                                                          }
-                                                                        }
                                                                       } else {
                                                                         countCheckPurchasedTogetherProductSubject.sink
                                                                             .add(countCheckPurchasedTogetherProductSubject.stream.value + 1);
-                                                                        addPurchasedTogetherProductToCart.stream.value.add(cartProduct);
                                                                       }
                                                                       checkList.replaceRange(index, index + 1, [!snapshot3.data[index]]);
                                                                       purchasedTogetherProductSubject.sink.add(checkList);
@@ -1273,17 +1296,9 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                                                                   if (snapshot3.data[index]) {
                                                                     countCheckPurchasedTogetherProductSubject.sink
                                                                         .add(countCheckPurchasedTogetherProductSubject.stream.value - 1);
-                                                                    for (int i = 0; i < addPurchasedTogetherProductToCart.stream.value.length; i++) {
-                                                                      if (product.id ==
-                                                                          addPurchasedTogetherProductToCart.stream.value[i].product.id) {
-                                                                        addPurchasedTogetherProductToCart.stream.value.removeAt(i);
-                                                                        break;
-                                                                      }
-                                                                    }
                                                                   } else {
                                                                     countCheckPurchasedTogetherProductSubject.sink
                                                                         .add(countCheckPurchasedTogetherProductSubject.stream.value + 1);
-                                                                    addPurchasedTogetherProductToCart.stream.value.add(cartProduct);
                                                                   }
                                                                   checkList.replaceRange(index, index + 1, [!snapshot3.data[index]]);
                                                                   purchasedTogetherProductSubject.sink.add(checkList);
@@ -1303,26 +1318,39 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                                           SizedBox(height: 5),
                                           StreamBuilder(
                                             stream: countCheckPurchasedTogetherProductSubject.stream,
-                                            builder: (context, snapshot) {
-                                              if (snapshot.hasData) {
+                                            builder: (context, snapshot4) {
+                                              if (snapshot4.hasData) {
                                                 return GestureDetector(
                                                     child: Container(
                                                       height: 40,
                                                       width: MediaQuery.of(context).size.width * 0.8,
                                                       decoration: BoxDecoration(
-                                                          color: snapshot.data > 0 ? AppColors.primary : AppColors.grey,
+                                                          color: snapshot4.data > 0 ? AppColors.primary : AppColors.grey,
                                                           borderRadius: BorderRadius.all(Radius.circular(20))),
                                                       alignment: Alignment.center,
-                                                      child: Text("Thêm ${snapshot.data} sản phẩm vào giỏ hàng",
+                                                      child: Text("Thêm ${snapshot4.data} sản phẩm vào giỏ hàng",
                                                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
                                                     ),
-                                                    onTap: snapshot.data > 0
-                                                        ? () async {
-                                                            cartProductsSubject.sink
-                                                                .add(Provider.of<CartModel>(context, listen: false).getCartProducts);
-                                                            countCheckPurchasedTogetherProductSubject.sink.add(0);
-                                                            await handleAddToCart(addPurchasedTogetherProductToCart.stream.value);
-                                                            addPurchasedTogetherProductToCart.sink.add([]);
+                                                    onTap: snapshot4.data != 0
+                                                        ? () {
+                                                            List<Product> products = [];
+                                                            for (int i = 0; i < snapshot.data.length; i++) {
+                                                              if (purchasedTogetherProductSubject.stream.value[i]) {
+                                                                products.add(snapshot.data[i]);
+                                                              }
+                                                            }
+                                                            for (int i = 0; i < products.length; i++) {
+                                                              if (i == products.length - 1) {
+                                                                CartModel.of(context, listen: false).addProduct(products[i], colorId: -1);
+                                                                totalQuantitySubject.sink.add(totalQuantitySubject.stream.value + 1);
+                                                                cartBadgeSubject.sink.add(cartBadgeSubject.stream.value + 1);
+                                                                handleAddToCart(addMainProduct: false);
+                                                              } else {
+                                                                CartModel.of(context, listen: false).addProduct(products[i], colorId: -1);
+                                                                totalQuantitySubject.sink.add(totalQuantitySubject.stream.value + 1);
+                                                                cartBadgeSubject.sink.add(cartBadgeSubject.stream.value + 1);
+                                                              }
+                                                            }
                                                           }
                                                         : null);
                                               } else {
@@ -1345,16 +1373,16 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                             color: Colors.white,
                             child: StreamBuilder(
                               stream: showFullPurchasedTogetherProductSubject.stream,
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData) {
+                              builder: (context, snapshot5) {
+                                if (snapshot5.hasData) {
                                   return GestureDetector(
                                     behavior: HitTestBehavior.translucent,
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        Text(snapshot.data ? "Rút gọn" : "Xem tất cả", style: TextStyle(fontSize: 14, color: Colors.blue)),
+                                        Text(snapshot5.data ? "Rút gọn" : "Xem tất cả", style: TextStyle(fontSize: 14, color: Colors.blue)),
                                         SizedBox(width: 5),
-                                        Icon(snapshot.data ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 18, color: Colors.blue)
+                                        Icon(snapshot5.data ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 18, color: Colors.blue)
                                       ],
                                     ),
                                     onTap: () {
@@ -1493,7 +1521,6 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                           MaterialPageRoute(
                               builder: (context) => ProductQuestions(
                                     product: widget.product,
-                                    cartProducts: cartProductsSubject.stream.value,
                                   )));
                     } else {
                       AppUtils.myShowDialog(context, widget.productId, widget.productVideoLink);
@@ -1525,7 +1552,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
               11, Colors.black, true, () => AppUtils.handleMessenger(context)),
           buildVerticalSeperateLine(8, 0.5, Colors.grey),
           buildBottomBarItem(MediaQuery.of(context).size.width * 0.28, Colors.white, AppImages.icShoppingCart, 24, true, true, "Thêm vào giỏ hàng",
-              11, Colors.black, true, addMainProductToCart),
+              11, Colors.black, true, handleAddToCart),
           buildBottomBarItem(MediaQuery.of(context).size.width * 0.35, AppColors.primary, null, null, false, false, "Mua ngay", 13, Colors.white,
               false, () => handlePurchaseButton("Mua ngay")),
         ],
@@ -1545,8 +1572,6 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
 
   Widget buildBottomBarItem(double containerWidth, Color containerColor, String iconSource, double iconSize, bool iconColor, bool isShowBadge,
       String title, double titleSize, Color titleColor, bool isShowIcon, Function action) {
-    List<CartProduct> cartProducts = Provider.of<CartModel>(context).getCartProducts;
-
     return GestureDetector(
       child: Container(
         width: containerWidth,
@@ -1555,7 +1580,36 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            isShowIcon ? Image.asset(iconSource, height: iconSize, width: iconSize, color: iconColor ? Colors.black : null) : Container(),
+            isShowIcon
+                ? (isShowBadge
+                    ? (StreamBuilder(
+                        stream: cartBadgeSubject.stream,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            if (snapshot.data == 0) {
+                              return Image.asset(iconSource, height: iconSize, width: iconSize, color: iconColor ? Colors.black : null);
+                            } else {
+                              return Stack(
+                                children: [
+                                  Image.asset(iconSource, height: iconSize, width: iconSize, color: iconColor ? Colors.black : null),
+                                  Container(
+                                      height: 15,
+                                      width: 15,
+                                      transform: Matrix4.translationValues(17, -3, 0.0),
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(8))),
+                                      child: Text(snapshot.data.toString(),
+                                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: AppColors.buttonContent)))
+                                ],
+                              );
+                            }
+                          } else {
+                            return Image.asset(iconSource, height: iconSize, width: iconSize, color: iconColor ? Colors.black : null);
+                          }
+                        },
+                      ))
+                    : Image.asset(iconSource, height: iconSize, width: iconSize, color: iconColor ? Colors.black : null))
+                : Container(),
             isShowIcon
                 ? SizedBox(
                     height: 2,
@@ -1577,110 +1631,133 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
   }
 
   addMainProductToCart() {
-    List<CartProduct> cartProducts = [];
-    CartProduct cartProduct = CartProduct(product: widget.product, total: 1);
-    cartProducts.add(cartProduct);
-    handleAddToCart(cartProducts);
+    int colorId = currentColorProductSubject.stream.value != -1 ? widget.product.colors[currentColorProductSubject.stream.value]["id"] : -1;
+    CartModel.of(context, listen: false).addProduct(widget.product, colorId: colorId);
+    totalQuantitySubject.sink.add(totalQuantitySubject.stream.value + 1);
+    cartBadgeSubject.sink.add(cartBadgeSubject.stream.value + 1);
   }
 
-  handleAddToCart(List<CartProduct> cartProducts) {
-    Provider.of<CartModel>(context, listen: false).setCartModel(cartProducts);
-    cartProductsSubject.sink.add(Provider.of<CartModel>(context, listen: false).getCartProducts);
+  handleAddToCart({bool addMainProduct = true}) {
+    if (addMainProduct) {
+      addMainProductToCart();
+    }
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      cartSubject.sink.add(CartModel.of(context));
+    });
+    // CartModel.of(context, listen: false).deleteAllProducts(); // xóa tất cả các cartItem có trong Cart
+    // CartProvider.instance.deleteCart(); // xóa Cart
 
     showMaterialModalBottomSheet(
         context: scaffoldKey.currentContext,
         builder: (context) => StreamBuilder(
-            stream: cartProductsSubject.stream,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Container(
-                    height: 50.0 + 70 * snapshot.data.length + 60,
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Column(
-                      children: [
-                        Container(
-                            height: 40,
-                            child: Row(
-                              children: [
-                                Image.asset(AppImages.icSuccess, height: 16, width: 16),
-                                SizedBox(width: 5),
-                                Text("${Provider.of<CartModel>(context, listen: false).getTotalProducts} sản phẩm đã được thêm vào giỏ hàng",
-                                    style: TextStyle(fontSize: 14, color: Colors.green, fontWeight: FontWeight.w600)),
-                                Spacer(),
-                                GestureDetector(
-                                    child: Icon(Icons.cancel, size: 18, color: AppColors.black),
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                    })
-                              ],
-                            )),
-                        SizedBox(height: 10),
-                        Container(
-                            height: 70.0 * snapshot.data.length,
-                            child: ListView.builder(
-                              itemCount: snapshot.data.length,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                Product product = snapshot.data[index].product;
+              stream: cartSubject.stream,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  int totalQuantity;
+                  List<CartItem> cartItems;
+                  if (snapshot.data == null) {
+                    totalQuantity = 0;
+                    cartItems = [];
+                  } else {
+                    totalQuantity = snapshot.data.totalQuantity;
+                    cartItems = snapshot.data.products;
+                  }
 
-                                return Column(
-                                  children: [
-                                    Container(
-                                        height: 60,
-                                        transform: Matrix4.translationValues(0.0, -20, 0.0),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          children: [
-                                            MyNetworkImage(url: "${AppEndpoint.BASE_URL}${product.imageSource}", height: 60, width: 60),
-                                            SizedBox(width: 10),
-                                            Expanded(
-                                                child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(product.name),
-                                                ShowMoney(
-                                                    price: product.salePrice,
-                                                    fontSizeLarge: 14,
-                                                    fontSizeSmall: 11,
-                                                    color: AppColors.black,
-                                                    fontWeight: FontWeight.bold,
-                                                    isLineThrough: false)
-                                              ],
-                                            ))
-                                          ],
-                                        )),
-                                    SizedBox(height: 10)
-                                  ],
-                                );
-                              },
-                            )),
-                        SizedBox(height: 10),
-                        Container(
-                            height: 40,
-                            width: MediaQuery.of(context).size.width * 0.7,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(20))),
-                            child: GestureDetector(
-                                child:
-                                    Text("Xem giỏ hàng", style: TextStyle(fontSize: 14, color: AppColors.buttonContent, fontWeight: FontWeight.bold)),
-                                onTap: () {
-                                  Navigator.pushNamed(context, Routers.Cart, arguments: cartProductsSubject.stream.value);
-                                })),
-                      ],
-                    ));
-              } else {
-                return MyLoading();
-              }
-            }));
+                  return Container(
+                      height: 50.0 + 70 * cartItems.length + 50,
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Column(
+                        children: [
+                          Container(
+                              height: 40,
+                              child: Row(
+                                children: [
+                                  Image.asset(AppImages.icSuccess, height: 16, width: 16),
+                                  SizedBox(width: 5),
+                                  Text("${totalQuantitySubject.stream.value} sản phẩm đã được thêm vào giỏ hàng",
+                                      style: TextStyle(fontSize: 14, color: Colors.green, fontWeight: FontWeight.w600)),
+                                  Spacer(),
+                                  GestureDetector(
+                                      child: Icon(Icons.cancel, size: 18, color: AppColors.black),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                      })
+                                ],
+                              )),
+                          Container(
+                              height: 70.0 * cartItems.length,
+                              child: ListView.builder(
+                                itemCount: cartItems.length,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  CartItem cartItem = cartItems[index];
+
+                                  return Column(
+                                    children: [
+                                      Container(
+                                          height: 60,
+                                          transform: Matrix4.translationValues(0.0, -20, 0.0),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            children: [
+                                              MyNetworkImage(url: "${AppEndpoint.BASE_URL}${cartItem.product.imageSource}"),
+                                              SizedBox(width: 10),
+                                              Expanded(
+                                                  child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(cartItem.product.name),
+                                                  ShowMoney(
+                                                      price: cartItem.product.salePrice,
+                                                      fontSizeLarge: 14,
+                                                      fontSizeSmall: 11,
+                                                      color: AppColors.black,
+                                                      fontWeight: FontWeight.bold,
+                                                      isLineThrough: false)
+                                                ],
+                                              ))
+                                            ],
+                                          )),
+                                      SizedBox(height: 10)
+                                    ],
+                                  );
+                                },
+                              )),
+                          SizedBox(height: 10),
+                          Container(
+                              height: 40,
+                              width: MediaQuery.of(context).size.width * 0.7,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(20))),
+                              child: GestureDetector(
+                                  child: Text("Xem giỏ hàng",
+                                      style: TextStyle(fontSize: 14, color: AppColors.buttonContent, fontWeight: FontWeight.bold)),
+                                  onTap: () async {
+                                    CartModel.of(context).readAll();
+                                    cartBadgeSubject.sink.add(CartModel.of(context).totalUnread);
+                                    totalQuantitySubject.sink.add(await Navigator.push(context,
+                                        MaterialPageRoute(builder: (context) => CartScreen(totalQuantity: totalQuantitySubject.stream.value))));
+                                    ;
+                                  })),
+                        ],
+                      ));
+                } else {
+                  return MyLoading();
+                }
+              },
+            ));
   }
 
   // hàm này sử dụng cho cả 2 button "Đặt mua trả góp" và "Mua ngay"
-  void handlePurchaseButton(String buttonContent) {
+  void handlePurchaseButton(String buttonContent) async {
     // nếu sản phẩm chưa hết hàng
     if (productStatus == 1) {
       if (buttonContent == "Mua ngay") {
-        Navigator.pushNamed(context, Routers.Cart, arguments: cartProductsSubject.stream.value);
+        CartModel.of(context).readAll();
+        cartBadgeSubject.sink.add(CartModel.of(context).totalUnread);
+        totalQuantitySubject.sink.add(
+            await Navigator.push(context, MaterialPageRoute(builder: (context) => CartScreen(totalQuantity: totalQuantitySubject.stream.value))));
       } else {
         Navigator.push(
             context,

@@ -107,9 +107,7 @@ class RootProfileScreenState extends State<RootProfileScreen> with ResponsiveWid
             height: 15,
           ),
           Text(userData.profile != null ? userData.profile.name : "Guest", style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
-          userData.profile != null
-              ? Text(userData.profile.phoneNumber, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w400))
-              : Container(),
+          userData.profile != null ? Text(userData.profile.phoneNumber, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w400)) : Container(),
           userData.rewardPoints != null
               ? Text("${userData.rewardPoints} điểm", style: TextStyle(fontSize: 21, color: AppColors.primary, fontWeight: FontWeight.bold))
               : Container()
@@ -222,7 +220,7 @@ class RootProfileScreenState extends State<RootProfileScreen> with ResponsiveWid
         break;
       case 3:
         if (await AppUtils.checkLogin()) {
-          await Navigator.pushNamed(context, Routers.List_Address);
+          await Navigator.push(context, MaterialPageRoute(builder: (context) => ListAddress(enableSelect: false, isCallFromCart: false)));
         } else {
           AppUtils.myShowDialog(context, -1, "");
         }

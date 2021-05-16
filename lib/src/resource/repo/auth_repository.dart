@@ -23,16 +23,14 @@ class AuthRepository {
     return _instance;
   }
 
-  Future<NetworkState<LoginData>> sendRequestLogin(
-      String email, String password) async {
+  Future<NetworkState<LoginData>> sendRequestLogin(String email, String password) async {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
     Map<String, dynamic> params = {};
     params.addAll({"identity": email, "password": password});
 
     try {
-      Response response =
-          await AppClients().post(AppEndpoint.LOGIN, data: params);
+      Response response = await AppClients().post(AppEndpoint.LOGIN, data: params);
 
       print("data: ${response.data}");
       NetworkState<LoginData> result = NetworkState(
@@ -42,8 +40,7 @@ class AuthRepository {
           converter: (data) => LoginData.fromJson(data),
         ),
       );
-      print(
-          "State.data: ${result.isSuccess} - ${result.isError} - ${result.data.token}");
+      print("State.data: ${result.isSuccess} - ${result.isError} - ${result.data.token}");
       if (result.isSuccess && !result.isError && result.data.token != null) {
         await AppShared.setAccessToken(result.data.token);
         return result;
@@ -58,13 +55,14 @@ class AuthRepository {
   Future<NetworkState<Data>> getProfile() async {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
 
     try {
-      Response response = await AppClients().get(AppEndpoint.GET_USER_PROFILE);
-      return NetworkState(
-          status: response.statusCode,
-          response: NetworkResponse.fromJson(response.data,
-              converter: (data) => Data.fromJson(data)));
+      Response response = await AppClients().get(AppEndpoint.GET_USER_PROFILE,
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
+      return NetworkState(status: response.statusCode, response: NetworkResponse.fromJson(response.data, converter: (data) => Data.fromJson(data)));
     } on DioError catch (e) {
       return NetworkState.withError(e);
     }
@@ -89,16 +87,13 @@ class AuthRepository {
         "date_of_birth": dateOfBirth,
         "gender": gender,
         "email": email,
-        "avatar": avatarPath != null
-            ? await MultipartFile.fromFile(avatarPath)
-            : null,
+        "avatar": avatarPath != null ? await MultipartFile.fromFile(avatarPath) : null,
       });
-      Response response =
-          await AppClients().post(AppEndpoint.USER_UPDATE_PROFILE,
-              data: data,
-              options: Options(headers: {
-                "${AppEndpoint.keyAuthorization}": "Bearer $token",
-              }));
+      Response response = await AppClients().post(AppEndpoint.USER_UPDATE_PROFILE,
+          data: data,
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
       print("Response: $response");
       return NetworkState(
         status: response.statusCode,
@@ -112,14 +107,12 @@ class AuthRepository {
     }
   }
 
-  Future<NetworkState<PromotionModel>> getPromotion(
-      int limit, int offset) async {
+  Future<NetworkState<PromotionModel>> getPromotion(int limit, int offset) async {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
 
     try {
-      Response response = await AppClients().get(AppEndpoint.GET_PROMOTION,
-          queryParameters: {"limit": limit, "offset": offset});
+      Response response = await AppClients().get(AppEndpoint.GET_PROMOTION, queryParameters: {"limit": limit, "offset": offset});
       print("Response: $response");
       return NetworkState(
         status: response.statusCode,
@@ -158,8 +151,7 @@ class AuthRepository {
     if (isDisconnect) return NetworkState.withDisconnect();
 
     try {
-      Response response =
-          await AppClients().get(AppEndpoint.GET_DISTRICT + "/$provinceCode");
+      Response response = await AppClients().get(AppEndpoint.GET_DISTRICT + "/$provinceCode");
 
       return NetworkState(
         status: response.statusCode,
@@ -178,8 +170,7 @@ class AuthRepository {
     if (isDisconnect) return NetworkState.withDisconnect();
 
     try {
-      Response response =
-          await AppClients().get(AppEndpoint.GET_WARD + "/$districtCode");
+      Response response = await AppClients().get(AppEndpoint.GET_WARD + "/$districtCode");
 
       return NetworkState(
         status: response.statusCode,
@@ -199,11 +190,10 @@ class AuthRepository {
     String token = await AppShared.getAccessToken();
 
     try {
-      Response response =
-          await AppClients().get(AppEndpoint.GET_DELIVERY_ADDRESS,
-              options: Options(headers: {
-                "${AppEndpoint.keyAuthorization}": "Bearer $token",
-              }));
+      Response response = await AppClients().get(AppEndpoint.GET_DELIVERY_ADDRESS,
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
 
       return NetworkState(
         status: response.statusCode,
@@ -251,12 +241,11 @@ class AuthRepository {
         "company_address": companyAddress,
         "company_email": companyEmail
       });
-      Response response =
-          await AppClients().post(AppEndpoint.CREATE_DELIVERY_ADDRESS,
-              data: data,
-              options: Options(headers: {
-                "${AppEndpoint.keyAuthorization}": "Bearer $token",
-              }));
+      Response response = await AppClients().post(AppEndpoint.CREATE_DELIVERY_ADDRESS,
+          data: data,
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
       print("Response: $response");
       return NetworkState(
         status: response.statusCode,
@@ -306,12 +295,11 @@ class AuthRepository {
         "company_address": companyAddress,
         "company_email": companyEmail
       });
-      Response response =
-          await AppClients().post(AppEndpoint.UPDATE_DELIVERY_ADDRESS,
-              data: data,
-              options: Options(headers: {
-                "${AppEndpoint.keyAuthorization}": "Bearer $token",
-              }));
+      Response response = await AppClients().post(AppEndpoint.UPDATE_DELIVERY_ADDRESS,
+          data: data,
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
       print("Response: $response");
       return NetworkState(
         status: response.statusCode,
@@ -336,12 +324,11 @@ class AuthRepository {
       FormData data = FormData.fromMap({
         "delivery_address_id": deliveryAddressId,
       });
-      Response response =
-          await AppClients().post(AppEndpoint.DELETE_DELIVERY_ADDRESS,
-              data: data,
-              options: Options(headers: {
-                "${AppEndpoint.keyAuthorization}": "Bearer $token",
-              }));
+      Response response = await AppClients().post(AppEndpoint.DELETE_DELIVERY_ADDRESS,
+          data: data,
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
       print("Response: $response");
       return NetworkState(
         status: response.statusCode,
@@ -355,19 +342,17 @@ class AuthRepository {
     }
   }
 
-  Future<NetworkState<ListProductsModel>> getViewedProducts(
-      int limit, int offset) async {
+  Future<NetworkState<ListProductsModel>> getViewedProducts(int limit, int offset) async {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
     String token = await AppShared.getAccessToken();
 
     try {
-      Response response =
-          await AppClients().get(AppEndpoint.GET_VIEWED_PRODUCTS,
-              queryParameters: {"limit": limit, "offset": offset},
-              options: Options(headers: {
-                "${AppEndpoint.keyAuthorization}": "Bearer $token",
-              }));
+      Response response = await AppClients().get(AppEndpoint.GET_VIEWED_PRODUCTS,
+          queryParameters: {"limit": limit, "offset": offset},
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
       print("Response: $response");
       return NetworkState(
         status: response.statusCode,
@@ -387,33 +372,28 @@ class AuthRepository {
     String token = await AppShared.getAccessToken();
 
     try {
-      Response response =
-          await AppClients().get(AppEndpoint.GET_COUNT_NOTIFICATION,
-              options: Options(headers: {
-                "${AppEndpoint.keyAuthorization}": "Bearer $token",
-              }));
+      Response response = await AppClients().get(AppEndpoint.GET_COUNT_NOTIFICATION,
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
       print("Count Notification: ${response.data["data"]}");
-      return NetworkState(
-          status: response.statusCode,
-          response: NetworkResponse(data: response.data["data"]));
+      return NetworkState(status: response.statusCode, response: NetworkResponse(data: response.data["data"]));
     } on DioError catch (e) {
       return NetworkState.withError(e);
     }
   }
 
-  Future<NetworkState<NotificationModel>> getListNotification(
-      int limit, int offset) async {
+  Future<NetworkState<NotificationModel>> getListNotification(int limit, int offset) async {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
     String token = await AppShared.getAccessToken();
 
     try {
-      Response response =
-          await AppClients().get(AppEndpoint.GET_LIST_NOTIFICATION,
-              queryParameters: {"limit": limit, "offset": offset},
-              options: Options(headers: {
-                "${AppEndpoint.keyAuthorization}": "Bearer $token",
-              }));
+      Response response = await AppClients().get(AppEndpoint.GET_LIST_NOTIFICATION,
+          queryParameters: {"limit": limit, "offset": offset},
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
       print("Response: $response");
       return NetworkState(
         status: response.statusCode,
@@ -427,8 +407,7 @@ class AuthRepository {
     }
   }
 
-  Future<NetworkState<OrderHistoryModel>> getOrderHistory(
-      int filter, int limit, int offset) async {
+  Future<NetworkState<OrderHistoryModel>> getOrderHistory(int filter, int limit, int offset) async {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
     String token = await AppShared.getAccessToken();
@@ -464,44 +443,31 @@ class AuthRepository {
     String token = await AppShared.getAccessToken();
 
     try {
-      Response response =
-          await AppClients().get(AppEndpoint.CHECK_FEEDBACK_OF_USER,
-              options: Options(headers: {
-                "${AppEndpoint.keyAuthorization}": "Bearer $token",
-              }));
+      Response response = await AppClients().get(AppEndpoint.CHECK_FEEDBACK_OF_USER,
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
 
-      return NetworkState(
-          status: response.statusCode,
-          response: NetworkResponse(data: response.data["data"]));
+      return NetworkState(status: response.statusCode, response: NetworkResponse(data: response.data["data"]));
     } on DioError catch (e) {
       return NetworkState.withError(e);
     }
   }
 
-  Future<NetworkState<String>> userSendContact(String fullName, String email,
-      String phone, String subject, String body) async {
+  Future<NetworkState<String>> userSendContact(String fullName, String email, String phone, String subject, String body) async {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
     String token = await AppShared.getAccessToken();
 
     try {
-      FormData data = FormData.fromMap({
-        "fullname": fullName,
-        "email": email,
-        "phone": phone,
-        "subject": subject,
-        "body": body
-      });
-      Response response =
-          await AppClients().post(AppEndpoint.USER_SEND_CONTACT_FORM,
-              data: data,
-              options: Options(headers: {
-                "${AppEndpoint.keyAuthorization}": "Bearer $token",
-              }));
+      FormData data = FormData.fromMap({"fullname": fullName, "email": email, "phone": phone, "subject": subject, "body": body});
+      Response response = await AppClients().post(AppEndpoint.USER_SEND_CONTACT_FORM,
+          data: data,
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
 
-      return NetworkState(
-          status: response.statusCode,
-          response: NetworkResponse(data: response.data["message"]));
+      return NetworkState(status: response.statusCode, response: NetworkResponse(data: response.data["message"]));
     } on DioError catch (e) {
       return NetworkState.withError(e);
     }
@@ -537,16 +503,13 @@ class AuthRepository {
 
     try {
       FormData data = FormData.fromMap({"contentRep": contentRep});
-      Response response =
-          await AppClients().post(AppEndpoint.USER_REPLY_FEEDBACK,
-              data: data,
-              options: Options(headers: {
-                "${AppEndpoint.keyAuthorization}": "Bearer $token",
-              }));
+      Response response = await AppClients().post(AppEndpoint.USER_REPLY_FEEDBACK,
+          data: data,
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
 
-      return NetworkState(
-          status: response.statusCode,
-          response: NetworkResponse(data: response.data["status"]));
+      return NetworkState(status: response.statusCode, response: NetworkResponse(data: response.data["status"]));
     } on DioError catch (e) {
       return NetworkState.withError(e);
     }
@@ -563,9 +526,7 @@ class AuthRepository {
             "${AppEndpoint.keyAuthorization}": "Bearer $token",
           }));
       print("Status Logout Request: ${response.data["status"]}");
-      return NetworkState(
-          status: response.statusCode,
-          response: NetworkResponse(data: response.data["status"]));
+      return NetworkState(status: response.statusCode, response: NetworkResponse(data: response.data["status"]));
     } on DioError catch (e) {
       return NetworkState.withError(e);
     }

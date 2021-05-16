@@ -32,9 +32,9 @@ class NotificationsState extends State<Notifications> with ResponsiveWidget {
         viewModel: notificationViewModel,
         builder: (context, viewModel, child) => Scaffold(
             appBar: AppBar(
-              title: Text("Thông báo"),
-              automaticallyImplyLeading: false,
-            ),
+                title: Text("Thông báo", style: TextStyle(color: AppColors.black)),
+                automaticallyImplyLeading: false,
+                backgroundColor: AppColors.white),
             body: buildUi(context: context)));
   }
 
@@ -68,8 +68,7 @@ class NotificationsState extends State<Notifications> with ResponsiveWidget {
                                     children: [
                                       Container(
                                           padding: EdgeInsets.only(bottom: 15),
-                                          child: Text(snapshot.data[index].title,
-                                              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w400))),
+                                          child: Text(snapshot.data[index].title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w400))),
                                       Container(
                                           child: Text(DateFormat("dd/MM/yyyy").format(snapshot.data[index].createdAt),
                                               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400))),

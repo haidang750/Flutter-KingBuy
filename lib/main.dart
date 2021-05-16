@@ -36,7 +36,7 @@ void main() {
       ),
       ChangeNotifierProvider(
         create: (context) => CartModel(),
-      )
+      ),
     ],
     child: MyApp(),
   ));

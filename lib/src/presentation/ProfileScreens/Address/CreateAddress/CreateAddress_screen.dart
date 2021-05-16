@@ -1,17 +1,26 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/presentation.dart';
 import 'package:projectui/src/resource/model/AddressModel.dart';
+import 'package:projectui/src/resource/model/CartModel.dart';
 import 'package:projectui/src/resource/model/DistrictModel.dart';
 import 'package:projectui/src/resource/model/ProvinceModel.dart';
 import 'package:projectui/src/resource/model/WardModel.dart';
+import 'package:projectui/src/utils/app_shared.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:toast/toast.dart';
 import '../../../widgets/BorderTextField.dart';
 
 class CreateAddress extends StatefulWidget {
-  CreateAddress({this.address, this.event});
+  CreateAddress({this.address, this.listAddress, this.event, this.isCallFromCart});
 
   Address address;
+  List<Address> listAddress;
   String event;
+  bool isCallFromCart;
 
   @override
   CreateAddressState createState() => CreateAddressState();
@@ -26,6 +35,12 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
   String provinceDropdownValue = "";
   String districtDropdownValue = "";
   String wardDropdownValue = "";
+  final oldProvinceName = BehaviorSubject<String>();
+  final oldDistrictName = BehaviorSubject<String>();
+  final oldWardName = BehaviorSubject<String>();
+  final provinceName = BehaviorSubject<String>();
+  final districtName = BehaviorSubject<String>();
+  final wardName = BehaviorSubject<String>();
   final addressController = TextEditingController();
   bool isExportInvoice = false;
   final taxCodeController = TextEditingController();
@@ -53,6 +68,11 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
       companyAddressController.text = widget.address.companyAddress;
       companyEmailController.text = widget.address.companyEmail;
       isDefault = widget.address.isDefault;
+      print("provinceName: ${widget.address.provinceName}");
+      print("provinceCode: ${widget.address.provinceCode}");
+      oldProvinceName.sink.add(widget.address.provinceName);
+      oldDistrictName.sink.add(widget.address.districtName);
+      oldWardName.sink.add(widget.address.wardName);
     }
   }
 
@@ -72,6 +92,12 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
   void dispose() {
     super.dispose();
     createAddressViewModel.dispose();
+    oldProvinceName.close();
+    oldDistrictName.close();
+    oldWardName.close();
+    provinceName.close();
+    districtName.close();
+    wardName.close();
   }
 
   @override
@@ -79,15 +105,23 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
     return BaseWidget(
         viewModel: createAddressViewModel,
         builder: (context, viewModel, child) => Scaffold(
-              appBar: AppBar(
+            appBar: AppBar(
                 titleSpacing: 0,
                 title: Text(widget.event == "create" ? "Thêm mới địa chỉ" : "Chi tiết địa chỉ"),
-              ),
-              body: buildUi(context: context)
-            ));
+                leading: Builder(
+                  builder: (BuildContext context) {
+                    return IconButton(
+                      icon: Icon(Icons.arrow_back),
+                      onPressed: () {
+                        Navigator.pop(context, widget.listAddress);
+                      },
+                    );
+                  },
+                )),
+            body: buildUi(context: context)));
   }
 
-  Widget buildScreen(){
+  Widget buildScreen() {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
@@ -101,7 +135,7 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
             color: Colors.grey.shade300,
           ),
           Container(
-              height: isExportInvoice ? 330 : 65,
+              height: isExportInvoice ? 310 : 65,
               padding: EdgeInsets.symmetric(horizontal: 15),
               child: ListView(
                 physics: NeverScrollableScrollPhysics(),
@@ -124,32 +158,36 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           BorderTextField(
-            borderColor: AppColors.borderTextField,
-            borderRadius: 8,
+            height: 50,
+            borderColor: AppColors.grey3,
+            borderRadius: 6,
+            borderWidth: 0.8,
             textController: fullNameController,
-            fontSize: 16,
+            fontSize: 14,
             hintText: "Họ và tên",
-            hintTextFontSize: 15,
+            hintTextFontSize: 14,
             hintTextFontWeight: FontWeight.w400,
           ),
           BorderTextField(
-            borderColor: AppColors.borderTextField,
-            borderRadius: 8,
+            height: 50,
+            borderColor: AppColors.grey3,
+            borderRadius: 6,
+            borderWidth: 0.8,
             textController: firstPhoneController,
-            fontSize: 16,
-            keyboardType: TextInputType.phone,
+            fontSize: 14,
             hintText: "Số điện thoại",
-            hintTextFontSize: 15,
+            hintTextFontSize: 14,
             hintTextFontWeight: FontWeight.w400,
           ),
           BorderTextField(
-            borderColor: AppColors.borderTextField,
-            borderRadius: 8,
+            height: 50,
+            borderColor: AppColors.grey3,
+            borderRadius: 6,
+            borderWidth: 0.8,
             textController: secondPhoneController,
-            fontSize: 16,
-            keyboardType: TextInputType.phone,
+            fontSize: 14,
             hintText: "Số điện thoại 2 (nếu có)",
-            hintTextFontSize: 15,
+            hintTextFontSize: 14,
             hintTextFontWeight: FontWeight.w400,
           ),
           Container(
@@ -160,14 +198,16 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
           ),
           buildWardField(),
           BorderTextField(
-            borderColor: AppColors.borderTextField,
-            borderRadius: 8,
+            height: 50,
+            borderColor: AppColors.grey3,
+            borderRadius: 6,
+            borderWidth: 0.8,
             textController: addressController,
-            fontSize: 16,
+            fontSize: 14,
             hintText: "Địa chỉ cụ thể (số nhà, tên tòa nhà)",
-            hintTextFontSize: 15,
+            hintTextFontSize: 14,
             hintTextFontWeight: FontWeight.w400,
-          ),
+          )
         ],
       ),
     );
@@ -178,8 +218,7 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
         height: 50,
         width: MediaQuery.of(context).size.width * 0.45,
         padding: EdgeInsets.only(left: 10, right: 5),
-        decoration:
-            BoxDecoration(border: Border.all(width: 1, color: Colors.grey.shade500), borderRadius: BorderRadius.all(Radius.circular(8))),
+        decoration: BoxDecoration(border: Border.all(width: 0.8, color: AppColors.grey3), borderRadius: BorderRadius.all(Radius.circular(6))),
         child: StreamBuilder(
           stream: createAddressViewModel.provinceStream,
           builder: (context, snapshot) {
@@ -197,6 +236,11 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
                     provinceDropdownValue = provinceCode;
                     districtDropdownValue = "";
                     wardDropdownValue = "";
+                  });
+                  createAddressViewModel.provinceSubject.stream.value.forEach((province) {
+                    if (province.code == provinceDropdownValue) {
+                      provinceName.sink.add(province.name);
+                    }
                   });
                   await createAddressViewModel.getDistrict(provinceDropdownValue);
                 },
@@ -217,8 +261,7 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
         height: 50,
         width: MediaQuery.of(context).size.width * 0.45,
         padding: EdgeInsets.only(left: 10, right: 5),
-        decoration:
-            BoxDecoration(border: Border.all(width: 1, color: Colors.grey.shade500), borderRadius: BorderRadius.all(Radius.circular(8))),
+        decoration: BoxDecoration(border: Border.all(width: 0.8, color: AppColors.grey3), borderRadius: BorderRadius.all(Radius.circular(6))),
         child: StreamBuilder(
           stream: createAddressViewModel.districtStream,
           builder: (context, snapshot) {
@@ -235,6 +278,11 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
                   setState(() {
                     districtDropdownValue = districtCode;
                     wardDropdownValue = "";
+                  });
+                  createAddressViewModel.districtSubject.stream.value.forEach((district) {
+                    if (district.code == districtDropdownValue) {
+                      districtName.sink.add(district.nameWithType);
+                    }
                   });
                   await createAddressViewModel.getWard(districtDropdownValue);
                 },
@@ -254,8 +302,7 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
     return Container(
         height: 50,
         padding: EdgeInsets.only(left: 10, right: 5),
-        decoration:
-            BoxDecoration(border: Border.all(width: 1, color: Colors.grey.shade500), borderRadius: BorderRadius.all(Radius.circular(8))),
+        decoration: BoxDecoration(border: Border.all(width: 0.8, color: AppColors.grey3), borderRadius: BorderRadius.all(Radius.circular(6))),
         child: StreamBuilder(
           stream: createAddressViewModel.wardStream,
           builder: (context, snapshot) {
@@ -271,6 +318,11 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
                 onChanged: (wardCode) {
                   setState(() {
                     wardDropdownValue = wardCode;
+                  });
+                  createAddressViewModel.wardSubject.stream.value.forEach((ward) {
+                    if (ward.code == wardDropdownValue) {
+                      wardName.sink.add(ward.nameWithType);
+                    }
                   });
                 },
                 items: snapshot.hasData
@@ -295,7 +347,6 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
               value: isExportInvoice,
               activeColor: AppColors.primary,
               onChanged: (value) {
-                print("Value checkbox: $value");
                 setState(() {
                   isExportInvoice = !isExportInvoice;
                   taxCodeController.clear();
@@ -305,63 +356,81 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
                 });
               },
             ),
-            Text(
-              "YÊU CẦU XUẤT HÓA ĐƠN VAT",
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            GestureDetector(
+              child: Text(
+                "YÊU CẦU XUẤT HÓA ĐƠN VAT",
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              ),
+              onTap: () {
+                setState(() {
+                  isExportInvoice = !isExportInvoice;
+                  taxCodeController.clear();
+                  companyNameController.clear();
+                  companyAddressController.clear();
+                  companyEmailController.clear();
+                });
+              },
             )
           ],
         ));
   }
 
   Widget buildVATInfo() {
-    return Container(
-      height: 270,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          BorderTextField(
-            borderColor: AppColors.borderTextField,
-            borderRadius: 8,
-            textController: taxCodeController,
-            fontSize: 16,
-            hintText: "Mã số thuế",
-            hintTextFontSize: 15,
-            hintTextFontWeight: FontWeight.w400,
-          ),
-          BorderTextField(
-            borderColor: AppColors.borderTextField,
-            borderRadius: 8,
-            textController: companyNameController,
-            fontSize: 16,
-            hintText: "Tên công ty",
-            hintTextFontSize: 15,
-            hintTextFontWeight: FontWeight.w400,
-          ),
-          BorderTextField(
-            borderColor: AppColors.borderTextField,
-            borderRadius: 8,
-            textController: companyAddressController,
-            fontSize: 16,
-            hintText: "Địa chỉ công ty",
-            hintTextFontSize: 15,
-            hintTextFontWeight: FontWeight.w400,
-          ),
-          BorderTextField(
-            borderColor: AppColors.borderTextField,
-            borderRadius: 8,
-            textController: companyEmailController,
-            fontSize: 16,
-            hintText: "Email",
-            hintTextFontSize: 15,
-            hintTextFontWeight: FontWeight.w400,
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        BorderTextField(
+          height: 50,
+          borderColor: AppColors.grey3,
+          borderRadius: 6,
+          borderWidth: 0.8,
+          textController: taxCodeController,
+          fontSize: 14,
+          hintText: "Mã số thuế",
+          hintTextFontSize: 14,
+          hintTextFontWeight: FontWeight.w400,
+        ),
+        SizedBox(height: 10),
+        BorderTextField(
+          height: 50,
+          borderColor: AppColors.grey3,
+          borderRadius: 6,
+          borderWidth: 0.8,
+          textController: companyNameController,
+          fontSize: 14,
+          hintText: "Tên công ty",
+          hintTextFontSize: 14,
+          hintTextFontWeight: FontWeight.w400,
+        ),
+        SizedBox(height: 10),
+        BorderTextField(
+          height: 50,
+          borderColor: AppColors.grey3,
+          borderRadius: 6,
+          borderWidth: 0.8,
+          textController: companyAddressController,
+          fontSize: 14,
+          hintText: "Địa chỉ công ty",
+          hintTextFontSize: 14,
+          hintTextFontWeight: FontWeight.w400,
+        ),
+        SizedBox(height: 10),
+        BorderTextField(
+          height: 50,
+          borderColor: AppColors.grey3,
+          borderRadius: 6,
+          borderWidth: 0.8,
+          textController: companyEmailController,
+          fontSize: 14,
+          hintText: "Email",
+          hintTextFontSize: 14,
+          hintTextFontWeight: FontWeight.w400,
+        ),
+      ],
     );
   }
 
-  Widget buildButton(Alignment alignment, double buttonHeight, double buttonWidth, Color buttonColor, double buttonBorderRadius,
-      String buttonContent, Color buttonContentColor, double buttonContentSize, FontWeight buttonContentFontWeight, Function buttonAction) {
+  Widget buildButton(Alignment alignment, double buttonHeight, double buttonWidth, Color buttonColor, double buttonBorderRadius, String buttonContent,
+      Color buttonContentColor, double buttonContentSize, FontWeight buttonContentFontWeight, Function buttonAction) {
     return GestureDetector(
         child: Container(
             alignment: alignment,
@@ -383,35 +452,42 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
     return Container(
         height: 50,
         padding: EdgeInsets.symmetric(horizontal: 15),
-        child: buildButton(
-            Alignment.centerRight, 60, 100, Colors.blue, 30, "Thêm mới", Colors.white, 16, FontWeight.w500, handleButtonCreate));
+        child: buildButton(Alignment.centerRight, 60, 100, Colors.blue, 30, "Thêm mới", Colors.white, 16, FontWeight.w500, handleButtonCreate));
   }
 
   Widget buildUpdateButton() {
     return Container(
       height: 50,
       padding: EdgeInsets.symmetric(horizontal: 15),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          buildButton(
-              Alignment.centerRight, 60, 100, Colors.red.shade500, 30, "Xóa", Colors.white, 16, FontWeight.w500, handleButtonDelete),
-          SizedBox(
-            width: 10,
-          ),
-          buildButton(Alignment.centerRight, 60, 100, isDefault == 1 ? Colors.grey : Colors.blue, 30, "Áp dụng", Colors.white, 16,
-              FontWeight.w500, handleButtonApplyDefault),
-          SizedBox(
-            width: 10,
-          ),
-          buildButton(Alignment.centerRight, 60, 100, Colors.blue, 30, "Lưu lại", Colors.white, 16, FontWeight.w500, handleButtonUpdate)
-        ],
-      ),
+      child: widget.isCallFromCart
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                // Khi không đăng nhập, phải chọn 1 địa chỉ trong danh sách địa chỉ rồi nhấn Áp dụng thì mới cho phép chỉnh sửa lại thông tin địa
+                // chỉ đó, khi nhấn Áp dụng thì địa chỉ này cũng được sử dụng để hiển thị ngoài CartScreen
+                widget.listAddress.length > 1
+                    ? Container()
+                    : buildButton(Alignment.centerRight, 60, 100, Colors.blue, 30, "Lưu lại", Colors.white, 16, FontWeight.w500, handleButtonUpdate),
+                widget.listAddress.length > 1 ? Container() : SizedBox(width: 10),
+                buildButton(Alignment.centerRight, 60, 100, Colors.blue, 30, "Áp dụng", Colors.white, 16, FontWeight.w500, handleButtonApplyDefault),
+              ],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                buildButton(Alignment.centerRight, 60, 100, Colors.red.shade500, 30, "Xóa", Colors.white, 16, FontWeight.w500, handleButtonDelete),
+                SizedBox(width: 10),
+                buildButton(Alignment.centerRight, 60, 100, isDefault == 1 ? Colors.grey : Colors.blue, 30, "Áp dụng", Colors.white, 16,
+                    FontWeight.w500, handleButtonApplyDefault),
+                SizedBox(width: 10),
+                buildButton(Alignment.centerRight, 60, 100, Colors.blue, 30, "Lưu lại", Colors.white, 16, FontWeight.w500, handleButtonUpdate)
+              ],
+            ),
     );
   }
 
   void handleButtonCreate() async {
-    bool result = await createAddressViewModel.createDeliveryAddress(
+    List<Address> listAdress = await createAddressViewModel.createDeliveryAddress(
         context,
         fullNameController.text,
         firstPhoneController.text,
@@ -426,45 +502,67 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
         companyNameController.text,
         companyAddressController.text,
         companyEmailController.text);
-    if (result) {
-      print("Thêm mới địa chỉ thành công");
-      Navigator.pop(context);
+    if (listAdress != null) {
+      Toast.show("Thêm mới địa chỉ thành công", context, gravity: Toast.CENTER);
+      Navigator.pop(context, listAdress);
     } else {
-      print("Thêm mới địa chỉ không thành công");
+      Toast.show("Thêm mới địa chỉ không thành công", context, gravity: Toast.CENTER);
     }
   }
 
   void handleButtonUpdate() async {
-    bool result = await createAddressViewModel.updateDeliveryAddress(
-        context,
-        deliveryAddressId,
-        fullNameController.text,
-        firstPhoneController.text,
-        secondPhoneController.text,
-        provinceDropdownValue,
-        districtDropdownValue,
-        wardDropdownValue,
-        addressController.text,
-        isDefault,
-        isExportInvoice ? 1 : 0,
-        taxCodeController.text,
-        companyNameController.text,
-        companyAddressController.text,
-        companyEmailController.text);
-    if (result) {
-      print("Cập nhật địa chỉ thành công");
-      Navigator.pop(context);
-    } else {
-      print("Cập nhật địa chỉ không thành công");
-    }
-  }
+    if (widget.isCallFromCart) {
+      // đây là trường hợp Update địa chỉ khi không Login
+      final createAddressViewModel = CreateAddressViewModel();
+      List<dynamic> deliveryStatus = [];
+      String ward = wardName.stream.value != null ? wardName.stream.value : oldWardName.stream.value;
+      String district = districtName.stream.value != null ? districtName.stream.value : oldDistrictName.stream.value;
+      String province = provinceName.stream.value != null ? provinceName.stream.value : oldProvinceName.stream.value;
+      String fullAddress = addressController.text + ", $ward" + ", $district" + ", $province";
 
-  void handleButtonApplyDefault() async {
-    if (isDefault == 0) {
-      setState(() {
-        isDefault = 1;
+      // từ provinceCode đã chọn, lấy ra danh sách các districts của province đó
+      List<District> districts = await createAddressViewModel.getDistrict(provinceDropdownValue);
+      // kiểm tra trong danh sách district trả về, district nào trùng với district đang chọn thì lấy ra delivery_status của district đó
+      districts.forEach((district) {
+        if (district.code == districtDropdownValue) {
+          deliveryStatus = district.deliveryStatus;
+        }
       });
-      bool result = await createAddressViewModel.updateDeliveryAddress(
+
+      Map<String, dynamic> addressJson = {
+        "id": widget.address.id,
+        "delivery_status": deliveryStatus,
+        "first_phone": firstPhoneController.text,
+        "second_phone": secondPhoneController.text,
+        "fullname": fullNameController.text,
+        "province_code": provinceDropdownValue,
+        "province_name": province,
+        "district_code": districtDropdownValue,
+        "district_name": district,
+        "ward_code": wardDropdownValue,
+        "ward_name": ward,
+        "address": addressController.text,
+        "full_address": fullAddress,
+        "is_export_invoice": isExportInvoice ? 1 : 0,
+        "tax_code": taxCodeController.text,
+        "company_name": companyNameController.text,
+        "company_address": companyAddressController.text,
+        "company_email": companyEmailController.text,
+      };
+
+      Address addressObject = Address.fromJson(addressJson);
+      AppShared.setListAddress([json.encode(addressObject)]);
+      SchedulerBinding.instance.addPostFrameCallback((timeStamp) async {
+        List<String> listAddressLocal = await AppShared.getAddressModel(); // lấy ra để hiển thị ở màn hình ListAddresss
+        List<Address> listAddress = [];
+        Map<String, dynamic> address = jsonDecode(listAddressLocal[0]);
+        listAddress.add(Address.fromJson(address));
+        CartModel.of(context).setDeliveryAddressId(listAddress[0].id);
+        Toast.show("Cập nhật địa chỉ thành công", context, gravity: Toast.CENTER);
+        Navigator.pop(context, listAddress);
+      });
+    } else {
+      List<Address> listAddress = await createAddressViewModel.updateDeliveryAddress(
           context,
           deliveryAddressId,
           fullNameController.text,
@@ -480,26 +578,71 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
           companyNameController.text,
           companyAddressController.text,
           companyEmailController.text);
-      if (result) {
-        print("Set địa chỉ mặc định thành công");
+      if (listAddress != null) {
+        Toast.show("Cập nhật địa chỉ thành công", context, gravity: Toast.CENTER);
+        Navigator.pop(context, listAddress);
       } else {
-        print("Set địa chỉ mặc định không thành công");
+        Toast.show("Cập nhật địa chỉ không thành công", context, gravity: Toast.CENTER);
       }
+    }
+  }
+
+  void handleButtonApplyDefault() async {
+    if (widget.isCallFromCart) {
+      // Xóa hết địa chỉ đã lưu trong SharedPreferences và chỉ giữ lại địa chỉ được Áp dụng
+      AppShared.setListAddress([json.encode(widget.address)]); // lưu vào
+      SchedulerBinding.instance.addPostFrameCallback((timeStamp) async {
+        List<String> listAddressLocal = await AppShared.getAddressModel(); // lấy ra để hiển thị ở màn hình ListAddresss
+        List<Address> listAddress = [];
+        Map<String, dynamic> address = jsonDecode(listAddressLocal[0]);
+        listAddress.add(Address.fromJson(address));
+        CartModel.of(context).setDeliveryAddressId(listAddress[0].id);
+        Toast.show("Áp dụng địa chỉ giao hàng thành công", context, gravity: Toast.CENTER);
+        Navigator.pop(context, listAddress);
+      });
     } else {
-      return null;
+      if (isDefault == 0) {
+        setState(() {
+          isDefault = 1;
+        });
+        List<Address> listAddress = await createAddressViewModel.updateDeliveryAddress(
+            context,
+            deliveryAddressId,
+            fullNameController.text,
+            firstPhoneController.text,
+            secondPhoneController.text,
+            provinceDropdownValue,
+            districtDropdownValue,
+            wardDropdownValue,
+            addressController.text,
+            isDefault,
+            isExportInvoice ? 1 : 0,
+            taxCodeController.text,
+            companyNameController.text,
+            companyAddressController.text,
+            companyEmailController.text);
+        if (listAddress != null) {
+          Toast.show("Áp dụng địa chỉ mặc định thành công", context, gravity: Toast.CENTER);
+          Navigator.pop(context, listAddress);
+        } else {
+          Toast.show("Áp dụng địa chỉ mặc định không thành công", context, gravity: Toast.CENTER);
+        }
+      } else {
+        return null;
+      }
     }
   }
 
   void handleButtonDelete() async {
-    bool result = await createAddressViewModel.deleteDeliveryAddress(
+    List<Address> listAddress = await createAddressViewModel.deleteDeliveryAddress(
       context,
       deliveryAddressId,
     );
-    if (result) {
-      print("Xóa địa chỉ thành công");
-      Navigator.pop(context);
+    if (listAddress != null) {
+      Toast.show("Xóa địa chỉ thành công", context, gravity: Toast.CENTER);
+      Navigator.pop(context, listAddress);
     } else {
-      print("Xóa địa chỉ không thành công");
+      Toast.show("Xóa địa chỉ không thành công", context, gravity: Toast.CENTER);
     }
   }
 

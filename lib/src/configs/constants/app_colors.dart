@@ -8,6 +8,7 @@ class AppColors {
   // static final Color primaryLight = Color.fromRGBO(246, 133, 14, 1);
 
   static final Color blue = Colors.blue;
+  static final Color blue2 = Colors.blue.shade600;
   static final Color white = Colors.white;
   static final Color black = Colors.black;
   static final Color grey = Colors.grey;
@@ -20,6 +21,7 @@ class AppColors {
   static final Color splashSpinKit = Colors.orange.shade400;
   static final Color buttonContent = Colors.white;
   static final Color enableButton = Colors.red.shade700;
-  static final Color disableButton = Colors.grey.shade500;
+  static final Color disableButton = Colors.grey.shade600;
   static final Color starColor = Colors.yellow.shade600;
+  static final Color purple = Colors.purpleAccent.shade400;
 }

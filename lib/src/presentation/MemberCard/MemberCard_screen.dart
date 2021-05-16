@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/MemberCard/MemberCard.dart';
 import 'package:projectui/src/presentation/base/base.dart';
 
@@ -15,7 +16,10 @@ class MemberCardScreenState extends State<MemberCardScreen> with ResponsiveWidge
     return BaseWidget(
         viewModel: memberCardViewModel,
         builder: (context, viewModel, child) => Scaffold(
-            appBar: AppBar(title: Text("Thẻ thành viên"), automaticallyImplyLeading: false),
+            appBar: AppBar(
+                title: Text("Thẻ thành viên", style: TextStyle(color: AppColors.black)),
+                automaticallyImplyLeading: false,
+                backgroundColor: AppColors.white),
             body: buildUi(context: context)));
   }
 

@@ -49,7 +49,7 @@ class CreateAddressViewModel extends BaseViewModel {
     }
   }
 
-  Future<bool> createDeliveryAddress(
+  Future<List<Address>> createDeliveryAddress(
       BuildContext context,
       String fullName,
       String firstPhone,
@@ -64,18 +64,18 @@ class CreateAddressViewModel extends BaseViewModel {
       String companyName,
       String companyAddress,
       String companyEmail) async {
-    NetworkState<AddressModel> result = await authRepository.createDeliveryAddress(fullName, firstPhone, secondPhone, provinceCode,
-        districtCode, wardCode, address, isDefault, isExportInvoice, taxCode, companyName, companyAddress, companyEmail);
+    NetworkState<AddressModel> result = await authRepository.createDeliveryAddress(fullName, firstPhone, secondPhone, provinceCode, districtCode,
+        wardCode, address, isDefault, isExportInvoice, taxCode, companyName, companyAddress, companyEmail);
     if (result.isSuccess) {
       List<Address> addresses = result.data.addresses;
       Provider.of<AddressModel>(context, listen: false).setAddress(addresses);
-      return true;
+      return addresses;
     } else {
-      return false;
+      return null;
     }
   }
 
-  Future<bool> updateDeliveryAddress(
+  Future<List<Address>> updateDeliveryAddress(
       BuildContext context,
       int deliveryAddressId,
       String fullName,
@@ -91,18 +91,18 @@ class CreateAddressViewModel extends BaseViewModel {
       String companyName,
       String companyAddress,
       String companyEmail) async {
-    NetworkState<AddressModel> result = await authRepository.updateDeliveryAddress(deliveryAddressId, fullName, firstPhone, secondPhone,
-        provinceCode, districtCode, wardCode, address, isDefault, isExportInvoice, taxCode, companyName, companyAddress, companyEmail);
+    NetworkState<AddressModel> result = await authRepository.updateDeliveryAddress(deliveryAddressId, fullName, firstPhone, secondPhone, provinceCode,
+        districtCode, wardCode, address, isDefault, isExportInvoice, taxCode, companyName, companyAddress, companyEmail);
     if (result.isSuccess) {
       List<Address> addresses = result.data.addresses;
       Provider.of<AddressModel>(context, listen: false).setAddress(addresses);
-      return true;
+      return addresses;
     } else {
-      return false;
+      return null;
     }
   }
 
-  Future<bool> deleteDeliveryAddress(
+  Future<List<Address>> deleteDeliveryAddress(
     BuildContext context,
     int deliveryAddressId,
   ) async {
@@ -112,9 +112,9 @@ class CreateAddressViewModel extends BaseViewModel {
     if (result.isSuccess) {
       List<Address> addresses = result.data.addresses;
       Provider.of<AddressModel>(context, listen: false).setAddress(addresses);
-      return true;
+      return addresses;
     } else {
-      return false;
+      return null;
     }
   }
 
