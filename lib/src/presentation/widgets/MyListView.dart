@@ -54,35 +54,36 @@ class MyListViewState extends State<MyListView> {
   @override
   Widget build(BuildContext context) {
     Color loadingColor = Theme.of(context).primaryColor;
-    return ListView(
-      physics: BouncingScrollPhysics(),
-      scrollDirection: widget.scrollDirection,
-      controller: _controller,
-      children: [
-        widget.header != null ? widget.header : Container(),
-        this._dataList == null
-            ? loadingProgress(loadingColor)
-            : (this._dataList.length > 0
-                ? RefreshIndicator(
-                    color: loadingColor,
-                    onRefresh: this.onRefresh,
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      physics: BouncingScrollPhysics(),
-                      scrollDirection: widget.scrollDirection,
-                      itemCount: _dataList.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index == _dataList.length) {
-                          return opacityLoadingProgress(isPerformingRequest, loadingColor);
-                        } else {
-                          return widget.itemBuilder(_dataList, context, index);
-                        }
-                      },
-                      padding: EdgeInsets.all(0),
-                    ))
-                : Center(child: Text("Không có dữ liệu")))
-      ],
-    );
+    return this._dataList == null
+        ? loadingProgress(loadingColor)
+        : (this._dataList.length > 0
+        ? RefreshIndicator(
+        color: loadingColor,
+        onRefresh: this.onRefresh,
+        child: SingleChildScrollView(
+          controller: _controller,
+          scrollDirection: widget.scrollDirection,
+          child: Wrap(
+            children: [
+              widget.header ?? SizedBox(),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: ClampingScrollPhysics(),
+                scrollDirection: widget.scrollDirection,
+                itemCount: _dataList.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == _dataList.length) {
+                    return opacityLoadingProgress(isPerformingRequest, loadingColor);
+                  } else {
+                    return widget.itemBuilder(_dataList, context, index);
+                  }
+                },
+                padding: EdgeInsets.all(0),
+              ),
+            ],
+          ),
+        ))
+        : Center(child: Text("Không có dữ liệu")));
   }
 
   Future<Null> onRefresh() async {

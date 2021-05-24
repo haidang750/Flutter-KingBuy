@@ -85,6 +85,7 @@ class SearchScreenState extends State<SearchScreen> with ResponsiveWidget {
                                           searchWord: value,
                                           productCategoryId: 0,
                                           brandId: 0,
+                                          limit: 6
                                         );
 
                                         List<Product> searchedProduct = await searchedCategoryDetailViewModel.loadDataSearchedProduct(0);
@@ -201,20 +202,29 @@ class SearchScreenState extends State<SearchScreen> with ResponsiveWidget {
                     itemBuilder: (context, index) {
                       return Column(
                         children: [
-                          Container(
-                            height: 50,
-                            color: AppColors.white,
-                            padding: EdgeInsets.only(left: 40, right: 25),
-                            alignment: Alignment.centerLeft,
-                            child: Row(
-                              children: [
-                                Text(searchedProduct[index].name.length > 30
-                                    ? searchedProduct[index].name.substring(0, 30) + " ..."
-                                    : searchedProduct[index].name),
-                                Spacer(),
-                                MyNetworkImage(url: "${AppEndpoint.BASE_URL}${searchedProduct[index].imageSource}", height: 40, width: 40)
-                              ],
+                          GestureDetector(
+                            child: Container(
+                              height: 50,
+                              color: AppColors.white,
+                              padding: EdgeInsets.only(left: 40, right: 25),
+                              alignment: Alignment.centerLeft,
+                              child: Row(
+                                children: [
+                                  Text(searchedProduct[index].name.length > 30
+                                      ? searchedProduct[index].name.substring(0, 30) + " ..."
+                                      : searchedProduct[index].name),
+                                  Spacer(),
+                                  MyNetworkImage(url: "${AppEndpoint.BASE_URL}${searchedProduct[index].imageSource}", height: 40, width: 40)
+                                ],
+                              ),
                             ),
+                            onTap: (){
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => ProductDetail(
+                                          product: searchedProduct[index], productId: searchedProduct[index].id, productVideoLink: searchedProduct[index].videoLink)));
+                            }
                           ),
                           index != searchedProduct.length - 1
                               ? Container(
