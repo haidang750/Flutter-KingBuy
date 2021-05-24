@@ -22,7 +22,7 @@ class PromotionDetailState extends State<PromotionDetail> with ResponsiveWidget 
     return BaseWidget(
         viewModel: promotionDetailViewModel,
         builder: (context, viewModel, child) =>
-            Scaffold(appBar: AppBar(titleSpacing: 0, title: Text("Chi tiết khuyến mãi")), body: buildUi(context: context)));
+            Scaffold(appBar: AppBar(titleSpacing: 0, title: Text("Chi tiết")), body: buildUi(context: context)));
   }
 
   Widget buildScreen() {

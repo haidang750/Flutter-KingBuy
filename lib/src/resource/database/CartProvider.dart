@@ -117,6 +117,7 @@ class CartProvider {
 
   Future<int> readAll() async {
     Database db = await database;
+    db.rawUpdate('UPDATE $tableCart SET total_unread = 0');
     return await db.rawUpdate('UPDATE $tableCartItem SET has_read = 1');
   }
 

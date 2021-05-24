@@ -54,7 +54,8 @@ class NavigationScreenState extends State<NavigationScreen> with WidgetsBindingO
 
   @override
   Widget build(BuildContext context) {
-    return BaseWidget(viewModel: navigationViewModel, builder: (context, viewModel, child) => Scaffold(body: buildUi(context: context)));
+    return BaseWidget(
+        showPhone: false, viewModel: navigationViewModel, builder: (context, viewModel, child) => Scaffold(body: buildUi(context: context)));
   }
 
   Widget buildScreen() {
@@ -180,9 +181,7 @@ class NavigationScreenState extends State<NavigationScreen> with WidgetsBindingO
         // build Title
         Text(name,
             style: TextStyle(
-                fontSize: 14,
-                color: index == currentIndex ? AppColors.enableButton : AppColors.disableButton,
-                fontWeight: FontWeight.w600)),
+                fontSize: 14, color: index == currentIndex ? AppColors.enableButton : AppColors.disableButton, fontWeight: FontWeight.w600)),
       ],
     );
   }
@@ -197,9 +196,7 @@ class NavigationScreenState extends State<NavigationScreen> with WidgetsBindingO
             height: 50,
             width: 50,
             decoration: BoxDecoration(
-                color: AppColors.primary,
-                border: Border.all(width: 2, color: AppColors.white),
-                borderRadius: BorderRadius.all(Radius.circular(25))),
+                color: AppColors.primary, border: Border.all(width: 2, color: AppColors.white), borderRadius: BorderRadius.all(Radius.circular(25))),
             child: Icon(
               Icons.payment_outlined,
               size: 22,

@@ -48,8 +48,12 @@ dependencies:
   get: ^4.1.4
   responsive_builder: ^0.4.1
   flutter_image: ^3.0.0
+  google_maps_flutter: ^2.0.5
+  webview_flutter: ^2.0.4
   flutter_picker: ^2.0.1
   sqflite: ^2.0.0+3
+  barcode_widget: ^2.0.1
+  qr_flutter: ^4.0.0
   cached_network_image: ^3.0.0
   carousel_slider: ^3.0.0
   rx_shared_preferences:

@@ -44,6 +44,7 @@ class SplashScreenViewModel extends BaseViewModel {
       cartModel = await CartProvider.instance.getCart();
       if (cartModel != null) {
         print("zoIF");
+        print("TEST totalUnread: ${cartModel.totalUnread}");
         CartModel.of(context, listen: false).setData(cartModel);
         // lay danh sach cart item
         List<CartItem> items = await CartProvider.instance.getCartItems();

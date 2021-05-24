@@ -7,7 +7,7 @@ import '../../../resource/model/ListProductsModel.dart';
 
 class CategoryDetailViewModel extends BaseViewModel {
   CategoryDetailViewModel(
-      {this.productCategoryId, this.searchWord, this.limit = 6, this.brandId, this.priceFrom = 0, this.priceTo = 1000000000});
+      {this.productCategoryId, this.searchWord, this.limit = 10, this.brandId, this.priceFrom = 0, this.priceTo = 1000000000});
   int productCategoryId;
   String searchWord;
   int limit;

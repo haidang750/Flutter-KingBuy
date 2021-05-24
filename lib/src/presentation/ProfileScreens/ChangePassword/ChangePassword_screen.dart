@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/base/base.dart';
 import 'package:projectui/src/presentation/presentation.dart';
+import 'package:toast/toast.dart';
 
 class ChangePassword extends StatefulWidget {
   @override
@@ -72,7 +73,19 @@ class ChangePasswordState extends State<ChangePassword> with ResponsiveWidget {
                       buttonColor: Colors.red.shade800,
                       child: RaisedButton(
                         child: Text("Cập nhật", style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500, color: Colors.white)),
-                        onPressed: () {},
+                        onPressed: () async {
+                          int status = await changePasswordViewModel.updatePassword(
+                              oldPasswordController.text, newPasswordController.text, confirmNewPasswordController.text);
+                          if(status == 1){
+                            Toast.show("Đổi mật khẩu thành công", context, gravity: Toast.CENTER);
+                          }else{
+                            if(newPasswordController.text != confirmNewPasswordController.text){
+                              Toast.show("Mật khẩu xác nhận không hợp lệ", context, gravity: Toast.CENTER);
+                            }else{
+                              Toast.show("Mật khẩu cũ không hợp lệ", context, gravity: Toast.CENTER);
+                            }
+                          }
+                        },
                       ),
                     )))
                   ],

@@ -60,7 +60,7 @@ class DetailProfileState extends State<DetailProfile> with ResponsiveWidget {
               actions: [
                 Builder(
                   builder: (context) => Padding(
-                    padding: EdgeInsets.only(right: 10, top: 16, bottom: 8),
+                    padding: EdgeInsets.only(right: 10, top: 14, bottom: 10),
                     child: ButtonTheme(
                         minWidth: 66,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),

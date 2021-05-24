@@ -26,6 +26,8 @@ class AppEndpoint {
   static const String UPDATE_DELIVERY_ADDRESS = "/api/updateDeliveryAddress";
   static const String DELETE_DELIVERY_ADDRESS = "/api/deleteDeliveryAddress";
   static const String GET_VIEWED_PRODUCTS = "/api/getViewedProducts";
+  static const String UPDATE_PASSWORD = "/api/updatePassword";
+  static const String GET_MEMBER_CARD_DETAIL = "/api/getMemberCardDetail";
   static const String GET_COUNT_NOTIFICATION = "/api/countNotification";
   static const String GET_LIST_NOTIFICATION = "/api/listNotification";
   static const String GET_ORDER_HISTORY = "/api/listBuyHistoryOfUser";
@@ -51,4 +53,12 @@ class AppEndpoint {
   static const String GET_CREDIT_LIST = "/api/creditList";
   static const String CREATE_INSTALLMENT = "/api/createInstallment";
   static const String DETAIL_INSTALLMENT = "/api/detailInstallment";
+  static const String CHECK_COUPON = "/api/checkCoupon";
+  static const String CREATE_INVOICE = "/api/createInvoice";
+  static const String CREATE_PAYMENT = '/api/createPayment';
+  static const String GET_ALL_ADDRESS = "/api/getAllAddress";
+  static const String GET_ALL_MY_PROMOTION = "/api/getAllMyPromotion";
+  static const String GET_ALL_PRODUCT_NEW = "/api/getAllProductNew";
+  static const String GET_ALL_PRODUCT_SELLING = "/api/getAllProductSelling";
+  static const String GET_POPUP = "/api/getPopup";
 }

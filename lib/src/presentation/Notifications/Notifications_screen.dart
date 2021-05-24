@@ -29,6 +29,7 @@ class NotificationsState extends State<Notifications> with ResponsiveWidget {
   @override
   Widget build(BuildContext context) {
     return BaseWidget(
+      mainScreen: true,
         viewModel: notificationViewModel,
         builder: (context, viewModel, child) => Scaffold(
             appBar: AppBar(

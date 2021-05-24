@@ -114,7 +114,7 @@ class ProductDetailViewModel extends BaseViewModel {
   }
 
   getViewedProducts() async {
-    NetworkState<ListProductsModel> result = await authRepository.getViewedProducts(6, 0);
+    NetworkState<ListProductsModel> result = await authRepository.getViewedProducts(10, 0);
     if (result.isSuccess) {
       viewedProductsSubject.sink.add(result.data.products);
     } else {

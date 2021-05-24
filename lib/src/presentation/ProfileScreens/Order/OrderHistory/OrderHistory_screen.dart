@@ -80,12 +80,13 @@ class OrderHistoryState extends State<OrderHistory> with ResponsiveWidget {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return GestureDetector(
-            child: Container(
-              width: 140,
-              height: 100,
-              alignment: Alignment.center,
-              padding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-              child: Card(
+            child: Card(
+              clipBehavior: Clip.antiAlias,
+              child: Container(
+                width: 150,
+                height: 90,
+                alignment: Alignment.center,
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 color: snapshot.data + 1 == index ? Colors.blue : Colors.white,
                 child: Text(
                   status[index],

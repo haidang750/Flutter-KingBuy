@@ -41,6 +41,10 @@ class AppImages {
   static final String icCoupon = 'assets/icons/coupon.png';
   static final String icCoin = 'assets/icons/coin.png';
   static final String icWallet = 'assets/icons/wallet.png';
+  static final String icBankPackage = 'assets/icons/ic_bank_package.png';
+  static final String icBankPayment = 'assets/icons/ic_bank_payment.png';
+  static final String icBankSurface = 'assets/icons/ic_bank_surface.png';
+  static final String icAllCategories = 'assets/icons/allCategories.jpg';
 
   //background
   static final String bgSplashScreen = 'assets/backgrounds/splashBackground.jpg';

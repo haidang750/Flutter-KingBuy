@@ -437,6 +437,24 @@ class AuthRepository {
     }
   }
 
+  Future<NetworkState<int>> updatePassword(String oldPassword, String newPassword, String newConfirmPassword) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      Response response = await AppClients().post(AppEndpoint.UPDATE_PASSWORD,
+          data: {"old_password": oldPassword, "new_password": newPassword, "new_confirm_password": newConfirmPassword},
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
+
+      return NetworkState(status: response.statusCode, response: NetworkResponse(data: response.data["status"]));
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
   Future<NetworkState<bool>> checkFeedbackOfUser() async {
     bool isDisconnect = await WifiService.isDisconnect();
     if (isDisconnect) return NetworkState.withDisconnect();
@@ -527,6 +545,70 @@ class AuthRepository {
           }));
       print("Status Logout Request: ${response.data["status"]}");
       return NetworkState(status: response.statusCode, response: NetworkResponse(data: response.data["status"]));
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<MemberCardModel>> getMemberCardDetail() async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+    String token = await AppShared.getAccessToken();
+
+    try {
+      Response response = await AppClients().get(AppEndpoint.GET_MEMBER_CARD_DETAIL,
+          options: Options(headers: {
+            "${AppEndpoint.keyAuthorization}": "Bearer $token",
+          }));
+
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => MemberCardModel.fromJson(response.data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<StoreModel>> getAllAddress() async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+
+    try {
+      Response response = await AppClients().get(AppEndpoint.GET_ALL_ADDRESS);
+
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => StoreModel.fromJson(response.data),
+        ),
+      );
+    } on DioError catch (e) {
+      return NetworkState.withError(e);
+    }
+  }
+
+  Future<NetworkState<MyPromotionModel>> getAllMyPromotion(int limit, int offset) async {
+    bool isDisconnect = await WifiService.isDisconnect();
+    if (isDisconnect) return NetworkState.withDisconnect();
+
+    try {
+      Response response = await AppClients().get(
+        AppEndpoint.GET_ALL_MY_PROMOTION,
+        queryParameters: {"limit": limit, "offset": offset},
+      );
+
+      return NetworkState(
+        status: response.statusCode,
+        response: NetworkResponse.fromJson(
+          response.data,
+          converter: (data) => MyPromotionModel.fromJson(response.data["data"]),
+        ),
+      );
     } on DioError catch (e) {
       return NetworkState.withError(e);
     }

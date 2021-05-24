@@ -27,8 +27,9 @@ List<PriceRange> priceRanges = [
 final formKey = GlobalKey<FormState>();
 
 class CategoryDetail extends StatefulWidget {
-  CategoryDetail({Key key, this.category}) : super(key: key);
+  CategoryDetail({Key key, this.category, this.searchContent}) : super(key: key);
   Category category;
+  String searchContent;
 
   @override
   CategoryDetailState createState() => CategoryDetailState();
@@ -68,8 +69,12 @@ class CategoryDetailState extends State<CategoryDetail> with ResponsiveWidget {
   @override
   void initState() {
     super.initState();
-    categoryIdSubject.add(widget.category.id);
-    searchController.text = "";
+    if (widget.searchContent == null) {
+      categoryIdSubject.add(widget.category.id);
+    }
+    setState(() {
+      searchController.text = widget.searchContent == null ? "" : widget.searchContent;
+    });
     getListCategories();
     getListBrands();
     searchSubject.sink.add(searchController.text);
@@ -151,26 +156,26 @@ class CategoryDetailState extends State<CategoryDetail> with ResponsiveWidget {
                       if (snapshot.hasData) {
                         // Nếu đã submit nội dung search thì build searchedProductList
                         if (snapshot.data != "") {
-                          print("Name Category: ${nameCategorySubject.stream.value}");
-                          print("Name Brand: ${nameBrandSubject.stream.value}");
-                          print("Range Price: ${namePriceRangeSubject.stream.value}");
                           return buildSearchResult(snapshot.data);
                         } else {
-                          // ngược lại build màn hình CategoryDetail
-                          return ListView(
-                            shrinkWrap: true,
-                            physics: BouncingScrollPhysics(),
-                            scrollDirection: Axis.vertical,
-                            children: [
-                              buildOneContainer(buildPath()),
-                              buildOneContainer(buildCategoryBackground()),
-                              buildOneContainer(buildListChildCategories()),
-                              buildOneContainer(buildListProducts()),
-                              widget.category.description != null
-                                  ? buildCategoryDescription(widget.category.name, widget.category.description)
-                                  : Container()
-                            ],
-                          );
+                          if (widget.searchContent == null) {
+                            return ListView(
+                              shrinkWrap: true,
+                              physics: BouncingScrollPhysics(),
+                              scrollDirection: Axis.vertical,
+                              children: [
+                                buildOneContainer(buildPath()),
+                                buildOneContainer(buildCategoryBackground()),
+                                buildOneContainer(buildListChildCategories()),
+                                buildOneContainer(buildListProducts()),
+                                widget.category.description != null
+                                    ? buildCategoryDescription(widget.category.name, widget.category.description)
+                                    : Container()
+                              ],
+                            );
+                          } else {
+                            return buildSearchResult(snapshot.data);
+                          }
                         }
                       } else {
                         return MyLoading();
@@ -192,16 +197,16 @@ class CategoryDetailState extends State<CategoryDetail> with ResponsiveWidget {
 
   Widget buildSearchContainer() {
     return Container(
-        width: MediaQuery.of(context).size.width * 0.72,
-        height: 36,
+        width: MediaQuery.of(context).size.width - 102,
+        height: 34,
         padding: EdgeInsets.only(left: 10),
         decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.all(Radius.circular(18))),
         child: Row(
           children: [
             Image.asset(
               AppImages.icSearch,
-              height: 20,
-              width: 20,
+              height: 18,
+              width: 18,
             ),
             SizedBox(
               width: 5,
@@ -211,57 +216,62 @@ class CategoryDetailState extends State<CategoryDetail> with ResponsiveWidget {
               children: [
                 Expanded(
                   // build vùng nhập nội dung tìm kiếm
-                  child: TextField(
-                    key: formKey,
-                    controller: searchController,
-                    decoration: InputDecoration(
-                        border: InputBorder.none, hintText: "Tìm kiếm", hintStyle: TextStyle(fontSize: 16, color: AppColors.hintText)),
-                    style: TextStyle(fontSize: 16),
-                    onSubmitted: (value) {
-                      searchSubject.sink.add(value);
-                      priceFromController.clear();
-                      priceToController.clear();
-                      idCategorySubject.sink.add(0);
-                      idBrandSubject.sink.add(0);
-                      idPriceSubject.sink.add(0);
-                      filterOptions.removeRange(0, filterOptions.length);
-                      filterOptionsSubject.sink.add(filterOptions);
-                    },
+                  child: Container(
+                    transform: Matrix4.translationValues(0.0, 1.2, 0.0),
+                    child: TextField(
+                      key: formKey,
+                      controller: searchController,
+                      decoration: InputDecoration(
+                          border: InputBorder.none, hintText: "Tìm kiếm", hintStyle: TextStyle(fontSize: 15, color: AppColors.hintText)),
+                      style: TextStyle(fontSize: 15),
+                      onSubmitted: (value) {
+                        searchSubject.sink.add(value);
+                        priceFromController.clear();
+                        priceToController.clear();
+                        idCategorySubject.sink.add(0);
+                        idBrandSubject.sink.add(0);
+                        idPriceSubject.sink.add(0);
+                        filterOptions.removeRange(0, filterOptions.length);
+                        filterOptionsSubject.sink.add(filterOptions);
+                      },
+                    ),
                   ),
                 ),
                 // build button cancel để xóa nội dung tìm kiếm đã nhập
-                StreamBuilder(
-                  stream: searchSubject.stream,
-                  builder: (context, snapshot) {
-                    if (snapshot.data != "") {
-                      return Container(
-                          width: 35,
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.cancel,
-                              color: AppColors.grey,
-                            ),
-                            iconSize: 18,
-                            onPressed: () {
-                              searchController.clear();
-                              searchSubject.sink.add("");
-                              priceFromController.clear();
-                              priceToController.clear();
-                              idCategorySubject.sink.add(0);
-                              idBrandSubject.sink.add(0);
-                              idPriceSubject.sink.add(0);
-                              nameCategorySubject.sink.add("");
-                              nameBrandSubject.sink.add("");
-                              namePriceRangeSubject.sink.add("");
-                              filterOptions.removeRange(0, filterOptions.length); // Xóa các filter options
-                              filterOptionsSubject.sink.add(filterOptions);
-                            },
-                          ));
-                    } else {
-                      return Container();
-                    }
-                  },
-                )
+                widget.searchContent == null
+                    ? StreamBuilder(
+                        stream: searchSubject.stream,
+                        builder: (context, snapshot) {
+                          if (snapshot.data != "") {
+                            return Container(
+                                width: 35,
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.cancel,
+                                    color: AppColors.grey,
+                                  ),
+                                  iconSize: 18,
+                                  onPressed: () {
+                                    searchController.clear();
+                                    searchSubject.sink.add("");
+                                    priceFromController.clear();
+                                    priceToController.clear();
+                                    idCategorySubject.sink.add(0);
+                                    idBrandSubject.sink.add(0);
+                                    idPriceSubject.sink.add(0);
+                                    nameCategorySubject.sink.add("");
+                                    nameBrandSubject.sink.add("");
+                                    namePriceRangeSubject.sink.add("");
+                                    filterOptions.removeRange(0, filterOptions.length); // Xóa các filter options
+                                    filterOptionsSubject.sink.add(filterOptions);
+                                  },
+                                ));
+                          } else {
+                            return Container();
+                          }
+                        },
+                      )
+                    : Container()
               ],
             ))
           ],
@@ -351,8 +361,8 @@ class CategoryDetailState extends State<CategoryDetail> with ResponsiveWidget {
                     if (snapshot.data != "") {
                       return Column(
                         children: [
-                          buildFilterOption("Danh mục", listCategoriesSubject, idCategorySubject, nameCategorySubject, true,
-                              categoryButtonSubject, listCategories, listCategoriesPartition),
+                          buildFilterOption("Danh mục", listCategoriesSubject, idCategorySubject, nameCategorySubject, true, categoryButtonSubject,
+                              listCategories, listCategoriesPartition),
                           SizedBox(height: 30)
                         ],
                       );
@@ -364,8 +374,8 @@ class CategoryDetailState extends State<CategoryDetail> with ResponsiveWidget {
                   }
                 },
               ),
-              buildFilterOption("Thương hiệu", listBrandsSubject, idBrandSubject, nameBrandSubject, true, brandButtonSubject, listBrands,
-                  listBrandsPartition),
+              buildFilterOption(
+                  "Thương hiệu", listBrandsSubject, idBrandSubject, nameBrandSubject, true, brandButtonSubject, listBrands, listBrandsPartition),
               SizedBox(height: 30),
               buildFilterOption("Giá", listPriceRangesSubject, idPriceSubject, namePriceRangeSubject, false, null, [], []),
               Container(
@@ -387,8 +397,8 @@ class CategoryDetailState extends State<CategoryDetail> with ResponsiveWidget {
   }
 
   // Build 3 filter options
-  Widget buildFilterOption(String optionTitle, BehaviorSubject listSubject, BehaviorSubject idSubject, BehaviorSubject nameSubject,
-      bool isShowButton, BehaviorSubject buttonSubject, List listOriginal, List listPartition) {
+  Widget buildFilterOption(String optionTitle, BehaviorSubject listSubject, BehaviorSubject idSubject, BehaviorSubject nameSubject, bool isShowButton,
+      BehaviorSubject buttonSubject, List listOriginal, List listPartition) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -423,9 +433,7 @@ class CategoryDetailState extends State<CategoryDetail> with ResponsiveWidget {
                                     padding: EdgeInsets.symmetric(horizontal: 10),
                                     decoration: BoxDecoration(
                                         color: Colors.blue.shade200,
-                                        border: snapshot2.data == snapshot.data[index].id
-                                            ? Border.all(width: 1, color: AppColors.primary)
-                                            : null,
+                                        border: snapshot2.data == snapshot.data[index].id ? Border.all(width: 1, color: AppColors.primary) : null,
                                         borderRadius: BorderRadius.all(Radius.circular(8))),
                                     child: Text(
                                       snapshot.data[index].name,
@@ -437,8 +445,8 @@ class CategoryDetailState extends State<CategoryDetail> with ResponsiveWidget {
                                       ? ClipPath(
                                           clipper: ClipPathClass(),
                                           child: Container(
-                                              decoration: BoxDecoration(
-                                                  color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(8)))),
+                                              decoration:
+                                                  BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.all(Radius.circular(8)))),
                                         )
                                       : Container()
                                 ],
@@ -740,9 +748,9 @@ class CategoryDetailState extends State<CategoryDetail> with ResponsiveWidget {
   Widget buildListChildCategories() {
     return Container(
       alignment: Alignment.center,
-      height: MediaQuery.of(context).size.height * 0.14,
+      height: MediaQuery.of(context).size.height * 0.12,
       child: Container(
-        height: MediaQuery.of(context).size.height * 0.1,
+        height: MediaQuery.of(context).size.height * 0.09,
         alignment: Alignment.centerLeft,
         child: ListView.builder(
           shrinkWrap: true,
@@ -752,12 +760,8 @@ class CategoryDetailState extends State<CategoryDetail> with ResponsiveWidget {
           itemBuilder: (context, index) {
             return Row(
               children: [
-                index == 0
-                    ? buildOneChildCategory(index, "Tất cả")
-                    : buildOneChildCategory(index, widget.category.children[index - 1].name),
-                SizedBox(
-                  width: 10,
-                )
+                index == 0 ? buildOneChildCategory(index, "Tất cả") : buildOneChildCategory(index, widget.category.children[index - 1].name),
+                SizedBox(width: 5)
               ],
             );
           },
@@ -768,35 +772,40 @@ class CategoryDetailState extends State<CategoryDetail> with ResponsiveWidget {
 
   Widget buildOneChildCategory(int index, String categoryName) {
     return StreamBuilder(
-      stream: currentCategorySubject.stream,
-      builder: (context, snapshot) => GestureDetector(
-          child: Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Container(
-                alignment: Alignment.center,
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  color: snapshot.data == index ? AppColors.blue : AppColors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(14)),
+        stream: currentCategorySubject.stream,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return GestureDetector(
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: snapshot.data == index ? AppColors.blue : AppColors.white,
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                      ),
+                      child: Text(categoryName,
+                          style: TextStyle(color: snapshot.data == index ? AppColors.white : AppColors.black, fontSize: 16),
+                          textAlign: TextAlign.center)),
                 ),
-                child: Text(categoryName,
-                    style: TextStyle(color: snapshot.data == index ? AppColors.white : AppColors.black, fontSize: 16),
-                    textAlign: TextAlign.center)),
-          ),
-          onTap: () {
-            // Load lại danh sách sản phẩm khi nhấn chọn 1 Child Category
-            if (index > 0) {
-              int childCategoryId = widget.category.children[index - 1].id;
-              categoryIdSubject.add(childCategoryId);
-            } else {
-              // Nếu nhấn chọn lại Tất cả (currentCategory = 0)
-              categoryIdSubject.add(widget.category.id);
-            }
-            currentCategorySubject.sink.add(index);
-          }),
-    );
+                onTap: () {
+                  // Load lại danh sách sản phẩm khi nhấn chọn 1 Child Category
+                  if (index > 0) {
+                    int childCategoryId = widget.category.children[index - 1].id;
+                    categoryIdSubject.add(childCategoryId);
+                  } else {
+                    // Nếu nhấn chọn lại Tất cả (currentCategory = 0)
+                    categoryIdSubject.add(widget.category.id);
+                  }
+                  currentCategorySubject.sink.add(index);
+                });
+          } else {
+            return Container();
+          }
+        });
   }
 
   Widget itemBuilder(List<Product> products, BuildContext context, int index) {

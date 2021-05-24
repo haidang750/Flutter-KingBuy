@@ -44,7 +44,7 @@ class RootProfileScreenState extends State<RootProfileScreen> with ResponsiveWid
 
   @override
   Widget build(BuildContext context) {
-    return BaseWidget(viewModel: rootProfileViewModel, builder: (context, viewModel, child) => buildUi(context: context));
+    return BaseWidget(mainScreen: true, viewModel: rootProfileViewModel, builder: (context, viewModel, child) => buildUi(context: context));
   }
 
   Widget buildScreen() {
@@ -200,7 +200,7 @@ class RootProfileScreenState extends State<RootProfileScreen> with ResponsiveWid
               style: TextStyle(fontSize: 17, color: AppColors.primary, fontWeight: FontWeight.bold),
             ),
             onTap: () {
-              handleLogout(userData);
+              rootProfileViewModel.handleLogout(userData);
             },
           ),
         ));
@@ -258,24 +258,6 @@ class RootProfileScreenState extends State<RootProfileScreen> with ResponsiveWid
       case 10:
         Navigator.pushNamed(context, Routers.Term_Of_Use);
         break;
-    }
-  }
-
-  handleLogout(Data userData) async {
-    if (userData.profile != null) {
-      final authRepository = AuthRepository();
-      NetworkState<int> response = await authRepository.sendRequestLogout();
-      if (response.data == 1) {
-        // Xóa dữ liệu user và accessToken khi đăng xuất
-        Provider.of<Data>(context, listen: false).setData(null, null, null, null);
-        await AppShared.setAccessToken(null);
-
-        // Xóa dữ liệu Notification khi đăng xuất
-        Provider.of<NotificationModel>(context, listen: false).setCountNotification(null);
-        await Navigator.pushNamed(context, Routers.Navigation);
-      }
-    } else {
-      Navigator.pushNamed(context, Routers.Login);
     }
   }
 

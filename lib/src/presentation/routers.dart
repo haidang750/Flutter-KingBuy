@@ -10,7 +10,6 @@ class Routers {
   static const String Personal_Info = "/LoginScreens/PersonalInfo";
   static const String Register = "/LoginScreens/Register";
   static const String Member_Card = "/MemberCard";
-  static const String Category_Detail = "/CategoriesScreens/CategoryDetail";
   static const String Order_Detail = "/ProfileScreens/Order/OrderDetail";
   static const String Detail_Contact = "/ProfileScreens/Contact/DetailContact";
   static const String Create_Contact = "/ProfileScreens/Contact/CreateContact";
@@ -26,6 +25,10 @@ class Routers {
   static const String Contact_Types = "ProfileScreens/Contact/ContactTypes";
   static const String Term_Of_Use = "/ProfileScreens/TermOfUse";
   static const String Installment_Detail = "/CategoriesScreens/InstallmentDetail";
+  static const String Root_Profile = "/ProfileScreens/RootProfile";
+  static const String Search = "/HomeScreens/Search";
+  static const String Store_Location = "/HomeScreens/StoreLocation";
+  static const String Detail_Store = "/HomeScreens/DetailStore";
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     var arguments = settings.arguments;
@@ -52,11 +55,8 @@ class Routers {
       case Member_Card:
         return animRoute(MemberCardScreen(), name: Member_Card, beginOffset: _center);
         break;
-      case Category_Detail:
-        return animRoute(CategoryDetail(category: arguments), name: Category_Detail, beginOffset: _center);
-        break;
       case Order_Detail:
-        return animRoute(OrderDetail(order: arguments), name: Order_Detail, beginOffset: _center);
+        return animRoute(OrderDetail(invoice: arguments), name: Order_Detail, beginOffset: _center);
         break;
       case Detail_Contact:
         return animRoute(DetailContact(), name: Detail_Contact, beginOffset: _center);
@@ -99,6 +99,18 @@ class Routers {
         break;
       case Installment_Detail:
         return animRoute(InstallmentDetailScreen(invoiceId: arguments), name: Installment_Detail, beginOffset: _center);
+        break;
+      case Root_Profile:
+        return animRoute(RootProfileScreen(), name: Root_Profile, beginOffset: _center);
+        break;
+      case Search:
+        return animRoute(SearchScreen(), name: Search, beginOffset: _center);
+        break;
+      case Store_Location:
+        return animRoute(StoreLocationScreen(), name: Store_Location, beginOffset: _center);
+        break;
+      case Detail_Store:
+        return animRoute(DetailStoreScreen(store: arguments), name: Detail_Store, beginOffset: _center);
         break;
       default:
         return animRoute(Container(child: Center(child: Text('No route defined for ${settings.name}'))));

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:projectui/src/configs/constants/app_values.dart';
 import 'package:projectui/src/presentation/presentation.dart';
 import 'package:projectui/src/presentation/splash/Splash.dart';
+import 'package:projectui/src/presentation/widgets/MyLoading.dart';
 import 'package:projectui/src/resource/model/AddressModel.dart';
 import 'package:projectui/src/resource/model/Data.dart';
 import 'package:projectui/src/resource/model/NotificationModel.dart';
@@ -49,6 +50,9 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: AppValues.APP_NAME,
         builder: (context, child) {
+          ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+            return Container();
+          };
           return ScrollConfiguration(
             behavior: MyBehavior(),
             child: child,

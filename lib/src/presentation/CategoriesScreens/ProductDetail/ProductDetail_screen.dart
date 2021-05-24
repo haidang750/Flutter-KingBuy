@@ -10,7 +10,6 @@ import 'package:projectui/src/presentation/widgets/MyNetworkImage.dart';
 import 'package:projectui/src/presentation/widgets/ShowPath.dart';
 import 'package:projectui/src/presentation/widgets/ShowRating.dart';
 import 'package:projectui/src/presentation/widgets/ShowMoney.dart';
-import 'package:projectui/src/resource/database/CartProvider.dart';
 import 'package:projectui/src/resource/model/CommentModel.dart';
 import 'package:projectui/src/resource/model/Data.dart';
 import 'package:projectui/src/resource/model/DetailProductModel.dart';
@@ -152,7 +151,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
                 GestureDetector(
                   child: Image.asset(AppImages.icSearchWhite, height: 26, width: 26),
                   onTap: () {
-                    print("handleSearch");
+                    Navigator.pushNamed(context, Routers.Search);
                   },
                 ),
                 SizedBox(width: 10),
@@ -1516,12 +1515,16 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
             onTap: enableNavigation
                 ? () async {
                     if (await AppUtils.checkLogin()) {
-                      Navigator.push(
+                      await Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => ProductQuestions(
                                     product: widget.product,
-                                  )));
+                                    cartQuantity: totalQuantitySubject.stream.value,
+                                  ))).then((dataBack) {
+                        totalQuantitySubject.sink.add(dataBack["totalQuantity"]);
+                        cartBadgeSubject.sink.add(dataBack["cartBadge"]);
+                      });
                     } else {
                       AppUtils.myShowDialog(context, widget.productId, widget.productVideoLink);
                     }
@@ -1653,13 +1656,10 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
               stream: cartSubject.stream,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  int totalQuantity;
                   List<CartItem> cartItems;
                   if (snapshot.data == null) {
-                    totalQuantity = 0;
                     cartItems = [];
                   } else {
-                    totalQuantity = snapshot.data.totalQuantity;
                     cartItems = snapshot.data.products;
                   }
 

@@ -515,6 +515,8 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
       // đây là trường hợp Update địa chỉ khi không Login
       final createAddressViewModel = CreateAddressViewModel();
       List<dynamic> deliveryStatus = [];
+      int shipFeeBulky;
+      int shipFeeNotBulky;
       String ward = wardName.stream.value != null ? wardName.stream.value : oldWardName.stream.value;
       String district = districtName.stream.value != null ? districtName.stream.value : oldDistrictName.stream.value;
       String province = provinceName.stream.value != null ? provinceName.stream.value : oldProvinceName.stream.value;
@@ -526,6 +528,8 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
       districts.forEach((district) {
         if (district.code == districtDropdownValue) {
           deliveryStatus = district.deliveryStatus;
+          shipFeeBulky = district.shipFeeBulky;
+          shipFeeNotBulky = district.shipFeeNotBulky;
         }
       });
 
@@ -548,6 +552,8 @@ class CreateAddressState extends State<CreateAddress> with ResponsiveWidget {
         "company_name": companyNameController.text,
         "company_address": companyAddressController.text,
         "company_email": companyEmailController.text,
+        "ship_fee_bulky": shipFeeBulky,
+        "ship_fee_not_bulky": shipFeeNotBulky
       };
 
       Address addressObject = Address.fromJson(addressJson);

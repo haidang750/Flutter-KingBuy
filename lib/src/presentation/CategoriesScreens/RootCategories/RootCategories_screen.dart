@@ -29,6 +29,7 @@ class RootCategoriesScreenState extends State<RootCategoriesScreen> with Respons
   @override
   Widget build(BuildContext context) {
     return BaseWidget(
+      mainScreen: true,
         viewModel: rootCategoriesViewModel,
         builder: (context, viewModel, child) => Scaffold(
             appBar: AppBar(
@@ -83,8 +84,7 @@ class RootCategoriesScreenState extends State<RootCategoriesScreen> with Respons
                   children: [
                     categoryName(index == 0 ? "Danh mục đang hot" : categories[index - 1].name,
                         () => index == 0 ? null : handleTouchCategory(categories[index - 1])),
-                    categoryBody(
-                        index, index >= 1 ? categories[index - 1].backgroundImage : "", index >= 1 ? categories[index - 1].children : [])
+                    categoryBody(index, index >= 1 ? categories[index - 1].backgroundImage : "", index >= 1 ? categories[index - 1].children : [])
                   ],
                 ),
               )),
@@ -135,10 +135,7 @@ class RootCategoriesScreenState extends State<RootCategoriesScreen> with Respons
         Container(
           child: Text(
             name.toUpperCase(),
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
         )
@@ -151,28 +148,18 @@ class RootCategoriesScreenState extends State<RootCategoriesScreen> with Respons
       height: 60,
       padding: EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(width: 0.1, color: Colors.grey),
-          bottom: BorderSide(width: 1, color: Colors.grey.shade400),
-        ),
+        color: AppColors.white,
+        border: Border(left: BorderSide(width: 0.1, color: Colors.grey), bottom: BorderSide(width: 1, color: Colors.grey.shade400)),
       ),
       alignment: Alignment.centerLeft,
       child: Row(
         children: [
           Padding(
             padding: EdgeInsets.only(left: 5),
-            child: Text(
-              title,
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-            ),
+            child: Text(title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
           ),
           Spacer(),
-          GestureDetector(
-              child: Icon(
-                Icons.arrow_forward_ios_outlined,
-                size: 16,
-              ),
-              onTap: action)
+          GestureDetector(child: Icon(Icons.arrow_forward_ios_outlined, size: 16), onTap: action)
         ],
       ),
     );
@@ -184,15 +171,15 @@ class RootCategoriesScreenState extends State<RootCategoriesScreen> with Respons
       // nếu là Danh mục đang hot
       return Expanded(
           child: StreamBuilder(
-        stream: rootCategoriesViewModel.hotCategoriesStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return Container(padding: EdgeInsets.fromLTRB(15, 0, 15, 5), child: buildListChildCategories(snapshot.data.categories));
-          } else {
-            return Center(child: CircularProgressIndicator());
-          }
-        },
-      ));
+              stream: rootCategoriesViewModel.hotCategoriesStream,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return Container(
+                      color: AppColors.white, padding: EdgeInsets.fromLTRB(15, 0, 15, 5), child: buildListChildCategories(snapshot.data.categories));
+                } else {
+                  return Center(child: CircularProgressIndicator());
+                }
+              }));
     } else {
       return Expanded(
         child: Column(
@@ -203,12 +190,13 @@ class RootCategoriesScreenState extends State<RootCategoriesScreen> with Respons
               child: Container(
                 height: 120,
                 decoration: BoxDecoration(
+                    color: AppColors.white,
                     image: DecorationImage(image: NetworkImage("${AppEndpoint.BASE_URL}$backgroundImage"), fit: BoxFit.fill),
                     borderRadius: BorderRadius.all(Radius.circular(8))),
               ),
             ),
             Expanded(
-              child: Container(padding: EdgeInsets.fromLTRB(15, 5, 15, 5), child: buildListChildCategories(childCategories)),
+              child: Container(color: AppColors.white, padding: EdgeInsets.fromLTRB(15, 5, 15, 5), child: buildListChildCategories(childCategories)),
             )
           ],
         ),
@@ -223,10 +211,8 @@ class RootCategoriesScreenState extends State<RootCategoriesScreen> with Respons
         childAspectRatio: 1 / 1.2,
         mainAxisSpacing: 6,
         crossAxisSpacing: 6,
-        children: List.generate(
-            categories.length,
-            (index) => buildOneChildCategory(
-                categories[index].name, categories[index].imageSource, () => handleTouchCategory(categories[index]))));
+        children: List.generate(categories.length,
+            (index) => buildOneChildCategory(categories[index].name, categories[index].imageSource, () => handleTouchCategory(categories[index]))));
   }
 
   // build 1 Child Category trong 1 Category
@@ -235,7 +221,7 @@ class RootCategoriesScreenState extends State<RootCategoriesScreen> with Respons
   }
 
   handleTouchCategory(Category category) {
-    Navigator.pushNamed(context, Routers.Category_Detail, arguments: category);
+    Navigator.push(context, MaterialPageRoute(builder: (context) => CategoryDetail(category: category, searchContent: null)));
   }
 
   @override

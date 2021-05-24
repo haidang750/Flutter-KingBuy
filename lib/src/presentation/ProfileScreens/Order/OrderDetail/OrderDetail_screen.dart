@@ -1,15 +1,18 @@
 // Ảnh 44 - Chi tiết đơn hàng
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/presentation.dart';
 import 'package:projectui/src/presentation/widgets/ShowMoney.dart';
+import 'package:projectui/src/resource/model/InvoiceModel.dart';
 import 'package:projectui/src/resource/model/ListProductsModel.dart';
 import 'package:projectui/src/resource/model/OrderHistoryModel.dart';
+import 'package:toast/toast.dart';
 
 class OrderDetail extends StatefulWidget {
-  OrderDetail({this.order});
+  OrderDetail({this.invoice});
 
-  Order order;
+  InvoiceData invoice;
 
   @override
   OrderDetailState createState() => OrderDetailState();
@@ -25,7 +28,7 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
         builder: (context, viewModel, child) => Scaffold(
             appBar: AppBar(
               titleSpacing: 0,
-              title: Text("Chi tiết đơn hàng"),
+              title: Text("Đơn hàng"),
             ),
             body: buildUi(context: context)));
   }
@@ -49,8 +52,8 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
                       Container(
                         padding: EdgeInsets.symmetric(vertical: 8),
                         child: Text(
-                          "DANH SÁCH SẢN PHẨM (${widget.order.items.length})",
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          "DANH SÁCH SẢN PHẨM (${widget.invoice.items.length})",
+                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                         ),
                       ),
                       buildListProduct(),
@@ -61,16 +64,16 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
           buildSeperateLine1(),
           buildDeliveryInfo(),
           buildSeperateLine1(),
-          buildNote(widget.order.note),
-          widget.order.isExportInvoice == 1 ? buildSeperateLine2(context) : Container(),
-          buildExportInvoice(widget.order.isExportInvoice),
+          buildNote(widget.invoice.note),
+          widget.invoice.isExportInvoice == 1 ? buildSeperateLine2(context) : Container(),
+          buildExportInvoice(widget.invoice.isExportInvoice),
           buildSeperateLine2(context),
-          buildPaymentInfo(widget.order.total + widget.order.discount + widget.order.deliveryCharge, widget.order.deliveryCharge,
-              widget.order.discount, widget.order.total),
+          buildPaymentInfo(widget.invoice.total - widget.invoice.deliveryCharge + widget.invoice.discount, widget.invoice.deliveryCharge,
+              widget.invoice.discount, widget.invoice.total),
           buildSeperateLine2(context),
-          buildPaymentMethod(widget.order.paymentType),
+          buildPaymentMethod(widget.invoice.paymentType),
           buildSeperateLine2(context),
-          buildRewardPoints(widget.order.rewardPoints)
+          buildRewardPoints()
         ],
       ),
     );
@@ -149,17 +152,23 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
         children: [
           Text(
             "ĐẶT HÀNG THÀNH CÔNG",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
-          Text(widget.order.createdAt, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400)),
+          Text(widget.invoice.createdAt, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400)),
           Row(
             children: [
-              Text("Mã đơn hàng: ", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400)),
-              Text(widget.order.invoiceCode, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text("Mã đơn hàng: ", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400)),
+              Text(widget.invoice.invoiceCode, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
               Spacer(),
-              Icon(
-                Icons.copy,
-                color: Colors.red,
+              GestureDetector(
+                child: Icon(
+                  Icons.copy,
+                  color: Colors.red,
+                ),
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: widget.invoice.invoiceCode));
+                  Toast.show("Copied to Clipboard", context, gravity: Toast.CENTER);
+                },
               )
             ],
           )
@@ -178,9 +187,9 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
         children: [
           Text(
             "TRẠNG THÁI ĐƠN HÀNG",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
-          Text(getStatus(widget.order.status), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400)),
+          Text(getStatus(widget.invoice.status), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400)),
         ],
       ),
     );
@@ -206,25 +215,25 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: color)),
+                    Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: color)),
                     SizedBox(height: 3),
                     Row(
                       children: [
                         ShowMoney(
                           price: price,
-                          fontSizeLarge: 18,
-                          fontSizeSmall: 14,
+                          fontSizeLarge: 15,
+                          fontSizeSmall: 12,
                           color: Colors.red.shade700,
                           fontWeight: FontWeight.bold,
                           isLineThrough: false,
                         ),
                         Spacer(),
-                        Text("x${quantity.toString()}", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400))
+                        Text("x${quantity.toString()}", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400))
                       ],
                     ),
                     SizedBox(height: 3),
                     Container(
-                        child: isGift ? Text("Tặng kèm", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: Colors.purple)) : null)
+                        child: isGift ? Text("Tặng kèm", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: Colors.purple)) : null)
                   ],
                 ),
               ),
@@ -250,9 +259,9 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
       child: ListView.builder(
         shrinkWrap: true,
         physics: BouncingScrollPhysics(),
-        itemCount: widget.order.items.length,
+        itemCount: widget.invoice.items.length,
         itemBuilder: (context, index) {
-          Item item = widget.order.items[index];
+          Item item = widget.invoice.items[index];
 
           return Column(
             children: [
@@ -276,7 +285,7 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
             padding: EdgeInsets.symmetric(vertical: 8),
             child: Text(
               "THÔNG TIN GIAO HÀNG",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
           ),
           Container(
@@ -284,13 +293,13 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.order.orderName,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, height: 1.6),
+                widget.invoice.orderName,
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, height: 1.6),
               ),
-              Text(widget.order.orderAddress, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400, height: 1.3)),
+              Text(widget.invoice.orderAddress, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400, height: 1.3)),
               Text(
-                  "${widget.order.orderPhone != null ? widget.order.orderPhone : ""}${widget.order.orderPhone2 != null ? "-${widget.order.orderPhone2}" : ""}",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400, height: 1.6))
+                  "${widget.invoice.orderPhone != null ? widget.invoice.orderPhone : ""}${widget.invoice.orderPhone2 != null ? "-${widget.invoice.orderPhone2}" : ""}",
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400, height: 1.6))
             ],
           ))
         ],
@@ -306,9 +315,9 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
           children: [
             Container(
               padding: EdgeInsets.symmetric(vertical: 8),
-              child: Text("GHI CHÚ", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              child: Text("GHI CHÚ", style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
             ),
-            Text(note != "" ? note : "[Không có]", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400))
+            Text(note != "" ? note : "[Không có]", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400))
           ],
         ));
   }
@@ -325,7 +334,7 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
                   padding: EdgeInsets.symmetric(vertical: 8),
                   child: Text(
                     "YÊU CẦU XUẤT HÓA ĐƠN VAT",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                   ),
                 ),
                 Container(
@@ -333,13 +342,12 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Mã số thuế 0109067764",
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, height: 1.6),
+                      "Mã số thuế ${widget.invoice.taxCode}",
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, height: 1.6),
                     ),
-                    Text("Công ty ABC Natural", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400, height: 1.3)),
-                    Text("Số 12 Đinh Tiên Hoàng, phường Đa Kao, Quận 1, Hồ Chí Minh",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400, height: 1.3)),
-                    Text("abcnatural@gmail.com", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400, height: 1.3))
+                    Text(widget.invoice.companyName, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400, height: 1.3)),
+                    Text(widget.invoice.companyAddress, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400, height: 1.3)),
+                    Text(widget.invoice.companyEmail, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400, height: 1.3))
                   ],
                 ))
               ],
@@ -358,17 +366,17 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
             padding: EdgeInsets.symmetric(vertical: 8),
             child: Text(
               "THÔNG TIN THANH TOÁN",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
           ),
           Row(
             children: [
-              Text("Tạm tính", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400)),
+              Text("Tạm tính", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400)),
               Spacer(),
               ShowMoney(
                 price: tempPrice,
-                fontSizeLarge: 18,
-                fontSizeSmall: 14,
+                fontSizeLarge: 15,
+                fontSizeSmall: 12,
                 color: Colors.black,
                 fontWeight: FontWeight.normal,
                 isLineThrough: false,
@@ -378,12 +386,12 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
           SizedBox(height: 10),
           Row(
             children: [
-              Text("Phí vận chuyển", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400)),
+              Text("Phí vận chuyển", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400)),
               Spacer(),
               ShowMoney(
                 price: deliveryCharge,
-                fontSizeLarge: 18,
-                fontSizeSmall: 14,
+                fontSizeLarge: 15,
+                fontSizeSmall: 12,
                 color: Colors.black,
                 fontWeight: FontWeight.normal,
                 isLineThrough: false,
@@ -393,12 +401,12 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
           SizedBox(height: 10),
           Row(
             children: [
-              Text("Giảm giá", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400)),
+              Text("Giảm giá", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400)),
               Spacer(),
               ShowMoney(
                 price: discount,
-                fontSizeLarge: 18,
-                fontSizeSmall: 14,
+                fontSizeLarge: 15,
+                fontSizeSmall: 12,
                 color: Colors.black,
                 fontWeight: FontWeight.normal,
                 isLineThrough: false,
@@ -413,12 +421,12 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
           SizedBox(height: 10),
           Row(
             children: [
-              Text("TỔNG", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text("TỔNG", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
               Spacer(),
               ShowMoney(
                 price: total,
-                fontSizeLarge: 18,
-                fontSizeSmall: 14,
+                fontSizeLarge: 15,
+                fontSizeSmall: 12,
                 color: AppColors.primary,
                 fontWeight: FontWeight.bold,
                 isLineThrough: false,
@@ -438,14 +446,14 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
           children: [
             Container(
               padding: EdgeInsets.symmetric(vertical: 8),
-              child: Text("PHƯƠNG THỨC THANH TOÁN", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              child: Text("PHƯƠNG THỨC THANH TOÁN", style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
             ),
-            Text(getPaymentType(paymentType), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400))
+            Text(getPaymentType(paymentType), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400))
           ],
         ));
   }
 
-  Widget buildRewardPoints(int rewardPoints) {
+  Widget buildRewardPoints() {
     return Container(
         padding: EdgeInsets.symmetric(vertical: 8, horizontal: 20),
         child: Column(
@@ -453,9 +461,10 @@ class OrderDetailState extends State<OrderDetail> with ResponsiveWidget {
           children: [
             Container(
               padding: EdgeInsets.symmetric(vertical: 8),
-              child: Text("ĐIỂM TÍCH LŨY", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              child: Text("ĐIỂM TÍCH LŨY", style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
             ),
-            Text("${rewardPoints.toString()} điểm", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.primary))
+            Text("${widget.invoice.rewardPoints.toString()} điểm",
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.primary))
           ],
         ));
   }

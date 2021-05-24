@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:projectui/src/configs/configs.dart';
 import 'package:projectui/src/presentation/presentation.dart';
+import 'package:projectui/src/utils/app_shared.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -17,6 +18,7 @@ class SplashScreenState extends State<SplashScreen> with ResponsiveWidget {
   void initState() {
     super.initState();
     getCart();
+    AppShared.setShowPopup(true);
     splashScreenViewModel.getProfileUser();
     splashScreenViewModel.getCountNotification();
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
@@ -30,7 +32,8 @@ class SplashScreenState extends State<SplashScreen> with ResponsiveWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BaseWidget(viewModel: splashScreenViewModel, builder: (context, viewModel, child) => Scaffold(body: buildUi(context: context)));
+    return BaseWidget(
+        showPhone: false, viewModel: splashScreenViewModel, builder: (context, viewModel, child) => Scaffold(body: buildUi(context: context)));
   }
 
   Widget buildScreen() {

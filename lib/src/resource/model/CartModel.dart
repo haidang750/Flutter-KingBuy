@@ -11,7 +11,7 @@ class CartModel with ChangeNotifier {
   int deliveryAddressId; // địa chỉ giao hàng được chọn
   String dateTime = ""; // ngày nhận hàng dd/MM/yyyy
   String hourTime = ""; // giờ nhận hàng hh:mm-hh:mm
-  int paymentType = 1; // phương thức giao hàng (1. COD, 2. Banking, 3. VISA, 4. Point Rewards)
+  int paymentType = 1; // phương thức thanh toán (1. COD, 2. Banking, 3. VISA, 4. Point Rewards)
   String note = ""; // Ghi chú đơn hàng
   int isExportInvoice = 0; // 1.Yêu cầu xuất hóa đơn VAT, 0.Không yêu cầu
   int couponId;
@@ -82,7 +82,7 @@ class CartModel with ChangeNotifier {
         paymentType: json['payment_type'],
         note: json['note'],
         isExportInvoice: json['is_export_invoice'],
-        couponId: json['coupon_id'],
+        couponId: json['coupon_id'] != null ? int.parse(json['coupon_id']) : null,
         totalUnread: json['total_unread'],
         deliveryStatus: json['delivery_status'],
         savePoint: json['save_point'],

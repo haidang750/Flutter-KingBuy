@@ -13,6 +13,8 @@ import 'package:projectui/src/utils/app_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../Addresss.dart';
+
 class ListAddress extends StatefulWidget {
   ListAddress({this.enableSelect, this.isCallFromCart, this.selectedAddressId, this.cartAddress});
 
@@ -31,6 +33,7 @@ class ListAddressState extends State<ListAddress> with ResponsiveWidget {
   final listAddressSubject = BehaviorSubject<List<Address>>();
   final showAddAddressIcon = BehaviorSubject<bool>();
   final cartAddressSubject = BehaviorSubject<Address>();
+  final createAddressViewModel = CreateAddressViewModel();
 
   @override
   void initState() {
@@ -141,42 +144,56 @@ class ListAddressState extends State<ListAddress> with ResponsiveWidget {
                       }),
                   if (widget.enableSelect)
                     Container(
-                      height: MediaQuery.of(context).size.height,
-                      width: MediaQuery.of(context).size.width,
-                      alignment: Alignment.bottomCenter,
-                      padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
-                      child: StreamBuilder(
-                        stream: selectedAddressSubject.stream,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return GestureDetector(
-                              child: Container(
-                                height: 45,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                    color: snapshot.data != -1 ? AppColors.primary : AppColors.disableButton,
-                                    borderRadius: BorderRadius.all(Radius.circular(22.5))),
-                                child: Text("Giao đến địa chỉ này",
-                                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.buttonContent)),
-                              ),
-                              onTap: snapshot.data != -1
-                                  ? () {
-                                      Address address = listAddressSubject.stream.value[snapshot.data];
-                                      if (address.taxCode == null) address.taxCode = "";
-                                      if (address.companyName == null) address.companyName = "";
-                                      if (address.companyAddress == null) address.companyAddress = "";
-                                      if (address.companyEmail == null) address.companyEmail = "";
-                                      CartModel.of(context).setDeliveryAddressId(address.id);
-                                      Navigator.pop(context, address);
-                                    }
-                                  : null,
-                            );
-                          } else {
-                            return Container();
-                          }
-                        },
-                      ),
-                    )
+                        height: MediaQuery.of(context).size.height,
+                        width: MediaQuery.of(context).size.width,
+                        alignment: Alignment.bottomCenter,
+                        padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
+                        child: StreamBuilder(
+                            stream: selectedAddressSubject.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return GestureDetector(
+                                    child: Container(
+                                      height: 45,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                          color: snapshot.data != -1 ? AppColors.primary : AppColors.disableButton,
+                                          borderRadius: BorderRadius.all(Radius.circular(22.5))),
+                                      child: Text("Giao đến địa chỉ này",
+                                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.buttonContent)),
+                                    ),
+                                    onTap: snapshot.data != -1
+                                        ? () async {
+                                            Address address = listAddressSubject.stream.value[snapshot.data];
+                                            // Update địa chỉ đó thành địa chỉ mặc định
+                                            await createAddressViewModel.updateDeliveryAddress(
+                                                context,
+                                                address.id,
+                                                address.fullName,
+                                                address.firstPhone,
+                                                address.secondPhone,
+                                                address.provinceCode,
+                                                address.districtCode,
+                                                address.wardCode,
+                                                address.address,
+                                                1,
+                                                address.isExportInvoice,
+                                                address.taxCode,
+                                                address.companyName,
+                                                address.companyAddress,
+                                                address.companyEmail);
+                                            if (address.taxCode == null) address.taxCode = "";
+                                            if (address.companyName == null) address.companyName = "";
+                                            if (address.companyAddress == null) address.companyAddress = "";
+                                            if (address.companyEmail == null) address.companyEmail = "";
+                                            CartModel.of(context).setDeliveryAddressId(address.id);
+                                            Navigator.pop(context, address);
+                                          }
+                                        : null);
+                              } else {
+                                return Container();
+                              }
+                            }))
                   else
                     Container()
                 ],

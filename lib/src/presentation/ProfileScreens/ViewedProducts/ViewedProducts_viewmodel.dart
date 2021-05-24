@@ -12,7 +12,7 @@ class ViewedProductsViewModel extends BaseViewModel {
   }
 
   Future<List<Product>> loadData(int offset) async {
-    NetworkState<ListProductsModel> result = await authRepository.getViewedProducts(6, offset);
+    NetworkState<ListProductsModel> result = await authRepository.getViewedProducts(10, offset);
 
     if (result.isSuccess) {
       List<Product> products = result.data.products;

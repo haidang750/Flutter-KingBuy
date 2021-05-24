@@ -51,7 +51,7 @@ class WritingCommentState extends State<WritingComment> with ResponsiveWidget {
   Widget buildAppBar() {
     return AppBar(title: Text("Viết đánh giá"), titleSpacing: 0, actions: [
       Padding(
-        padding: EdgeInsets.only(right: 10, top: 16, bottom: 8),
+        padding: EdgeInsets.only(right: 10, top: 14, bottom: 10),
         child: StreamBuilder(
           stream: ratingSubject.stream,
           builder: (context, snapshot) {

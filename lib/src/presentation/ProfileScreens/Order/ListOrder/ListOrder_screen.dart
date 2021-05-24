@@ -5,6 +5,7 @@ import 'package:projectui/src/presentation/base/base.dart';
 import 'package:projectui/src/presentation/presentation.dart';
 import 'package:projectui/src/presentation/widgets/MyListView.dart';
 import 'package:projectui/src/presentation/widgets/ShowMoney.dart';
+import 'package:projectui/src/resource/model/InvoiceModel.dart';
 import 'package:projectui/src/resource/model/OrderHistoryModel.dart';
 
 class ListOrder extends StatefulWidget {
@@ -51,8 +52,8 @@ class ListOrderState extends State<ListOrder> with ResponsiveWidget {
     }
   }
 
-  Widget itemBuilder(List<dynamic> orders, BuildContext context, int index) {
-    Order order = orders[index];
+  Widget itemBuilder(List<dynamic> invoices, BuildContext context, int index) {
+    InvoiceData invoice = invoices[index];
 
     return Column(
       children: [
@@ -69,15 +70,15 @@ class ListOrderState extends State<ListOrder> with ResponsiveWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Text(
-                          order.createdAt,
+                          invoice.createdAt,
                           style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
                         ),
                         Text(
-                          getStatus(order.status),
+                          getStatus(invoice.status),
                           style: TextStyle(fontSize: 17, fontWeight: FontWeight.w400, color: Colors.grey),
                         ),
                         ShowMoney(
-                          price: order.total,
+                          price: invoice.total,
                           fontSizeLarge: 17,
                           fontSizeSmall: 13,
                           color: AppColors.primary,
@@ -94,7 +95,7 @@ class ListOrderState extends State<ListOrder> with ResponsiveWidget {
                 ],
               )),
           onTap: () {
-            Navigator.pushNamed(context, Routers.Order_Detail, arguments: order);
+            Navigator.pushNamed(context, Routers.Order_Detail, arguments: invoice);
           },
         ),
         Opacity(
@@ -107,11 +108,11 @@ class ListOrderState extends State<ListOrder> with ResponsiveWidget {
     );
   }
 
-  Future<List<Order>> initRequester() async {
+  Future<List<InvoiceData>> initRequester() async {
     return await listOrderViewModel.loadData(widget.filter, 0);
   }
 
-  Future<List<Order>> dataRequester(int currentSize) async {
+  Future<List<InvoiceData>> dataRequester(int currentSize) async {
     return await listOrderViewModel.loadData(widget.filter, currentSize);
   }
 

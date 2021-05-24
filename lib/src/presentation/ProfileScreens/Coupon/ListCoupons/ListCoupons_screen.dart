@@ -7,8 +7,6 @@ import 'package:projectui/src/presentation/presentation.dart';
 import 'package:projectui/src/presentation/widgets/MyLoading.dart';
 import 'package:projectui/src/resource/model/CouponModel.dart';
 
-import '../CouponDetail/CouponDetail_screen.dart';
-
 class ListCoupons extends StatefulWidget {
   @override
   ListCouponsState createState() => ListCouponsState();
