@@ -211,7 +211,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
   Widget buildProductDetailContainer() {
     return Expanded(
       child: SingleChildScrollView(
-          physics: BouncingScrollPhysics(),
+          // physics: ClampingScrollPhysics(),
           child: StreamBuilder(
             stream: productDetailViewModel.productDetailStream,
             builder: (context, snapshot) {
@@ -1453,6 +1453,7 @@ class ProductDetailState extends State<ProductDetail> with ResponsiveWidget, Tic
   Widget listRelatedProducts() {
     return MyListView.build(
         scrollDirection: Axis.horizontal,
+        hasParentSingleChildScrollView: true,
         itemBuilder: itemRelatedProductBuilder,
         dataRequester: dataRelatedProductRequester,
         initRequester: initRelatedProductRequester);
