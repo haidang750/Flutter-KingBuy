@@ -1,0 +1,11 @@
+export 'address/address.dart';
+export 'change_password/change_password.dart';
+export 'commitment/commitment.dart';
+export 'contact/contact.dart';
+export 'coupon/coupon.dart';
+export 'detail_profile/detail_profile.dart';
+export 'order/order.dart';
+export 'promotion/promotion.dart';
+export 'term_of_use/term_of_use.dart';
+export 'viewed_products/viewed_products.dart';
+export 'root_profile/root_profile.dart';

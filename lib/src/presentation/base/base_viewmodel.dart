@@ -1,6 +1,6 @@
-import 'package:projectui/src/resource/repo/Commitment_Repository.dart';
-import 'package:projectui/src/resource/repo/Contact_Repository.dart';
-import 'package:projectui/src/resource/repo/Coupon_Repository.dart';
+import 'package:projectui/src/resource/repo/commitment_repository.dart';
+import 'package:projectui/src/resource/repo/contact_repository.dart';
+import 'package:projectui/src/resource/repo/coupon_repository.dart';
 import 'package:projectui/src/resource/repo/auth_repository.dart';
 import 'package:projectui/src/resource/repo/category_repository.dart';
 import 'package:flutter/material.dart';

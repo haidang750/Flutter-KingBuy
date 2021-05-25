@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:projectui/src/configs/constants/app_values.dart';
 import 'package:projectui/src/presentation/presentation.dart';
-import 'package:projectui/src/presentation/splash/Splash.dart';
-import 'package:projectui/src/presentation/widgets/MyLoading.dart';
-import 'package:projectui/src/resource/model/AddressModel.dart';
-import 'package:projectui/src/resource/model/Data.dart';
-import 'package:projectui/src/resource/model/NotificationModel.dart';
-import 'package:projectui/src/resource/model/ProductQuestionModel.dart';
-import 'package:projectui/src/resource/model/ViewedProductLocalStorage.dart';
+import 'package:projectui/src/presentation/splash/splash.dart';
+import 'package:projectui/src/presentation/widgets/my_loading.dart';
+import 'package:projectui/src/resource/model/address_model.dart';
+import 'package:projectui/src/resource/model/data.dart';
+import 'package:projectui/src/resource/model/notification_model.dart';
+import 'package:projectui/src/resource/model/product_question_model.dart';
+import 'package:projectui/src/resource/model/viewed_product_local_storage.dart';
 import 'package:projectui/src/resource/model/model.dart';
 import 'package:provider/provider.dart';
 

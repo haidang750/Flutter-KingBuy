@@ -57,7 +57,13 @@ class _BaseWidgetState<T extends BaseViewModel> extends State<BaseWidget<T>> wit
         child: Consumer<T>(
             builder: (BuildContext context, T viewModel, Widget child) => Stack(
                   children: [
-                    widget.builder.call(context, viewModel, child),
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        FocusScope.of(context).requestFocus(new FocusNode());
+                      },
+                      child: widget.builder.call(context, viewModel, child),
+                    ),
                     if (widget.showPhone)
                       Container(
                         height: MediaQuery.of(context).size.height,

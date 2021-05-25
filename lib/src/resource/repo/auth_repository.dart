@@ -1,17 +1,17 @@
 import 'package:dio/dio.dart';
-import 'package:projectui/src/resource/model/ContactModel.dart';
-import 'package:projectui/src/resource/model/Data.dart';
-import 'package:projectui/src/resource/model/DistrictModel.dart';
-import 'package:projectui/src/resource/model/LoginModel.dart';
-import 'package:projectui/src/resource/model/NotificationModel.dart';
-import 'package:projectui/src/resource/model/OrderHistoryModel.dart';
-import 'package:projectui/src/resource/model/ListProductsModel.dart';
-import 'package:projectui/src/resource/model/ProvinceModel.dart';
-import 'package:projectui/src/resource/model/WardModel.dart';
+import 'package:projectui/src/resource/model/contact_model.dart';
+import 'package:projectui/src/resource/model/data.dart';
+import 'package:projectui/src/resource/model/district_model.dart';
+import 'package:projectui/src/resource/model/login_model.dart';
+import 'package:projectui/src/resource/model/notification_model.dart';
+import 'package:projectui/src/resource/model/order_history_model.dart';
+import 'package:projectui/src/resource/model/list_products_model.dart';
+import 'package:projectui/src/resource/model/province_model.dart';
+import 'package:projectui/src/resource/model/ward_model.dart';
 import '../../configs/configs.dart';
 import '../../utils/utils.dart';
 import '../resource.dart';
-import '../model/PromotionModel.dart';
+import '../model/promotion_model.dart';
 
 class AuthRepository {
   AuthRepository._();
